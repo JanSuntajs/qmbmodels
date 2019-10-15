@@ -41,24 +41,6 @@ if __name__ == '__main__':
 
     # ----------------------------------------------------------------------
     # save the files
-
-    # prepare the metadata_files
-    metapath = os.path.join(savepath, 'metadata')
-    if not os.path.isdir(metapath):
-        os.makedirs(metapath)
-
-    metafile = os.path.join(metapath,
-                            'metadata_{}_{}.json'.format(syspar, modpar))
-
-    if not os.path.isfile(metafile):
-
-        with open(metafile, "w") as f:
-            argsDict_ = argsDict.copy()
-            argsDict_.pop('seed', None)
-            json = json.dumps(argsDict_)
-            f.write(json)
-
-        # folder_path =
     filename = 'eigvals_{}_{}_seed_{}'.format(syspar, modpar,
                                               argsDict['seed'])
     print(filename)
@@ -66,3 +48,30 @@ if __name__ == '__main__':
         os.makedirs(savepath)
 
     np.save(os.path.join(savepath, filename), eigvals)
+
+    # prepare the metadata_files
+    metapath = os.path.join(savepath, 'metadata')
+    metafile = os.path.join(metapath,
+                            'metadata_{}_{}.json'.format(syspar, modpar))
+
+    if not os.path.isdir(metapath):
+        try:
+            os.makedirs(metapath)
+        except OSError, e:
+            if e.errno != os.errno.EEXIST:
+                raise
+            pass
+
+    if not os.path.isfile(metafile):
+        try:
+            with open(metafile, "w") as f:
+                argsDict_ = argsDict.copy()
+                argsDict_.pop('seed', None)
+                json = json.dumps(argsDict_)
+                f.write(json)
+        except OSError, e:
+            if e.errno != os.errno.EEXIST:
+                raise
+            pass
+
+        # folder_path =
