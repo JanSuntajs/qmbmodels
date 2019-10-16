@@ -6,6 +6,9 @@
 **/tmp
 *.hdf5
 
+#ignore the runner script
+*runner.py
+
 # cache files for sublime text
 *.tmlanguage.cache
 *.tmPreferences.cache

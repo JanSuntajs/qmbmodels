@@ -241,7 +241,7 @@ def prepare_dependency_script(scripts, name, *args, **kwargs):
 
     dep_script = ("""#!/bin/bash\n"""
                   """#SBATCH --time=00:00:01\n
-                  #SBATCH --output=/log/dep_%A.out""")
+                  #SBATCH --output=/log/dep_%j.out""")
 
     dep_script += f"\njid0=$(sbatch --parsable {scripts[0]})"
     try:
