@@ -111,10 +111,10 @@ if __name__ == '__main__':
             for key, value in attrs.items():
                 f['r_data'].attrs[key] = value
 
+        txt_file = file.replace('eigvals', 'r_stats')
+        txt_file = txt_file.replace('.hdf5', '.txt')
+        print(txt_file)
+        np.savetxt(txt_file, gap_data)
+
     except IndexError:
         pass
-
-    # save r_data to a quickly readable file as well
-
-    np.savetxt(file.replace('r_stats', 'eigvals').replace(
-        '.txt', 'hdf5'), gap_data)

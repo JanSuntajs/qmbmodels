@@ -16,6 +16,11 @@ import json
 import h5py
 from cmd_parser_tools import arg_parser
 
+metadata = {}
+sysdict = {}
+moddict = {}
+
+dicts = [metadata, sysdict, moddict]
 
 if __name__ == '__main__':
 
@@ -29,11 +34,17 @@ if __name__ == '__main__':
     # load metadata
 
     metapath = os.path.join(savepath, 'metadata')
-    metafile = glob.glob(f"{metapath}/*.json")[0]
+    metafile, sysfile, modfile = [glob.glob(f"{metapath}/{name}*.json")[0]
+                                  for name in ['metadata',
+                                               'syspar', 'modpar']]
 
-    with open(metafile) as json_file:
+    files = [metafile, sysfile, modfile]
 
-        metadata = json.load(json_file).copy()
+    for i, file in enumerate(files):
+        with open(file) as json_file:
+
+            dicts[i].update(json.load(json_file).copy())
+            print(dicts[i])
 
     # Load the eigenvalue files, then save them to hdf5
     loadpath = savepath
@@ -44,9 +55,9 @@ if __name__ == '__main__':
 
     filenames = np.array([os.path.split(name)[1]
                           for name in filenames_], dtype=object)
+
     filename = filenames[0].split('_seed', 1)[0]
-    print(filenames)
-    print(filename)
+
     nsamples, nener = files.shape
 
     datasets = {'Eigenvalues': files,
@@ -63,32 +74,35 @@ if __name__ == '__main__':
         'dict_format': 'json',
         'loadpath': loadpath,
         'filename': filename,
+        **metadata
 
     }
 
     attrs = {'nener': nener,
              'nsamples': nsamples,
+             'syspar': syspar,
+             'modpar': modpar,
+             **sysdict,
+             **moddict
              }
-
-    system_info = {'syspar': syspar,
-                   'modpar': modpar}
-
-    misc = {**attrs, **system_info, **metadata, **creator}
-
     #  ----------------------------------------------------------------------
     # save the files to hdf5
 
-    if not os.path.isdir(savepath):
-        os.makedirs(savepath)
+    # if not os.path.isdir(savepath):
+    #     os.makedirs(savepath)
 
     filename = os.path.join(savepath, filename + '.hdf5')
 
     # save a hdf5 file
     with h5py.File(filename, 'a') as f:
 
-        # if 'misc', 'metadata' and 'system_info' were
-        # not yet created
+        # attributes of the whole file
+        for key, value in creator.items():
 
+            f.attrs[key] = value
+
+        # if 'misc', 'metadata' and 'system_info' were
+        # not yet created -> the file was not opened before
         if all([(key not in f.keys()) for key in datasets.keys()]):
             print('Creating the dataset!')
 
@@ -109,11 +123,13 @@ if __name__ == '__main__':
                     f.create_dataset(
                         key, data=value, maxshape=maxshape, dtype=string_dt)
 
-            for key, value in misc.items():
+            # append attributes
+            for key, value in attrs.items():
 
                 f['Eigenvalues'].attrs[key] = value
 
             print('created actual values')
+
         # append to the existing datasets if the datasets already exist
         else:
             print('Appending spectra to the existing values!')
@@ -129,7 +145,7 @@ if __name__ == '__main__':
             nsamples = indices.shape[0]
 
             nsamples += nsamples0
-            misc['nsamples'] = nsamples
+            attrs['nsamples'] = nsamples
 
             f['Eigenvalues'].resize((nsamples, nener))
             f['Eigenvalues'][nsamples0:, :] = datasets['Eigenvalues']
@@ -137,7 +153,8 @@ if __name__ == '__main__':
             f['Eigenvalues_filenames'][nsamples0:] =  \
                 datasets['Eigenvalues_filenames']
 
-            for key, value in misc.items():
+            # if attributes have also changed
+            for key, value in attrs.items():
 
                 f['Eigenvalues'].attrs[key] = value
 

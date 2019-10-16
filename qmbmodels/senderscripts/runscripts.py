@@ -29,7 +29,9 @@ programs = {
     'gaps': {'name': 'main_r.py', 'array': False,
              'save': 'Spectral_stats', 'vectors': False},
     'hdf5': {'name': './utils/hdf5saver.py', 'array': False,
-             'save': 'Eigvals', 'vectors': False}
+             'save': 'Eigvals', 'vectors': False},
+    'folder': {'name': './utils/prepfolders.py', 'array': False,
+               'save': None, 'array': False}
 
 }
 
@@ -44,6 +46,7 @@ def prep_sub_script(mode='diag', queue=False, cmd_arg='',
                     slurm_opt=[],
                     module='',
                     environment='', cd='',
+                    name=''
                     ):
     """
 
@@ -151,6 +154,9 @@ def prep_sub_script(mode='diag', queue=False, cmd_arg='',
             of the script. Order:
             [<time>, <nodes>, <ntasks>, <cpus-per-task>,<mem-per-cpu<,
             <job-name>, <output>, <minseed>, <maxseed>]
+        name: str
+            A human readable description of the job which also
+            serves as the top folder in the results directory.
 
 
 
@@ -180,9 +186,10 @@ def prep_sub_script(mode='diag', queue=False, cmd_arg='',
     # given program
     tail, head = syspar.split('_pbc_')
     head = 'pbc_' + head
+    results = f"{storage}/{name}/{head}/{tail}/{modpar}"
     cmd_scripts = [(
         f"python {prog['name']} {cmd_arg}{' '.join(cmd_opt)} {seed} "
-        f"--results={storage}/{prog['save']}/{head}/{tail}/{modpar} "
+        f"--results={results} "
         f"--syspar={syspar} --modpar={modpar} \n") for seed in
         seedlist]
 

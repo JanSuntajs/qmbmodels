@@ -18,9 +18,9 @@ if __name__ == '__main__':
     # argsDict -> system and module dependent parameters
     # extra -> path for saving the results
     argsDict, extra = arg_parser(syspar_keys, modpar_keys)
-    print(extra)
 
-    print(argsDict)
+    # define attributes for the hdf5
+
     savepath = argsDict['results']
     syspar = argsDict['syspar']
     modpar = argsDict['modpar']
@@ -44,25 +44,39 @@ if __name__ == '__main__':
     filename = 'eigvals_{}_{}_seed_{}'.format(syspar, modpar,
                                               argsDict['seed'])
     print(filename)
-    if not os.path.isdir(savepath):
-        os.makedirs(savepath)
+    # if not os.path.isdir(savepath):
+    #     os.makedirs(savepath)
 
     np.save(os.path.join(savepath, filename), eigvals)
 
     # prepare the metadata_files
     metapath = os.path.join(savepath, 'metadata')
-    metafile = os.path.join(metapath,
-                            'metadata_{}_{}.json'.format(syspar, modpar))
 
-    if not os.path.isdir(metapath):
+    metafiles = [os.path.join(metapath,
+                              '{}_{}_{}.json'.format(name, syspar, modpar))
+                 for name in ['metadata', 'modpar', 'syspar']]
 
-        os.makedirs(metapath, exist_ok=True)
+    # if not os.path.isdir(metapath):
 
-    if not os.path.isfile(metafile):
-        with open(metafile, "w") as f:
-            argsDict_ = argsDict.copy()
-            argsDict_.pop('seed', None)
-            json = json.dumps(argsDict_)
-            f.write(json)
+    argsDict_ = argsDict.copy()
+    argsDict_.pop('seed', None)
+
+    sys_dict = {key: value for key, value in argsDict_.items() if
+                key in syspar_keys}
+    mod_dict = {key: value for key, value in argsDict_.items() if
+                key in modpar_keys}
+
+    argsDict_ = {key: value for key, value in argsDict_.items() if
+                 key not in syspar_keys + modpar_keys}
+
+    dicts = [argsDict_, sys_dict, mod_dict]
+
+    #     os.makedirs(metapath, exist_ok=True)
+    for file, dict_ in zip(metafiles, dicts):
+        if not os.path.isfile(file):
+            with open(file, "w") as f:
+
+                jsonfile = json.dumps(dict_)
+                f.write(jsonfile)
 
         # folder_path =

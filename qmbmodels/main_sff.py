@@ -1,5 +1,16 @@
 #!/usr/bin/env python
 
+"""
+This module provides utilities for calculating sff data
+and then storing them together with their corresponding
+metadata in the hdf5 format. The code below relies
+heavily on the tools from the spectral_stats package,
+which can be obtained from:
+https://github.com/JanSuntajs/spectral_statistics_tools
+
+
+"""
+
 import os
 import numpy as np
 import glob
@@ -19,6 +30,14 @@ _sff_parse_dict = {'sff_min_tau': [float, -5],
                    'sff_eta': [float, 0.5],
                    'sff_unfolding_n': [int, 3],
                    'sff_filter': [str, 'gaussian']}
+
+# which attributes of the Spectra class instance to exclude
+# from the final hdf5 file
+
+_filt_exclude = ['filter', 'dims']
+# which attributes to consider as separate datasets
+_misc_include = ['mean_ener', 'sq_ham_tr', 'ham_tr_sq', 'gamma',
+                 ]
 
 # sfflist text descriptor
 sfflist_desc = """
@@ -87,13 +106,11 @@ if __name__ == '__main__':
     print(min_tau, max_tau, n_tau, sff_filter)
 
     savepath = argsDict['results']
-    syspar = argsDict['syspar']
-    modpar = argsDict['modpar']
-
-    loadpath = savepath.replace('Spectral_stats', 'Eigvals')
+    print(savepath)
 
     try:
-        file = glob.glob(f"{loadpath}/*.hdf5")[0]
+        file = glob.glob(f"{savepath}/*.hdf5")[0]
+        print('delamo')
 
         with h5py.File(file, 'a') as f:
 
@@ -105,7 +122,7 @@ if __name__ == '__main__':
             taulist = np.logspace(min_tau, max_tau, n_tau)
 
             # if the sff spectrum dataset does not yet exist, create it
-
+            # perform the calculations
             spc = Spectra(data)
             spc.spectral_width = (0., 1.)
             spc.spectral_unfolding(n=unfold_n, merge=False, correct_slope=True)
@@ -114,12 +131,31 @@ if __name__ == '__main__':
             sfflist = np.zeros(
                 (spc.nsamples + 1, len(taulist)), dtype=np.complex128)
             sfflist[0] = taulist
+            # calculate the SFF
             sfflist[1:, :] = spc.calc_sff(taulist, return_sfflist=True)
-
+            # gather the results
             sffvals = np.array([spc.taulist, spc.sff, spc.sff_uncon])
-            print(type(sffvals))
-            print(sffvals.shape)
 
+            # prepare additional attributes
+            filt_dict = {key: spc.filt_dict[key] for key in spc.filt_dict
+                         if key not in _filt_exclude}
+            misc_dict = {key: spc.misc_dict[key]
+                         for key in spc.misc_dict if key not in _misc_include}
+            misc0 = spc.misc0_dict.copy()
+            misc0_keys = [key for key in misc0]
+
+            for key in misc0_keys:
+                misc0[key + '0'] = misc0.pop(key)
+            attrs.update(spc.unfold_dict.copy())
+
+            for dict_ in (misc_dict, filt_dict, misc0):
+                attrs.update(dict_)
+
+            attrs.update({'nener': spc.nener, 'nsamples': spc.nsamples,
+                          'nener0': spc._nener, 'nsamples0': spc._nsamples})
+
+
+            # add the actual sff values
             if 'SFF_spectra' not in f.keys():
 
                 f.create_dataset('SFF_spectra', data=sfflist,
@@ -137,36 +173,22 @@ if __name__ == '__main__':
                 f['SFF_spectra'][()] = sfflist
                 f['SFF_spectrum'][()] = sffvals
 
-            for key, value in attrs.items():
-                f['SFF_spectra'].attrs[key] = value
-                f['SFF_spectrum'].attrs[key] = value
+            # data which led to the SFF calculation
+            for key in _misc_include:
+
+                if key not in f.keys():
+
+                    f.create_dataset(
+                        key, data=spc.misc_dict[key], maxshape=(None,))
+                else:
+                    f[key].resize(spc.misc_dict[key].shape)
+                    f[key][()] = spc.misc_dict[key]
+
+            # append the attributes
+            for key1 in ['SFF_spectra', 'SFF_spectrum'] + _misc_include:
+                for key2, value in attrs.items():
+                    f[key1].attrs[key2] = value
 
     except IndexError:
+        print('ne delamo')
         pass
-
-    # print(data)
-    # files = np.array([np.load(file) for file in files])
-
-    # # create the Spectra class instance
-
-    # taulist = np.logspace(-5, 2, 1000)
-    # spc = Spectra(files)
-    # spc.spectral_width = (0., 1.)
-    # spc.spectral_unfolding(n=3, merge=False, correct_slope=True)
-    # spc.get_ham_misc(individual=True)
-    # spc.spectral_filtering(filter_key='gaussian', eta=0.5)
-
-    # spc.calc_sff(taulist)
-
-    # sffvals = np.array([spc.taulist, spc.sff, spc.sff_uncon])
-
-    # # ----------------------------------------------------------------------
-    # # save the files
-
-    # # folder_path =
-    # filename = 'sff_{}_{}'.format(syspar, modpar)
-    # print(filename)
-    # if not os.path.isdir(savepath):
-    #     os.makedirs(savepath)
-
-    # np.save(os.path.join(savepath, filename), sffvals)

@@ -114,7 +114,6 @@ class BatchSender(object):
             subdirs_dict[subdir] = sub_path
             if not os.path.isdir(sub_path):
                 os.mkdir(sub_path)
-
         self.__dict__.update(subdirs_dict)
 
     def prepare_jobs(self):

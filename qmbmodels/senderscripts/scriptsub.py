@@ -91,7 +91,7 @@ class SubmittedScript(object):
     def __init__(self, job, sender, mode, queue=False,
                  calc_vectors=True,
                  time="00:00:00", nodes=1, ntasks=1,
-                 cputask=1, memcpu=1, cd='.', name='imbrie_model',
+                 cputask=1, memcpu=1, cd='.', name='',
                  module='Anaconda3/5.3.0', sourcename='python3imbrie'):
 
         super(SubmittedScript, self).__init__()
@@ -160,6 +160,8 @@ class SubmittedScript(object):
         indices = []
 
         modes = self.modes.copy()
+
+        modes.insert(0, 'folder')
         for mode in modes:
 
             if mode == 'diag':
@@ -172,6 +174,7 @@ class SubmittedScript(object):
             modes.insert(i, 'hdf5')
 
         self._modes = modes
+        print(self._modes)
         for mode in modes:
 
             try:
@@ -184,7 +187,8 @@ class SubmittedScript(object):
                                                 slurm_opt=[],
                                                 module=self.module,
                                                 environment=self.sourcename,
-                                                cd=self.cd
+                                                cd=self.cd,
+                                                name=self.name
                                                 )
                 #  If jobs are submitted to the cluster,
                 #  cmdscript only contains one script to be
