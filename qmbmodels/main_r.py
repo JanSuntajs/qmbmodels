@@ -113,3 +113,8 @@ if __name__ == '__main__':
 
     except IndexError:
         pass
+
+    # save r_data to a quickly readable file as well
+
+    np.savetxt(file.replace('r_stats', 'eigvals').replace(
+        '.txt', 'hdf5'), gap_data)
