@@ -162,7 +162,7 @@ class BatchSender(object):
 
     def run_jobs(self, mode, queue=False, time="00:00:01", nodes=1,
                  ntasks=1, cputask=1, memcpu=4, module='Anaconda3/5.3.0',
-                 sourcename='python3imbrie'):
+                 sourcename='python3imbrie', name=''):
         """
         A function for running jobs either on the headnode/home machine or in
         the SLURM based cluster.
@@ -188,4 +188,4 @@ class BatchSender(object):
 
             script = SubmittedScript(
                 job, self, mode, queue, time, nodes, ntasks, cputask, memcpu,
-                module=module, sourcename=sourcename)
+                module=module, sourcename=sourcename, name=name)

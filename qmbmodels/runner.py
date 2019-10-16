@@ -5,7 +5,7 @@ from models import heisenberg as mod
 
 if __name__ == '__main__':
 
-    model = 'spin1d'
+    model = 'ferm1d'
     params = {
         'L': [12],
         'nu': [6],
@@ -16,7 +16,7 @@ if __name__ == '__main__':
         'delta1': [.55],
         'delta2': [.55],
         'pbc': [True],
-        'ham_type': ['ferm1d'],
+        'ham_type': [model],
         'disorder': ['uniform', 'gaussian', 'binary'],
         'min_seed': [1],
         'max_seed': [5],
@@ -34,6 +34,7 @@ if __name__ == '__main__':
     auxpar_keys = ['sff_min_tau', 'sff_max_tau', 'sff_n_tau', 'sff_eta',
                    'sff_unfolding_n', 'sff_filter', 'r_step']
 
+    name = f'{model}_xxz_compare_disorders'
     time = "00:59:59"
     nodes = 1   # number of nodes
     ntasks = 1  # number of threads
@@ -47,4 +48,4 @@ if __name__ == '__main__':
     sender = BatchSender(params, syspar_keys, modpar_keys, auxpar_keys)
 
     sender.run_jobs(mode, queue=queue, time=time, nodes=nodes, ntasks=ntasks,
-                    memcpu=memcpu)
+                    memcpu=memcpu, name=name)
