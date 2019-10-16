@@ -170,7 +170,8 @@ class SubmittedScript(object):
 
         for i in indices:
             modes.insert(i, 'hdf5')
-        print(modes)
+
+        self._modes = modes
         for mode in modes:
 
             try:
@@ -215,7 +216,7 @@ class SubmittedScript(object):
             if not os.path.isdir(tmp):
                 os.makedirs(tmp)
 
-            for mode, script in zip(self.modes, self.scripts):
+            for mode, script in zip(self._modes, self.scripts):
 
                 slurmscript = '{}/sbatch_{}_{}.run'.format(
                     tmp, mode, job.desc_string)

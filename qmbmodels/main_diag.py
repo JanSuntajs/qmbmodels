@@ -55,23 +55,14 @@ if __name__ == '__main__':
                             'metadata_{}_{}.json'.format(syspar, modpar))
 
     if not os.path.isdir(metapath):
-        try:
-            os.makedirs(metapath)
-        except OSError, e:
-            if e.errno != os.errno.EEXIST:
-                raise
-            pass
+
+        os.makedirs(metapath, exist_ok=True)
 
     if not os.path.isfile(metafile):
-        try:
-            with open(metafile, "w") as f:
-                argsDict_ = argsDict.copy()
-                argsDict_.pop('seed', None)
-                json = json.dumps(argsDict_)
-                f.write(json)
-        except OSError, e:
-            if e.errno != os.errno.EEXIST:
-                raise
-            pass
+        with open(metafile, "w") as f:
+            argsDict_ = argsDict.copy()
+            argsDict_.pop('seed', None)
+            json = json.dumps(argsDict_)
+            f.write(json)
 
         # folder_path =
