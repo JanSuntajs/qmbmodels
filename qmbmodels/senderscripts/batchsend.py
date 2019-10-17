@@ -186,5 +186,6 @@ class BatchSender(object):
         for job in self.jobs:
 
             script = SubmittedScript(
-                job, self, mode, queue, time, nodes, ntasks, cputask, memcpu,
+                job, self, mode, queue=queue, time=time, nodes=nodes,
+                ntasks=ntasks, cputask=cputask, memcpu=memcpu,
                 module=module, sourcename=sourcename, name=name)

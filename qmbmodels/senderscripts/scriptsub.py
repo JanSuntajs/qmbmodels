@@ -91,7 +91,7 @@ class SubmittedScript(object):
     def __init__(self, job, sender, mode, queue=False,
                  calc_vectors=True,
                  time="00:00:00", nodes=1, ntasks=1,
-                 cputask=1, memcpu=1, cd='.', name='',
+                 cputask=1, memcpu=4, cd='.', name='',
                  module='Anaconda3/5.3.0', sourcename='python3imbrie'):
 
         super(SubmittedScript, self).__init__()
