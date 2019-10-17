@@ -35,7 +35,7 @@ cosuniform (cosine of a random number:
 import numpy as np
 
 _available_disorders = ['none', 'uniform', 'binary', 'gaussian',
-                        'incommensurate', 'cosuniform']
+                        'incomm', 'cosuniform']
 
 
 def get_disorder_dist(L, disorder_type='none', *params):
@@ -110,7 +110,7 @@ def get_disorder_dist(L, disorder_type='none', *params):
 
         disorder = np.random.normal(loc=W, scale=dW, size=L)
 
-    if disorder_type == 'incommensurate':
+    if disorder_type == 'incomm':
 
         gldn_ratio = 0.5 * (np.sqrt(5.) - 1.)
 
