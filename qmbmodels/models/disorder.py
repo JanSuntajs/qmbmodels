@@ -20,19 +20,22 @@ binary:
 
     rho^2 = dW^2
 
-Gaussian:
+gaussian:
 
     rho^2 = dW^2
 
-Quasirandom:
+cosuniform (cosine of a random number:
 
     rho^2 = dW^2 / 2
+
+
 
 
 """
 import numpy as np
 
-_available_disorders = ['none', 'uniform', 'binary', 'gaussian', 'quasirandom']
+_available_disorders = ['none', 'uniform', 'binary', 'gaussian',
+                        'incommensurate', 'cosuniform']
 
 
 def get_disorder_dist(L, disorder_type='none', *params):
@@ -49,7 +52,8 @@ def get_disorder_dist(L, disorder_type='none', *params):
                 String specifying from which distribution the
                 disordered values should be sampled. Currently
                 allowed:
-                'uniform', 'binary', 'gaussian', 'quasirandom',
+                'uniform', 'binary', 'gaussian', 'incommensurate',
+                'cosuniform' (cosine of a uniform variable)
                 'none'
                 Defaults to 'none'
         L: int
@@ -106,14 +110,22 @@ def get_disorder_dist(L, disorder_type='none', *params):
 
         disorder = np.random.normal(loc=W, scale=dW, size=L)
 
-    if disorder_type == 'quasirandom':
+    if disorder_type == 'incommensurate':
 
         gldn_ratio = 0.5 * (np.sqrt(5.) - 1.)
 
         rnd_phase = np.random.uniform(0., 2 * np.pi)
 
         lattice = np.arange(1, L + 1, 1)
-        disorder = W * \
+        disorder = dW * \
             np.cos(2 * np.pi * gldn_ratio * lattice + rnd_phase)
+
+    if disorder_type == 'cosuniform':
+
+        # randomly distributed disorder -> site dependent
+        # disorder on a lattice
+        lattice = np.random.uniform(0., 2 * np.pi, size=L)
+
+        disorder = dW * np.cos(lattice)
 
     return disorder
