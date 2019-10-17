@@ -33,7 +33,7 @@ if __name__ == '__main__':
 
     print('Starting diagonalization ...')
     # eigvals = imbrie_model.eigvals(turbo=True)
-    eigvals, eigvecs = model.eigsystem(turbo=True)
+    eigvals, eigvecs = model.eigsystem(complex=False, turbo=True)
     print('Diagonalization finished!')
 
     print('Displaying eigvals')
