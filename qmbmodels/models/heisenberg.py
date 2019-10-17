@@ -61,9 +61,11 @@ def construct_hamiltonian(argsdict):
 
         num_op = 'z'
 
-    inter = [[num_op + num_op, [[argsdict['delta1'], *coup]
+    inter = [[num_op + num_op, [[argsdict['J1'] * argsdict['delta1'],
+                                 *coup]
                                 for coup in coup1p]],
-             [num_op + num_op, [[argsdict['delta2'], *coup]
+             [num_op + num_op, [[argsdict['J2'] * argsdict['delta2'],
+                                 *coup]
                                 for coup in coup2p]]]
 
     fields = get_disorder_dist(L, disorder, argsdict['W'],
