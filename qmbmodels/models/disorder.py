@@ -1,6 +1,33 @@
 """
 This model provides functions for creating
-the most commonly used disorder distributions
+the most commonly used disorder distributions.
+In general, apart from the system size L and
+disorder type, each disorder distribution
+should have two key parameters:
+
+W: center of the disorder distribution
+dW: width of the disorder distribution
+
+For disorder distributions centered at the
+origin, the dependence of the variance on
+the dW parameter should be the following:
+
+uniform:
+
+    rho^2 = dW^2 / 3
+
+binary:
+
+    rho^2 = dW^2
+
+Gaussian:
+
+    rho^2 = dW^2
+
+Quasirandom:
+
+    rho^2 = dW^2 / 2
+
 
 """
 import numpy as np
@@ -68,7 +95,8 @@ def get_disorder_dist(L, disorder_type='none', *params):
 
     if disorder_type == 'uniform':
 
-        disorder = np.random.uniform(W - dW, W + dW, size=L)
+        disorder = np.random.uniform(
+            W - dW, W + dW, size=L)
 
     if disorder_type == 'binary':
 
