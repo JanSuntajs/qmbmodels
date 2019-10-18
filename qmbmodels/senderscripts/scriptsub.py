@@ -197,7 +197,9 @@ class SubmittedScript(object):
                 #  self.queue == False and mode == 'diag',
                 #  in which case multiple scripts for different
                 #  seeds are prepared and then executed sequentially.
-                if self.queue:
+
+                noqueue = rsc.programs[mode]['noqueue']
+                if (self.queue and not noqueue):
                     scripts.append(cmdscript[0])
                 else:
                     [sp.check_call(cmd, shell=True) for cmd in cmdscript]

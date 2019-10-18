@@ -19,19 +19,28 @@ import subprocess as sp
 #                              give eigenvectors (large
 #                              and potentially memory-
 #                              consuming arrays) as output.
+# programs[mode]['noqueue'] -> if job is never meant to be
+#                              ran on the cluster, such as
+#                              in the case of 'folder' program
+#                              which only creates the folder
+#                              structure.
 #
 programs = {
 
     'diag': {'name': 'main_diag.py', 'array': True,
-             'save': 'Eigvals', 'vectors': True},
+             'save': 'Eigvals', 'vectors': True,
+             'noqueue': False},
     'sff': {'name': 'main_sff.py', 'array': False,
-            'save': 'Spectral_stats', 'vectors': False},
+            'save': 'Spectral_stats', 'vectors': False,
+            'noqueue': False},
     'gaps': {'name': 'main_r.py', 'array': False,
-             'save': 'Spectral_stats', 'vectors': False},
+             'save': 'Spectral_stats', 'vectors': False,
+             'noqueue': False},
     'hdf5': {'name': './utils/hdf5saver.py', 'array': False,
-             'save': 'Eigvals', 'vectors': False},
+             'save': 'Eigvals', 'vectors': False,
+             'noqueue': False},
     'folder': {'name': './utils/prepfolders.py', 'array': False,
-               'save': None, 'array': False}
+               'save': None, 'array': False, 'noqueue': True}
 
 }
 
