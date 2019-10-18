@@ -60,6 +60,30 @@ class BatchSender(object):
         results and log files are
         stored.
 
+    cmd_opt: list
+        A list of strings specifying optional command-line arguments.
+        This is implemented for flexibility - most of the commandline
+        arguments match for the majority of our programs, so a single
+        <cmd_arg>
+        string often suffices, but there can be differences. This option
+        allows to add other command-line possibilities without the need
+        to restructure this code in the future.
+        Note that this function already
+        takes care of the cases when the seed needs to be added manually
+        when code is not executed on a SLURM-based cluster or when the job
+        does not need a seed altogether, such as in the case of sff jobs.
+        Syntax:
+        ./<executable_name> <cmd_arg> <cmd_opt>
+
+slurm_opt: string
+        A string specifying optional arguments to be added to the
+        SLURM-related part of the script. Much as in the cmd_opt case,
+        this part is included for flexibility. All other parameters
+        remaining equal, we simply append the required additional
+        set of #SBATCH commands to the preexisting core set. As with
+        the cmd_opt parameter, the function already addresses the cases
+        related to the usage of array jobs.
+
     Attributes:
         params, _syspar_keys, _modpar_keys:
         see the above "Parameters" section.
@@ -77,13 +101,15 @@ class BatchSender(object):
     """
 
     def __init__(self, params, syspar_keys, modpar_keys, auxpar_keys=[],
-                 storage='.'):
+                 storage='.', cmd_opt=[], slurm_opt=[]):
         super(BatchSender, self).__init__()
 
         self.params = params
         self._syspar_keys = syspar_keys
         self._modpar_keys = modpar_keys
         self._auxpar_keys = auxpar_keys
+        self.cmd_opt = cmd_opt
+        self.slurm_opt = slurm_opt
         self.prepare_jobs()
         self.prepare_folders(storage)
 
