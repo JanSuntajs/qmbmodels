@@ -129,8 +129,8 @@ def prep_sub_script(mode='diag', queue=False, cmd_arg='',
             does not need a seed altogether, such as in the case of sff jobs.
             Syntax:
             ./<executable_name> <cmd_arg> <cmd_opt>
-        slurm_opt: string
-            A string specifying optional arguments to be added to the
+        slurm_opt: list
+            A list specifying optional arguments to be added to the
             SLURM-related part of the script. Much as in the cmd_opt case,
             this part is included for flexibility. All other parameters
             remaining equal, we simply append the required additional
