@@ -178,6 +178,7 @@ def prep_sub_script(mode='diag', queue=False, cmd_arg='',
             script is prepared for each seed number. In all other
             cases, only one submission script is prepared.
     """
+    slurm_opt = slurm_opt.copy()
     prog = programs[mode]
     minseed = slurmargs[7]
     maxseed = slurmargs[8]

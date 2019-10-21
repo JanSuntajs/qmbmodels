@@ -172,7 +172,7 @@ class SubmittedScript(object):
         for i in indices:
             modes.insert(i, 'hdf5')
 
-        self._modes = modes
+        self._modes = modes.copy()
         print(self._modes)
         modes.insert(0, 'folder')
         for mode in modes:
