@@ -161,7 +161,6 @@ class SubmittedScript(object):
 
         modes = self.modes.copy()
 
-        modes.insert(0, 'folder')
         for mode in modes:
 
             if mode == 'diag':
@@ -175,6 +174,7 @@ class SubmittedScript(object):
 
         self._modes = modes
         print(self._modes)
+        modes.insert(0, 'folder')
         for mode in modes:
 
             try:
