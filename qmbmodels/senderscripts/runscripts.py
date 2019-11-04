@@ -248,8 +248,8 @@ def prep_sub_script(mode='diag', queue=False, cmd_arg='',
             nproc = '${SLURM_NTASKS}'
         else:
             nproc = slurmargs[2]
-        #execname = 'mpirun -np {} python'.format(nproc)
-        execname = 'mpiexec python'
+        execname = 'mpiexec -np {} python'.format(nproc)
+        # execname = 'mpiexec python'
         cmd_opt_ = cmd_opt.copy()
     else:
         execname = 'python'

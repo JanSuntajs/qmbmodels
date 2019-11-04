@@ -2,6 +2,7 @@
 
 import sys
 import slepc4py
+from utils import set_mkl_lib
 
 slepc4py.init(sys.argv)
 
