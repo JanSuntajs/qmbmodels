@@ -107,8 +107,8 @@ if __name__ == '__main__':
         print('eigvals:')
         print(eigvals)
 
+        savefile(eigvals, savepath, syspar, modpar, argsDict,
+                 syspar_keys, modpar_keys, 'partial', True)
+
     E_si.destroy()
     matrix.destroy()
-
-    savefile(eigvals, savepath, syspar, modpar, argsDict,
-             syspar_keys, modpar_keys, 'partial', True)
