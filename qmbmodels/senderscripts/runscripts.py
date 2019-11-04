@@ -86,7 +86,8 @@ diag_modes = ['diag', 'sinvert']
 
 sinvert_keys = ['eps_type', 'eps_nev', 'st_type', 'st_ksp_type',
                 'st_pc_type',
-                'st_pc_factor_mat_solver_type']
+                'st_pc_factor_mat_solver_type',
+                'mat_mumps_icntl']
 
 
 def prep_sub_script(mode='diag', queue=False, cmd_arg='',
