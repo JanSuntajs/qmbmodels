@@ -244,7 +244,11 @@ def prep_sub_script(mode='diag', queue=False, cmd_arg='',
     results = f"{storage}/{name}/{head}/{tail}/{modpar}"
 
     if prog['mpi']:
-        execname = 'mpirun -np {} python'.format(slurmargs[2])
+        if queue:
+            nproc = '${SLURM_NTASKS}'
+        else:
+            nproc = slurmargs[2]
+        execname = 'mpirun -np {} python'.format(nproc)
         cmd_opt_ = cmd_opt.copy()
     else:
         execname = 'python'
