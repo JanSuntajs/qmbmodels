@@ -26,33 +26,25 @@ from spectral_stats.spectra import Spectra
 from utils import set_mkl_lib
 from utils.cmd_parser_tools import arg_parser, arg_parser_general
 
-_r_keys = ['r_step']
 
-_r_parse_dict = {'r_step': [float, 0.25], }
-
-_r_name = 'r_data'
+_r_name = 'r_data_partial'
 # sfflist text descriptor
 r_data_desc = """
 This string provides a textual descriptor of the
-'r_data' hdf5 dataset. The latter contains the
+'r_data_partial' hdf5 dataset. The latter contains the
 values of the mean ratio of the adjacent level
 spacings for an ensemble of hamiltonians for which
-the energy spectra have been calculated using exact
+the energy spectra have been calculated using partial
 diagonalization. The entry corresponding to the
-'r_data' key is a ndarray of the shape
-(n_data, 3). Here, n_data is the number of different
-percentages of the eigenstates for which we calculate
-the r-statistic. As it is customary with this observable,
-we usually only consider some portion of the states
-from around the centre of the energy spectrum.
+'r_data_partial' key is a ndarray of the shape
+(1, 3).
 
 The entries are:
 
-r_data[:, 0] -> percentages of the states for which
-                the values have been calculated
-r_data[:, 1] -> mean values of the r-statistic for
+r_data[0, 0] -> number of obtained eigenvalues
+r_data[0, 1] -> mean values of the r-statistic for
                 the corresponding percentages
-r_data[:, 2] -> standard deviations of the mean values
+r_data[0, 2] -> standard deviations of the mean value
 
 See manuscript at: https://arxiv.org/abs/1905.06345
 for a more technical introduction of our implementation.
@@ -61,13 +53,8 @@ for a more technical introduction of our implementation.
 
 if __name__ == '__main__':
 
-    rDict, rextra = arg_parser_general(_r_parse_dict)
+    # rDict, rextra = arg_parser_general(_r_parse_dict)
     argsDict, extra = arg_parser([], [])
-
-    r_step, = [
-        rDict[key] for key in _r_parse_dict.keys()]
-
-    print(r_step)
 
     savepath = argsDict['results']
     syspar = argsDict['syspar']
@@ -80,40 +67,33 @@ if __name__ == '__main__':
 
         with h5py.File(file, 'a') as f:
 
-            data = f['Eigenvalues'][:]
+            data = f['Eigenvalues_partial'][:]
 
-            attrs = dict(f['Eigenvalues'].attrs)
-            attrs.update(rDict)
+            attrs = dict(f['Eigenvalues_partial'].attrs)
             attrs.update({'r_desc': r_data_desc})
 
             # if the sff spectrum dataset does not yet exist, create it
-            n_data = int(0.5 / r_step)
-            gap_data = np.zeros((n_data, 3))
             spc = Spectra(data)
+            spc.spectral_width = (0., 1.)
+            gap_data = np.zeros((1, 3))
 
-            # try:
-            for i in range(int(0.5 / r_step)):
-                percentage = 1 - (2 * i * r_step)
-                spc.spectral_width = (i * r_step, 1 - i * r_step)
-
-                gap_mean, gap_dev = spc.gap_avg()
-                gap_data[i] = [percentage, gap_mean, gap_dev]
+            gap_mean, gap_dev = spc.gap_avg()
+            gap_data[0] = [data.shape[1], gap_mean, gap_dev]
             # except ValueError:
-                # pass#
+            # pass#
 
             if _r_name not in f.keys():
 
                 f.create_dataset(_r_name, data=gap_data, maxshape=(None, 3))
 
             else:
-                f[_r_name].resize(gap_data.shape)
 
                 f[_r_name][()] = gap_data
 
             for key, value in attrs.items():
                 f[_r_name].attrs[key] = value
 
-        txt_file = file.replace('eigvals', 'r_stats')
+        txt_file = file.replace('eigvals', 'r_stats_partial')
         txt_file = txt_file.replace('.hdf5', '.txt')
         print(txt_file)
         np.savetxt(txt_file, gap_data)

@@ -13,7 +13,7 @@ _modpar_keys = [key for key in modpar_keys if 'seed' not in key]
 _modpar_keys.append('seed')
 
 
-def construct_hamiltonian(argsdict):
+def construct_hamiltonian(argsdict, parallel=False, mpirank=0, mpisize=0):
 
     L = argsdict['L']
     nu = argsdict['nu']
@@ -75,6 +75,7 @@ def construct_hamiltonian(argsdict):
 
     static_list = [*hops, *inter, rnd]
 
-    hamiltonian = ham(L, static_list, [], Nu=int(nu))
+    hamiltonian = ham(L, static_list, [], Nu=int(nu), parallel=parallel,
+                      mpirank=mpirank, mpisize=mpisize)
 
     return hamiltonian, fields

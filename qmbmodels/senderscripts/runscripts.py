@@ -8,7 +8,7 @@ the head node/ home machine.
 
 import subprocess as sp
 
-# attributes of the dict:
+# attributes of the programs dict:
 # programs[mode] -> which type of job to perform
 # programs[mode]['name'] -> name of the executable script
 # programs[mode]['array'] -> if the job is meant to be
@@ -24,25 +24,69 @@ import subprocess as sp
 #                              in the case of 'folder' program
 #                              which only creates the folder
 #                              structure.
+# programs[mode]['mpi'] -> whether the job can be executed in
+#                          parallel using the mpi paradigm
+#
+# What different modes do:
+#
+#   diag -> full diagonalization
+#   sff -> spectral form factor calculation
+#   gaps -> <r> value calculation
+#   hdf5 -> a helper job that is run after the diag
+#           or sinvert jobs have finished ->
+#           collects the eigenvalue calculation results
+#           into a single hdf5 file with multiple
+#           datasets. The user does not need to
+#           call the routine, it is called automatically
+#           after the diagonalization jobs to do the
+#           'cleanup'.
+#   folder -> a helper routine that takes care of the
+#             appropriate directory structure creation.
+#             This mode is never run on the cluster since
+#             queueing in order to perform such a trivial
+#             task would be wasteful.
 #
 programs = {
 
-    'diag': {'name': 'main_diag.py', 'array': True,
+    'diag': {'name': './main_diag.py', 'array': True,
              'save': 'Eigvals', 'vectors': True,
-             'noqueue': False},
-    'sff': {'name': 'main_sff.py', 'array': False,
+             'noqueue': False, 'mpi': False},
+    'sff': {'name': './main_sff.py', 'array': False,
             'save': 'Spectral_stats', 'vectors': False,
-            'noqueue': False},
-    'gaps': {'name': 'main_r.py', 'array': False,
+            'noqueue': False, 'mpi': False},
+    'gaps': {'name': './main_r.py', 'array': False,
              'save': 'Spectral_stats', 'vectors': False,
-             'noqueue': False},
+             'noqueue': False, 'mpi': False},
+    'gaps_partial': {'name': './main_r_partial.py', 'array': False,
+                     'save': 'Spectral_stats', 'vectors': False,
+                     'noqueue': False, 'mpi': False},
     'hdf5': {'name': './utils/hdf5saver.py', 'array': False,
              'save': 'Eigvals', 'vectors': False,
-             'noqueue': False},
+             'noqueue': False, 'mpi': False},
     'folder': {'name': './utils/prepfolders.py', 'array': False,
-               'save': None, 'array': False, 'noqueue': True}
+               'save': None, 'array': False, 'noqueue': True,
+               'mpi': False},
+    'sinvert': {'name': './main_sinvert.py', 'array': True,
+                'save': 'Eigvals', 'vectors': True,
+                'noqueue': False, 'mpi': True}
 
 }
+
+# diagonalization modes
+diag_modes = ['diag', 'sinvert']
+# define shift-and-invert keys:
+#
+# eps_type -> eps_solver
+# eps_nev -> number of eps eigenvalues
+# st_type -> type of the spectral transform used
+# st_ksp_type
+# st_pc_type -> preconditioner type
+# st_pc_factor_mat_solver_type -> which solver to use
+#
+
+sinvert_keys = ['eps_type', 'eps_nev', 'st_type', 'st_ksp_type',
+                'st_pc_type',
+                'st_pc_factor_mat_solver_type']
 
 
 def prep_sub_script(mode='diag', queue=False, cmd_arg='',
@@ -197,8 +241,19 @@ def prep_sub_script(mode='diag', queue=False, cmd_arg='',
     tail, head = syspar.split('_pbc_')
     head = 'pbc_' + head
     results = f"{storage}/{name}/{head}/{tail}/{modpar}"
+
+    if prog['mpi']:
+        execname = 'mpirun -np {} python'.format(slurmargs[2])
+        cmd_opt_ = cmd_opt.copy()
+    else:
+        execname = 'python'
+        # exclude command options referring to the
+        # mpi jobs in this case
+        cmd_opt_ = [opt for opt in cmd_opt if not any(
+            [key in opt for key in sinvert_keys])]
+
     cmd_scripts = [(
-        f"python {prog['name']} {cmd_arg}{' '.join(cmd_opt)} {seed} "
+        f"{execname} {prog['name']} {cmd_arg} {' '.join(cmd_opt_)} {seed} "
         f"--results={results} "
         f"--syspar={syspar} --modpar={modpar} \n") for seed in
         seedlist]
@@ -237,7 +292,7 @@ def prep_sub_script(mode='diag', queue=False, cmd_arg='',
                               in cmd_scripts]
     else:
         submission_scripts = cmd_scripts
-
+    print(submission_scripts)
     return submission_scripts
 
 

@@ -55,7 +55,6 @@ def get_disorder_dist(L, disorder_type='none', *params):
                 'uniform', 'binary', 'gaussian', 'incommensurate',
                 'cosuniform' (cosine of a uniform variable)
                 'none'
-                Defaults to 'none'
         L: int
                 Integer specifying the system size, or, more
                 specifically, the number of the random coupling

@@ -163,7 +163,7 @@ class SubmittedScript(object):
 
         for mode in modes:
 
-            if mode == 'diag':
+            if mode in rsc.diag_modes:
                 indices.append(i + j + 1)
                 j += 1
 

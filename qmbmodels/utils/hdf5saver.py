@@ -15,6 +15,7 @@ import json
 # from dataIO import hdf5save
 import h5py
 from cmd_parser_tools import arg_parser
+from filesaver import metalist
 
 metadata = {}
 sysdict = {}
@@ -22,7 +23,35 @@ moddict = {}
 
 dicts = [metadata, sysdict, moddict]
 
+
+def prepare_files(filenames, partial=False):
+    """ 
+    Function that takes care of the fact
+    that partial diagonalization does
+    not always return the same number
+    of eigenvalues -> hence it reshapes
+    the whole list of values so that shapes
+    of individual 1D spectra match.
+    """
+
+    files = [np.load(file) for file in filenames]
+
+    if partial:
+
+        files = [file for file in files if file.size != 0]
+
+        shapes = [file.shape[0] for file in files]
+        minshape = np.min(shapes)
+        files = [file[:minshape] for file in files]
+
+    return np.array(files)
+
+
 if __name__ == '__main__':
+
+    partial = False
+    eigenkey = 'Eigenvalues'
+    fnamekey = 'Eigenvalues_filenames'
 
     print(os.getcwd())
     argsDict, extra = arg_parser([], [])
@@ -35,8 +64,7 @@ if __name__ == '__main__':
 
     metapath = os.path.join(savepath, 'metadata')
     metafile, sysfile, modfile = [glob.glob(f"{metapath}/{name}*.json")[0]
-                                  for name in ['metadata',
-                                               'syspar', 'modpar']]
+                                  for name in metalist]
 
     files = [metafile, sysfile, modfile]
 
@@ -51,17 +79,29 @@ if __name__ == '__main__':
 
     filenames_ = glob.glob(f"{loadpath}/*.npy")
 
-    files = np.array([np.load(file) for file in filenames_])
+    # files = np.array([np.load(file) for file in filenames_])
 
     filenames = np.array([os.path.split(name)[1]
                           for name in filenames_], dtype=object)
 
     filename = filenames[0].split('_seed', 1)[0]
 
+    # in case we are dealing with the partial diagonalization case,
+    # change the partial flag accordingly
+    if 'partial' in filename:
+
+        partial = True
+        eigenkey = 'Eigenvalues_partial'
+        fnamekey = 'Eigenvalues_partial_filenames'
+
+    files = prepare_files(filenames_, partial)
+
+    filename = filename.replace('partial_', '')
+
     nsamples, nener = files.shape
 
-    datasets = {'Eigenvalues': files,
-                'Eigenvalues_filenames': filenames}
+    datasets = {eigenkey: files,
+                fnamekey: filenames}
 
     # information about the creator of the data
     creator = {
@@ -110,13 +150,16 @@ if __name__ == '__main__':
             for key, value in datasets.items():
                 maxshape = (None,)
                 # eigenvalues are stored as a numpy array
-                if key == 'Eigenvalues':
-                    maxshape = (None, nener)
+                if key == eigenkey:
+                    if not partial:
+                        maxshape = (None, nener)
+                    else:
+                        maxshape = (None, None)
 
                     eigset = f.create_dataset(
                         key, data=value, maxshape=maxshape)
 
-                # this is a numpy array of the object datatype
+                # this is aY¸ numpy array of the object datatype
                 else:
                     string_dt = h5py.special_dtype(vlen=str)
 
@@ -126,37 +169,42 @@ if __name__ == '__main__':
             # append attributes
             for key, value in attrs.items():
 
-                f['Eigenvalues'].attrs[key] = value
+                f[eigenkey].attrs[key] = value
 
             print('created actual values')
 
         # append to the existing datasets if the datasets already exist
         else:
             print('Appending spectra to the existing values!')
-            nsamples0 = f['Eigenvalues'].shape[0]
+            nsamples0 = f[eigenkey].shape[0]
 
             # check for duplicates
             indices = np.array([i for i, name in enumerate(filenames)
                                 if name not in
-                                f['Eigenvalues_filenames'][()]], dtype=np.int8)
+                                f[fnamekey][()]], dtype=np.int8)
 
-            datasets['Eigenvalues'] = files[indices, :]
-            datasets['Eigenvalues_filenames'] = filenames[indices]
+            datasets[eigenkey] = files[indices, :]
+            datasets[fnamekey] = filenames[indices]
             nsamples = indices.shape[0]
 
             nsamples += nsamples0
             attrs['nsamples'] = nsamples
 
-            f['Eigenvalues'].resize((nsamples, nener))
-            f['Eigenvalues'][nsamples0:, :] = datasets['Eigenvalues']
-            f['Eigenvalues_filenames'].resize((nsamples,))
-            f['Eigenvalues_filenames'][nsamples0:] =  \
-                datasets['Eigenvalues_filenames']
+            if partial:
+                nener_ = f[eigenkey].shape[1]
+                if nener > nener_:
+                    nener = nener_
+            f[eigenkey].resize((nsamples, nener))
+
+            f[eigenkey][nsamples0:, :] = datasets[eigenkey]
+            f[fnamekey].resize((nsamples,))
+            f[fnamekey][nsamples0:] =  \
+                datasets[fnamekey]
 
             # if attributes have also changed
             for key, value in attrs.items():
 
-                f['Eigenvalues'].attrs[key] = value
+                f[eigenkey].attrs[key] = value
 
     for filename in filenames_:
 
