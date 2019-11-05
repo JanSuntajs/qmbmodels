@@ -227,10 +227,14 @@ class SubmittedScript(object):
 
                 slurmscript = '{}/sbatch_{}_{}.run'.format(
                     tmp, mode, job.desc_string)
-
-                with open(slurmscript, 'w') as slrm:
-                    slrm.write(script)
-
+                try:
+                    with open(slurmscript, 'w') as slrm:
+                        slrm.write(script)
+                except OSError as exc:
+                    if exc.errno == 36:
+                        print('Warning! Filename too long!')
+                    else:
+                        raise
                 scriptnames.append(slurmscript)
 
             name = f"{tmp}/dep_script_{job.desc_string}.run"
