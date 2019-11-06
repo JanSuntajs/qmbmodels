@@ -25,10 +25,7 @@ def mode_parser():
 
     Leave the --queue optional argument if
     the code is not meant to be run on the
-    cluster. The same holds true for the
-    --interactive optional argument in case
-    one does not intend to run the job in
-    the cluster's interactive mode.
+    cluster.
     """
 
     parser = argparse.ArgumentParser(prog='Run code on a slurm-based cluster '
@@ -38,10 +35,6 @@ def mode_parser():
     parser.add_argument("-q", "--queue",
                         help="Whether the job is ran in the slurm "
                         "queue or not.", action="store_true")
-
-    parser.add_argument("-i", "--interactive",
-                        help="Whether the job is ran in the slurm "
-                        "interactive mode or not.", action="store_true")
 
     parser.add_argument("--eigvecs",
                         help="Whether the diagonalization job should "
@@ -136,6 +129,7 @@ def arg_parser_general(*args):
 
             parser.add_argument('--{}'.format(key),
                                 type=type_, default=default)
+
 
     args, extra = parser.parse_known_args()
 

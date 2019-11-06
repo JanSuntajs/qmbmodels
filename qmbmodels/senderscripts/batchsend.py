@@ -185,7 +185,7 @@ slurm_opt: list
 
         self.jobs = jobs
 
-    def run_jobs(self, mode, queue=False, interactive=False, time="00:00:01", nodes=1,
+    def run_jobs(self, mode, queue=False, time="00:00:01", nodes=1,
                  ntasks=1, cputask=1, memcpu=4, module='Anaconda3/5.3.0',
                  sourcename='python3imbrie', name=''):
         """
@@ -212,7 +212,6 @@ slurm_opt: list
         for job in self.jobs:
 
             script = SubmittedScript(
-                job, self, mode, queue=queue,
-                interactive=interactive, time=time, nodes=nodes,
+                job, self, mode, queue=queue, time=time, nodes=nodes,
                 ntasks=ntasks, cputask=cputask, memcpu=memcpu,
                 module=module, sourcename=sourcename, name=name)

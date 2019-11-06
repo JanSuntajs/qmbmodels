@@ -90,8 +90,7 @@ sinvert_keys = ['eps_type', 'eps_nev', 'st_type', 'st_ksp_type',
                 'mat_mumps_icntl']
 
 
-def prep_sub_script(mode='diag', queue=False,
-                    interactive=False, cmd_arg='',
+def prep_sub_script(mode='diag', queue=False, cmd_arg='',
                     storage='', syspar='',
                     modpar='',
                     slurmargs=["00:00:01",
@@ -160,11 +159,8 @@ def prep_sub_script(mode='diag', queue=False,
             Specifier for which program type to run. Currently 'diag' and
             'sff' are supported and the default is set to 'diag'.
         queue: boolean
-            Whether the program is to be executed on a SLURM-based cluster
+            Whether the program is to be executed on a SLURM-based clusterr
             or on the headnode/home machine.
-        interactive: boolean
-            Whether the program is to be executed on a SLURM-based cluster's
-            interactive mode.
         cmd_arg: string
             A string which follows the name of the executable program when
             run in the command line:
@@ -237,7 +233,7 @@ def prep_sub_script(mode='diag', queue=False,
         if queue:
             slurm_opt.append(f'#SBATCH --array={minseed}-{maxseed}')
             seedlist = ['--seed=${SLURM_ARRAY_TASK_ID}']
-        elif (interactive or (not queue)):
+        else:
             seedlist = [f'--seed={seed}' for seed in
                         range(minseed, maxseed, 1)]
 
@@ -248,7 +244,7 @@ def prep_sub_script(mode='diag', queue=False,
     results = f"{storage}/{name}/{head}/{tail}/{modpar}"
 
     if prog['mpi']:
-        if queue or interactive:
+        if queue:
             nproc = '${SLURM_NTASKS}'
         else:
             nproc = slurmargs[2]
@@ -276,7 +272,6 @@ def prep_sub_script(mode='diag', queue=False,
         f"conda activate {environment}\n"
     )
 
-    # job allocation parameters for running on the SLURM cluster
     sbatch_script = (
         "#!/bin/bash"
         "\n#SBATCH --time={0}\n"
@@ -288,13 +283,6 @@ def prep_sub_script(mode='diag', queue=False,
         "#SBATCH --output={6}slurm_%A_%a.out\n"
         "{7}\n").format(*slurmargs[:7], '\n'.join(slurm_opt))
 
-    # allocation parameters for running on
-    interactive_script = (
-        "srun --time={0} --nodes={1} --ntasks={2} "
-        "--cpus-per-task={3} --mem-per-cpu={4} "
-        "--job-name={5} --output={6}slurm_%A_%a.out "
-        "{7} --pty bash -i").format(*slurmargs[:7], ' '.join(slurm_opt))
-
     misc_script = (
         "\ncd {0}\n"
         "hostname\n"
@@ -303,23 +291,15 @@ def prep_sub_script(mode='diag', queue=False,
         "OMP_NUM_THREADS=${{SLURM_CPUS_PER_TASK}}\n"
     ).format(cd)
 
-    runscript = ""
-    if (queue and not interactive):
+    if queue:
 
         submission_scripts = [sbatch_script + modload_script +
                               misc_script + cmd_script for cmd_script
                               in cmd_scripts]
-    elif interactive:
-
-        submission_scripts = modload_script + misc_script
-        for cmd_script in cmd_scripts:
-            submission_script += cmd_script
-
-        runscript = interactive_script
     else:
         submission_scripts = cmd_scripts
-
-    return submission_scripts, runscript
+    print(submission_scripts)
+    return submission_scripts
 
 
 def prepare_dependency_script(scripts, name, *args, **kwargs):

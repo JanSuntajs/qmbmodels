@@ -89,7 +89,6 @@ class SubmittedScript(object):
     """
 
     def __init__(self, job, sender, mode, queue=False,
-                 interactive=False,
                  calc_vectors=True,
                  time="00:00:00", nodes=1, ntasks=1,
                  cputask=1, memcpu=4, cd='.', name='',
@@ -99,7 +98,6 @@ class SubmittedScript(object):
 
         self.modes = mode
         self.queue = queue
-        self.interactive = interactive
         self.calc_vectors = calc_vectors
         self.time = time
         self.nodes = nodes
@@ -181,21 +179,18 @@ class SubmittedScript(object):
 
             try:
 
-                cmdscript, run = rsc.prep_sub_script(mode,
-                                                     self.queue,
-                                                     self.interactive,
-                                                     job.jobscript,
-                                                     sender.results,
-                                                     job.syspar,
-                                                     job.modpar,
-                                                     slurm_args,
-                                                     cmd_opt=sender.cmd_opt,
-                                                     slurm_opt=sender.slurm_opt,
-                                                     module=self.module,
-                                                     environment=self.sourcename,
-                                                     cd=self.cd,
-                                                     name=self.name
-                                                     )
+                cmdscript = rsc.prep_sub_script(mode, self.queue,
+                                                job.jobscript,
+                                                sender.results,
+                                                job.syspar, job.modpar,
+                                                slurm_args,
+                                                cmd_opt=sender.cmd_opt,
+                                                slurm_opt=sender.slurm_opt,
+                                                module=self.module,
+                                                environment=self.sourcename,
+                                                cd=self.cd,
+                                                name=self.name
+                                                )
                 #  If jobs are submitted to the cluster,
                 #  cmdscript only contains one script to be
                 #  executed. This is not the case if
@@ -204,14 +199,11 @@ class SubmittedScript(object):
                 #  seeds are prepared and then executed sequentially.
 
                 noqueue = rsc.programs[mode]['noqueue']
-                if not self.interactive:
-                    if (self.queue and not noqueue):
-                        scripts.append(cmdscript[0])
-                    else:
-                        [sp.check_call(cmd, shell=True) for cmd in cmdscript]
+                if (self.queue and not noqueue):
+                    scripts.append(cmdscript[0])
                 else:
-                    sp.check_call(run, shell=True)
                     [sp.check_call(cmd, shell=True) for cmd in cmdscript]
+
             except KeyError:
                 print(f"Mode {mode} not yet implemented!")
 
