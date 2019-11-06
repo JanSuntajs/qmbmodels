@@ -183,6 +183,7 @@ class SubmittedScript(object):
 
                 cmdscript, run = rsc.prep_sub_script(mode,
                                                      self.queue,
+                                                     self.interactive,
                                                      job.jobscript,
                                                      sender.results,
                                                      job.syspar,
