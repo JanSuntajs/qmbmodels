@@ -204,7 +204,7 @@ class SubmittedScript(object):
                 #  seeds are prepared and then executed sequentially.
 
                 noqueue = rsc.programs[mode]['noqueue']
-                if not interactive:
+                if not self.interactive:
                     if (self.queue and not noqueue):
                         scripts.append(cmdscript[0])
                     else:
