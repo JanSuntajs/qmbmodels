@@ -225,7 +225,7 @@ class SubmittedScript(object):
 
             for mode, script in zip(self._modes, self.scripts):
 
-                slurmscript = '{}/sbatch_{}_{}.run'.format(
+                slurmscript = '{}/{}_{}.run'.format(
                     tmp, mode, job.desc_string)
                 try:
                     with open(slurmscript, 'w') as slrm:
@@ -237,7 +237,7 @@ class SubmittedScript(object):
                         raise
                 scriptnames.append(slurmscript)
 
-            name = f"{tmp}/dep_script_{job.desc_string}.run"
+            name = f"{tmp}/dep_{job.desc_string}.run"
 
             depscript = rsc.prepare_dependency_script(scriptnames, name)
 
