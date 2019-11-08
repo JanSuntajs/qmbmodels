@@ -229,6 +229,8 @@ class SubmittedScript(object):
             if not os.path.isdir(tmp):
                 os.makedirs(tmp)
 
+            descriptor = ''.join(random.choices(string.ascii_lowercase +
+                                                string.digits, k=200))
             for mode, script in zip(self._modes, self.scripts):
 
                 # generate a unique descriptor for the slurmscript
@@ -236,8 +238,7 @@ class SubmittedScript(object):
                 # We use this to ensure that each SLURM script has
                 # a unique identifier and that the filename is not
                 # too long.
-                descriptor = ''.join(random.choices(string.ascii_lowercase +
-                                                    string.digits, k=200))
+
                 slurmscript = '{}/{}_{}.run'.format(
                     tmp, mode, descriptor)
 
@@ -252,6 +253,6 @@ class SubmittedScript(object):
                 scriptnames, name)
 
             sp.check_call(f"sbatch {depscript}", shell=True)
-            
+
         else:
             pass
