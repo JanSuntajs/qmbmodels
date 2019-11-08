@@ -252,6 +252,6 @@ class SubmittedScript(object):
                 scriptnames, name)
 
             sp.check_call(f"sbatch {depscript}", shell=True)
-
+            
         else:
             pass
