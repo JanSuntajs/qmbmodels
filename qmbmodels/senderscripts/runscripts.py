@@ -5,7 +5,7 @@ the head node/ home machine.
 
 """
 
-
+import os
 import subprocess as sp
 
 # attributes of the programs dict:
@@ -298,7 +298,7 @@ def prep_sub_script(mode='diag', queue=False, cmd_arg='',
                               in cmd_scripts]
     else:
         submission_scripts = cmd_scripts
-    print(submission_scripts)
+    # print(submission_scripts)
     return submission_scripts
 
 
@@ -315,6 +315,16 @@ def prepare_dependency_script(scripts, name, *args, **kwargs):
     If needed, we could add an additional list of dependencies
     for consecutive jobs.
 
+    Parameters:
+    -----------
+
+    scripts: list
+             A list of strings specifying submission scripts
+             for individual job substeps.
+    name: str
+          The name of the dependency script to be stored on
+          disk.
+
     """
 
     dep_script = ("""#!/bin/bash\n"""
@@ -328,6 +338,17 @@ def prepare_dependency_script(scripts, name, *args, **kwargs):
             dep_script += (f"\njid{j}=$(sbatch --parsable "
                            f"--dependency=afterany:"
                            f"$jid{i} {script})")
+
+        # remove the scripts to avoid cluttering
+        # of the folder
+
+        for script in enumerate(scripts):
+
+            # copy_path to a dedicated subfolder in the
+            # results folder and remove the folder from
+            # the tmp dir
+            dep_script += (f"rm {script} \n")
+
     except IndexError:
         pass
 

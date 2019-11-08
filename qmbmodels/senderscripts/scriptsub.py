@@ -11,6 +11,8 @@ run on the head node or on the home machine.
 
 import os
 import subprocess as sp
+import random
+import string
 
 from . import runscripts as rsc
 
@@ -214,6 +216,10 @@ class SubmittedScript(object):
         """
         Send jobs to SLURM if self.queue == True
 
+        In order to avoid the "filename too long error",
+        we randomize the part of the script appended to
+        the mode descriptor name.
+
         """
         scriptnames = []
         if self.queue:
@@ -225,21 +231,25 @@ class SubmittedScript(object):
 
             for mode, script in zip(self._modes, self.scripts):
 
+                # generate a unique descriptor for the slurmscript
+                # -> a random string
+                # We use this to ensure that each SLURM script has
+                # a unique identifier and that the filename is not
+                # too long.
+                descriptor = ''.join(random.choices(string.ascii_lowercase +
+                                                    string.digits, k=200))
                 slurmscript = '{}/{}_{}.run'.format(
-                    tmp, mode, job.desc_string)
-                try:
-                    with open(slurmscript, 'w') as slrm:
-                        slrm.write(script)
-                except OSError as exc:
-                    if exc.errno == 36:
-                        print('Warning! Filename too long!')
-                    else:
-                        raise
+                    tmp, mode, descriptor)
+
+                with open(slurmscript, 'w') as slrm:
+                    slrm.write(script)
+
                 scriptnames.append(slurmscript)
 
-            name = f"{tmp}/dep_{job.desc_string}.run"
+            name = f"{tmp}/dep_{descriptor}.run"
 
-            depscript = rsc.prepare_dependency_script(scriptnames, name)
+            depscript = rsc.prepare_dependency_script(
+                scriptnames, name, results)
 
             sp.check_call(f"sbatch {depscript}", shell=True)
 
