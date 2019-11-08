@@ -249,7 +249,7 @@ class SubmittedScript(object):
             name = f"{tmp}/dep_{descriptor}.run"
 
             depscript = rsc.prepare_dependency_script(
-                scriptnames, name, results)
+                scriptnames, name)
 
             sp.check_call(f"sbatch {depscript}", shell=True)
 
