@@ -337,7 +337,7 @@ def prepare_dependency_script(scripts, name, *args, **kwargs):
             j = i + 1
             dep_script += (f"\njid{j}=$(sbatch --parsable "
                            f"--dependency=afterany:"
-                           f"$jid{i} {script})")
+                           f"$jid{i} {script})\n")
 
         # remove the scripts to avoid cluttering
         # of the folder
