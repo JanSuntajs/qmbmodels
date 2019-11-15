@@ -11,10 +11,12 @@ import json
 
 metalist = ['metadata', 'modpar', 'syspar']
 
+
 def savefile(file, savepath, syspar, modpar, argsDict,
              syspar_keys, modpar_keys,
              diag_type='full',
-             save_metadata=True):
+             save_metadata=True,
+             name='eigvals'):
     """
     Prepare a file for saving.
 
@@ -51,14 +53,17 @@ def savefile(file, savepath, syspar, modpar, argsDict,
                 Whether to store metadata or not.
 
     """
+    if not os.path.isdir(savepath):
+
+        os.mkdir(savepath)
 
     if diag_type == 'full':
 
-        name = 'eigvals'
+        name = name
 
     elif diag_type == 'partial':
 
-        name = 'partial_eigvals'
+        name = 'partial_{}'.format(name)
 
     filename = '{}_{}_{}_seed_{}'.format(
         name, syspar, modpar, argsDict['seed'])

@@ -1,4 +1,4 @@
-#!/usr/bin/bash
+!/usr/bin/bash
 
 conda deactivate
 conda create --name petscenv --file conda_spec_file.txt
