@@ -42,6 +42,6 @@ if __name__ == '__main__':
 
     # ----------------------------------------------------------------------
     # save the files
-
+    eigvals_dict = {'Eigvals': eigvals}
     savefile(eigvals, savepath, syspar, modpar, argsDict,
-             syspar_keys, modpar_keys, 'full', True)
+             syspar_keys, modpar_keys, 'full', True, save_type='npy')

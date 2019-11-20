@@ -11,19 +11,27 @@ import json
 
 metalist = ['metadata', 'modpar', 'syspar']
 
-def savefile(file, savepath, syspar, modpar, argsDict,
+
+def savefile(files, savepath, syspar, modpar, argsDict,
              syspar_keys, modpar_keys,
              diag_type='full',
-             save_metadata=True):
+             save_metadata=True,
+             name='eigvals',
+             save_type='npy'):
     """
     Prepare a file for saving.
 
     Parameters
     ----------
 
-    file: ndarray
-                1D ndarray of eigenvalues sorted in
-                ascending order w.r.t. their magnitude.
+    files: dict or ndarray
+                Can be either:
+                a) A dictionary of arrays to be saved
+                via the np.savez(). Intended to be used
+                together with save_type = 'npz'
+                b) A ndarray to be saved via the np.save
+                method. Hence intended to use in the case
+                when save_type = 'npy'.
 
     savepath: str
                 Path to the folder where the eigenvalues
@@ -50,22 +58,36 @@ def savefile(file, savepath, syspar, modpar, argsDict,
     save_metadata: bool, optional
                 Whether to store metadata or not.
 
+    save_type: string
+                Whether to save in the '.npy' or '.npz'
+                file format. The two current options
+                are thus:
+                'npy'
+                'npz'
+
     """
+    if not os.path.isdir(savepath):
+
+        os.mkdir(savepath)
 
     if diag_type == 'full':
 
-        name = 'eigvals'
+        name = name
 
     elif diag_type == 'partial':
 
-        name = 'partial_eigvals'
+        name = 'partial_{}'.format(name)
 
     filename = '{}_{}_{}_seed_{}'.format(
         name, syspar, modpar, argsDict['seed'])
 
     print(filename)
 
-    np.save(os.path.join(savepath, filename), file)
+    filepath = os.path.join(savepath, filename)
+    if save_type == 'npy':
+        np.save(filepath, files)
+    elif save_type == 'npz':
+        np.savez(filepath, **files)
 
     # prepare the metadata files
     if save_metadata:
