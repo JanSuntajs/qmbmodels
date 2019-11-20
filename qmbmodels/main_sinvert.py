@@ -227,14 +227,17 @@ if __name__ == '__main__':
             eigvals = np.array(eigvals)[sortargs]
 
             entropy = np.array(entropy)[sortargs]
+            metadata = np.array([ener0, ener1, nconv])
 
             saveargs = (savepath, syspar, modpar, argsDict,
                         syspar_keys, modpar_keys, 'partial')
-            # save the eigenvalues
-            savefile(eigvals, *saveargs, True)
-            # save the eigenvectors to a /tmp subfolder on the
-            # savepath
-            savefile(entropy, savepath + '/vecs', *saveargs[1:], False,
-                     name='entro')
+
+            savedict = {'Eigenvalues_partial': eigvals,
+                        'Entropy_partial': entropy,
+                        'Eigenvalues_partial_spectral_info': metadata}
+            # save the eigenvalues, entropy and spectral info as
+            # a npz array
+            savefile(savedict, *saveargs, True, save_type='npz')
+            
     E_si.destroy()
     matrix.destroy()
