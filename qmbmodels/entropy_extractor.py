@@ -190,18 +190,18 @@ def save_ave_entro(topdir, savepath, results_key='Entropy_partial',
 
                     os.makedirs(savefolder_)
 
-                    vals = savedict[desc][syspar][savefolder]
+                vals = savedict[desc][syspar][savefolder]
 
-                    entropy = np.zeros((len(vals), arr_shape))
+                entropy = np.zeros((len(vals), arr_shape))
 
-                    for i, value in enumerate(vals):
+                for i, value in enumerate(vals):
 
-                        entropy[i] = _entro_ave(value[1], results_key,
-                                                disorder_key)
+                    entropy[i] = _entro_ave(value[1], results_key,
+                                            disorder_key)
 
-                    # sort according to disorder
-                    entropy = entropy[entropy[:, 0].argsort()]
-                    savename = 'entro_sweep_{}_{}'.format(syspar, savefolder)
-                    print(_join(savefolder_, savename))
-                    np.savetxt(_join(savefolder_, savename),
-                               entropy, footer=footer)
+                # sort according to disorder
+                entropy = entropy[entropy[:, 0].argsort()]
+                savename = 'entro_sweep_{}_{}'.format(syspar, savefolder)
+                print(_join(savefolder_, savename))
+                np.savetxt(_join(savefolder_, savename),
+                           entropy, footer=footer)
