@@ -148,7 +148,7 @@ def _crawl_folder_tree(topdir, results_key='Entropy_partial',
                            if not _check(modpath, modp)]
 
                 for modpar in modpars:
-                    savefolder = modpars.split('_{}_'.format(disorder_key))[0]
+                    savefolder = modpar.split('_{}_'.format(disorder_key))[0]
                     savedict[descriptor][syspar][savefolder] = []
 
                 for modpar in modpars:
