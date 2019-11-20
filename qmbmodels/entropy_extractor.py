@@ -1,0 +1,198 @@
+#!/usr/bin/env python
+
+"""
+A function for extracting entanglement
+entropy data from the hdf5 files and store
+them into txt files for easier reading,
+representation and sharing with others.
+
+"""
+
+import sys, os
+import numpy as np
+import h5py
+import collections
+
+from glob import glob
+
+def _makehash():
+    return collections.defaultdict(_makehash)
+
+def _join(head, tail):
+
+	return os.path.join(head, tail)
+
+def _check(head, tail):
+
+	return os.path.isfile(_join(head, tail))
+
+def _entro_ave(h5file,results_key='Entropy_partial',
+	disorder_key = 'dW'):
+
+	"""
+	A function that calculates
+	the average entropy of the
+	data stored in a .hdf5 file
+	under a key "Entropy_partial"
+	
+	Parameters:
+	-----------
+
+	h5file: string
+			Filename of a hdf5 file
+			to be opened.
+	
+	results_key: string
+			Which type of results do we want to
+			extract.
+
+	disorder_key: string
+			Which key denotes the disorder
+			parameter in the attributes dict.
+
+	"""
+	try:
+		with h5py.File(h5file, 'r') as file:
+
+			key = results_key
+			if key in file.keys():
+
+				entropy = file[key][()]
+
+				nsamples = file[key].attrs['nsamples']
+				nener = file[key].attrs['nener']
+				dW = file[key].attrs['dW']
+				ave_entro = np.mean(entropy)
+				std_entro = np.std(entropy)
+
+			else:
+
+				dW = nsamples = nener = ave_entro = std_entro = None
+				print('Key {} not present in the HDF5 file!'.format(key))
+
+	except IOError:
+		print('File {} not present!'.format(h5file))
+		dW = nsamples = nener = ave_entro = std_entro = None
+	
+	return dW, ave_entro, std_entro, nener, nsamples 
+
+def crawl_folder_tree(topdir,results_key=
+	'Entropy_partial', disorder_key='dW'):
+
+	"""
+	Crawls the subdirectories of the top results folder
+	and provides a list of files to be visited and
+	opened for the postprocessing operation to be performed.
+
+	Parameters:
+	-----------
+
+	topdir: string,path
+			Should be the path towards the '*/results/'
+			directory where the results for a specific
+			project are stored.
+
+	disorder_key: string
+
+
+
+	"""
+	# filelist = []
+	savedict = _makehash()
+	# strip any possible underscores
+	disorder_key = disorder_key.rstrip('_').lstrip('_')
+	if os.path.isdir(topdir):
+		# system descriptors, a lisf of
+		# subfolders such as
+		# 'pbc_True_disorder_uniform_ham_type_spin1d'
+		descriptors = os.listdir(topdir)
+		descriptors = [desc for desc in descriptors 
+		if not _check(topdir, desc)]
+
+		for descriptor in descriptors:
+
+			syspath = os.path.join(topdir, descriptor)
+			syspars = os.listdir(syspath)
+			syspars = [sysp for sysp in syspars 
+			if not _check(syspath, sysp)]
+
+			for syspar in syspars:
+
+				modpath = os.path.join(syspath, syspar)
+				modpars = os.listdir(modpath)
+				modpars = [modp for modp in modpars
+				if not _check(modpath, modp)]
+				savefolder = modpars[0].split('_{}_'.format(disorder_key))[0]
+				savedict[descriptor][syspar][savefolder] = []
+
+				for modpar in modpars:
+					disorder = modpar.split('_{}_'.format(disorder_key))[1]
+					disorder = np.float(disorder)
+					filepath = os.path.join(modpath, modpar)
+
+					try:
+						file = glob('{}/*.hdf5'.format(filepath))[0]
+
+						savedict[descriptor][syspar][savefolder].append([disorder, file])
+
+					except IndexError:
+						print('file in folder {} not present!'.format(filepath))
+
+
+	return savedict
+
+
+def save_ave_entro(topdir,savepath, results_key='Entropy_partial', 
+	disorder_key='dW', arr_shape = 5):
+
+	savedict = _crawl_folder_tree(topdir, disorder_key)
+
+	for desc in savedict.keys():
+
+		descdir = ps.path.join(savepath, desc)
+
+		for syspar in savedict[desc].keys():
+
+			sysdir = os.path.join(descdir, sysp)
+
+			for savefolder in savedict[desc][syspar].keys():
+
+				savefolder_ = os.path.join(sysdir, savefolder)
+
+				if not os.path.isdir(savefolder_):
+
+					os.makedirs(savefolder_)
+
+
+					vals = savedict[desc][syspar][savefolder]
+
+					entropy = np.zeros((len(vals), arr_shape))
+
+					for i,value in enumerate(vals):
+
+						entropy[i] = _entro_ave(value[1], results_key,
+							disorder_key)
+
+					savename = 'entro_sweep_{}_{}'.format(syspar, savefolder)
+					np.savetxt(savename, entropy)
+
+
+
+
+
+
+
+
+		 
+
+
+
+
+
+
+	
+
+
+
+
+
