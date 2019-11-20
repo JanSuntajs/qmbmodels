@@ -193,7 +193,7 @@ def save_ave_entro(topdir,savepath, results_key='Entropy_partial',
 					# sort according to disorder
 					entropy = entropy[entropy[:,0].argsort()]
 					savename = 'entro_sweep_{}_{}'.format(syspar, savefolder)
-					np.savetxt(_join(savefolder,savename), entropy, footer=footer)
+					np.savetxt(_join(savefolder_,savename), entropy, footer=footer)
 
 
 
