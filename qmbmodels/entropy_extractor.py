@@ -8,7 +8,7 @@ representation and sharing with others.
 
 """
 
-import sys, os
+import os
 import numpy as np
 import h5py
 import collections
@@ -18,9 +18,10 @@ from glob import glob
 footer = """
 Each row is organised as follows:
 
-dW: disorder strength 
+dW: disorder strength
 average_entropy S: average entropy for a given number of states and samples
-rescaled entropy S_re: |log(2) - 2**(2*LA - L - 1) / LA - S/LA|; L-> system, LA-> subsystem
+rescaled entropy S_re: |log(2) - 2**(2*LA - L - 1) / LA - S/LA|; L-> system,
+LA-> subsystem
 Delta S: standard deviation of S
 size L: system size
 nener: number of energies obtained using partial diagonalization
@@ -32,186 +33,175 @@ nsamples: number of random samples
 def _makehash():
     return collections.defaultdict(_makehash)
 
+
 def _join(head, tail):
 
-	return os.path.join(head, tail)
+    return os.path.join(head, tail)
+
 
 def _check(head, tail):
 
-	return os.path.isfile(_join(head, tail))
-
-def _entro_ave(h5file,results_key='Entropy_partial',
-	disorder_key = 'dW'):
-
-	"""
-	A function that calculates
-	the average entropy of the
-	data stored in a .hdf5 file
-	under a key "Entropy_partial"
-	
-	Parameters:
-	-----------
-
-	h5file: string
-			Filename of a hdf5 file
-			to be opened.
-	
-	results_key: string
-			Which type of results do we want to
-			extract.
+    return os.path.isfile(_join(head, tail))
 
-	disorder_key: string
-			Which key denotes the disorder
-			parameter in the attributes dict.
-
-	"""
-	try:
-		with h5py.File(h5file, 'r') as file:
 
-			key = results_key
-			if key in file.keys():
+def _entro_ave(h5file, results_key='Entropy_partial',
+               disorder_key='dW'):
+    """
+    A function that calculates
+    the average entropy of the
+    data stored in a .hdf5 file
+    under a key "Entropy_partial"
 
-				entropy = file[key][()]
+    Parameters:
+    -----------
+
+    h5file: string
+                    Filename of a hdf5 file
+                    to be opened.
+
+    results_key: string
+                    Which type of results do we want to
+                    extract.
 
-				nsamples = file[key].attrs['nsamples']
-				nener = file[key].attrs['nener']
-				dW = file[key].attrs['dW']
-				size = file[key].attrs['L']
-				sub = size / 2.
-				ave_entro = -np.mean(entropy)
-				entro_rescaled = np.abs(np.log(2) - (2**(2*sub - size -1))/ sub - ave_entro / sub)
-				std_entro = np.std(entropy)
+    disorder_key: string
+                    Which key denotes the disorder
+                    parameter in the attributes dict.
 
-			else:
+    """
+    try:
+        with h5py.File(h5file, 'r') as file:
 
-				dW = nsamples = nener = ave_entro = std_entro = size = entro_rescaled = None
-				print('Key {} not present in the HDF5 file!'.format(key))
+            key = results_key
+            if key in file.keys():
 
-	except IOError:
-		print('File {} not present!'.format(h5file))
-		dW = nsamples = nener = ave_entro = std_entro = size = entro_rescaled =  None
-	
-	return dW, ave_entro, entro_rescaled, std_entro, size, nener, nsamples 
+                entropy = file[key][()]
 
-def _crawl_folder_tree(topdir,results_key=
-	'Entropy_partial', disorder_key='dW'):
+                nsamples = file[key].attrs['nsamples']
+                nener = file[key].attrs['nener']
+                dW = file[key].attrs['dW']
+                size = file[key].attrs['L']
+                sub = size / 2.
+                ave_entro = -np.mean(entropy)
+                entro_rescaled = np.abs(
+                    np.log(2) - (2**(2 * sub - size - 1)) / sub -
+                    ave_entro / sub)
+                std_entro = np.std(entropy)
 
-	"""
-	Crawls the subdirectories of the top results folder
-	and provides a list of files to be visited and
-	opened for the postprocessing operation to be performed.
+            else:
 
-	Parameters:
-	-----------
+                dW = nsamples = nener = ave_entro = std_entro \
+                    = size = entro_rescaled = None
+                print('Key {} not present in the HDF5 file!'.format(key))
 
-	topdir: string,path
-			Should be the path towards the '*/results/'
-			directory where the results for a specific
-			project are stored.
+    except IOError:
+        print('File {} not present!'.format(h5file))
+        dW = nsamples = nener = ave_entro = std_entro \
+            = size = entro_rescaled = None
 
-	disorder_key: string
+    return dW, ave_entro, entro_rescaled, std_entro, size, nener, nsamples
 
 
+def _crawl_folder_tree(topdir, results_key='Entropy_partial',
+                       disorder_key='dW'):
+    """
+    Crawls the subdirectories of the top results folder
+    and provides a list of files to be visited and
+    opened for the postprocessing operation to be performed.
 
-	"""
-	# filelist = []
-	savedict = _makehash()
-	# strip any possible underscores
-	disorder_key = disorder_key.rstrip('_').lstrip('_')
-	if os.path.isdir(topdir):
-		# system descriptors, a lisf of
-		# subfolders such as
-		# 'pbc_True_disorder_uniform_ham_type_spin1d'
-		descriptors = os.listdir(topdir)
-		descriptors = [desc for desc in descriptors 
-		if not _check(topdir, desc)]
+    Parameters:
+    -----------
 
-		for descriptor in descriptors:
+    topdir: string,path
+                    Should be the path towards the '*/results/'
+                    directory where the results for a specific
+                    project are stored.
 
-			syspath = os.path.join(topdir, descriptor)
-			syspars = os.listdir(syspath)
-			syspars = [sysp for sysp in syspars 
-			if not _check(syspath, sysp)]
+    disorder_key: string
 
-			for syspar in syspars:
 
-				modpath = os.path.join(syspath, syspar)
-				modpars = os.listdir(modpath)
-				modpars = [modp for modp in modpars
-				if not _check(modpath, modp)]
-				savefolder = modpars[0].split('_{}_'.format(disorder_key))[0]
-				savedict[descriptor][syspar][savefolder] = []
 
-				for modpar in modpars:
-					disorder = modpar.split('_{}_'.format(disorder_key))[1]
-					disorder = np.float(disorder)
-					filepath = os.path.join(modpath, modpar)
+    """
+    # filelist = []
+    savedict = _makehash()
+    # strip any possible underscores
+    disorder_key = disorder_key.rstrip('_').lstrip('_')
+    if os.path.isdir(topdir):
+        # system descriptors, a lisf of
+        # subfolders such as
+        # 'pbc_True_disorder_uniform_ham_type_spin1d'
+        descriptors = os.listdir(topdir)
+        descriptors = [desc for desc in descriptors
+                       if not _check(topdir, desc)]
 
-					try:
-						file = glob('{}/*.hdf5'.format(filepath))[0]
+        for descriptor in descriptors:
 
-						savedict[descriptor][syspar][savefolder].append([disorder, file])
+            syspath = os.path.join(topdir, descriptor)
+            syspars = os.listdir(syspath)
+            syspars = [sysp for sysp in syspars
+                       if not _check(syspath, sysp)]
 
-					except IndexError:
-						print('file in folder {} not present!'.format(filepath))
+            for syspar in syspars:
 
+                modpath = os.path.join(syspath, syspar)
+                modpars = os.listdir(modpath)
+                modpars = [modp for modp in modpars
+                           if not _check(modpath, modp)]
 
-	return savedict
+                for modpar in modpars:
+                    savefolder = modpars.split('_{}_'.format(disorder_key))[0]
+                    savedict[descriptor][syspar][savefolder] = []
 
+                for modpar in modpars:
+                    disorder = modpar.split('_{}_'.format(disorder_key))[1]
+                    disorder = np.float(disorder)
+                    filepath = os.path.join(modpath, modpar)
 
-def save_ave_entro(topdir,savepath, results_key='Entropy_partial', 
-	disorder_key='dW', arr_shape = 6, footer=footer):
-	
-	savedict = _crawl_folder_tree(topdir, disorder_key)
+                    try:
+                        file = glob('{}/*.hdf5'.format(filepath))[0]
 
-	for desc in savedict.keys():
+                        savedict[descriptor][syspar][savefolder].append(
+                            [disorder, file])
 
-		descdir = os.path.join(savepath, desc)
+                    except IndexError:
+                        print('file in folder {} not present!'.format(
+                            filepath))
 
-		for syspar in savedict[desc].keys():
+    return savedict
 
-			sysdir = os.path.join(descdir, syspar)
 
-			for savefolder in savedict[desc][syspar].keys():
+def save_ave_entro(topdir, savepath, results_key='Entropy_partial',
+                   disorder_key='dW', arr_shape=6, footer=footer):
 
-				savefolder_ = os.path.join(sysdir, savefolder)
+    savedict = _crawl_folder_tree(topdir, disorder_key)
 
-				if not os.path.isdir(savefolder_):
+    for desc in savedict.keys():
 
-					os.makedirs(savefolder_)
+        descdir = os.path.join(savepath, desc)
 
+        for syspar in savedict[desc].keys():
 
-					vals = savedict[desc][syspar][savefolder]
+            sysdir = os.path.join(descdir, syspar)
 
-					entropy = np.zeros((len(vals), arr_shape))
+            for savefolder in savedict[desc][syspar].keys():
 
-					for i,value in enumerate(vals):
+                savefolder_ = os.path.join(sysdir, savefolder)
 
-						entropy[i] = _entro_ave(value[1], results_key,
-							disorder_key)
+                if not os.path.isdir(savefolder_):
 
-					# sort according to disorder
-					entropy = entropy[entropy[:,0].argsort()]
-					savename = 'entro_sweep_{}_{}'.format(syspar, savefolder)
-					np.savetxt(_join(savefolder_,savename), entropy, footer=footer)
+                    os.makedirs(savefolder_)
 
+                    vals = savedict[desc][syspar][savefolder]
 
+                    entropy = np.zeros((len(vals), arr_shape))
 
+                    for i, value in enumerate(vals):
 
+                        entropy[i] = _entro_ave(value[1], results_key,
+                                                disorder_key)
 
-
-
-
-		 
-
-
-
-
-
-
-	
-
-
-
-
-
+                    # sort according to disorder
+                    entropy = entropy[entropy[:, 0].argsort()]
+                    savename = 'entro_sweep_{}_{}'.format(syspar, savefolder)
+                    print(_join(savefolder_, savename))
+                    np.savetxt(_join(savefolder_, savename),
+                               entropy, footer=footer)
