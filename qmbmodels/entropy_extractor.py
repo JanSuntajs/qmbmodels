@@ -15,6 +15,20 @@ import collections
 
 from glob import glob
 
+footer = """
+Each row is organised as follows:
+
+dW: disorder strength 
+average_entropy S: average entropy for a given number of states and samples
+rescaled entropy S_re: |log(2) - 2**(2*LA - L - 1) / LA - S/LA|; L-> system, LA-> subsystem
+Delta S: standard deviation of S
+size L: system size
+nener: number of energies obtained using partial diagonalization
+nsamples: number of random samples
+
+"""
+
+
 def _makehash():
     return collections.defaultdict(_makehash)
 
@@ -62,21 +76,24 @@ def _entro_ave(h5file,results_key='Entropy_partial',
 				nsamples = file[key].attrs['nsamples']
 				nener = file[key].attrs['nener']
 				dW = file[key].attrs['dW']
-				ave_entro = np.mean(entropy)
+				size = file[key].attrs['L']
+				sub = size / 2.
+				ave_entro = -np.mean(entropy)
+				entro_rescaled = np.abs(np.log(2) - (2**(2*sub - size -1))/ sub - ave_entro / sub)
 				std_entro = np.std(entropy)
 
 			else:
 
-				dW = nsamples = nener = ave_entro = std_entro = None
+				dW = nsamples = nener = ave_entro = std_entro = size = entro_rescaled = None
 				print('Key {} not present in the HDF5 file!'.format(key))
 
 	except IOError:
 		print('File {} not present!'.format(h5file))
-		dW = nsamples = nener = ave_entro = std_entro = None
+		dW = nsamples = nener = ave_entro = std_entro = size = entro_rescaled =  None
 	
-	return dW, ave_entro, std_entro, nener, nsamples 
+	return dW, ave_entro, entro_rescaled, std_entro, size, nener, nsamples 
 
-def crawl_folder_tree(topdir,results_key=
+def _crawl_folder_tree(topdir,results_key=
 	'Entropy_partial', disorder_key='dW'):
 
 	"""
@@ -143,17 +160,17 @@ def crawl_folder_tree(topdir,results_key=
 
 
 def save_ave_entro(topdir,savepath, results_key='Entropy_partial', 
-	disorder_key='dW', arr_shape = 5):
-
+	disorder_key='dW', arr_shape = 6, footer=footer):
+	
 	savedict = _crawl_folder_tree(topdir, disorder_key)
 
 	for desc in savedict.keys():
 
-		descdir = ps.path.join(savepath, desc)
+		descdir = os.path.join(savepath, desc)
 
 		for syspar in savedict[desc].keys():
 
-			sysdir = os.path.join(descdir, sysp)
+			sysdir = os.path.join(descdir, syspar)
 
 			for savefolder in savedict[desc][syspar].keys():
 
@@ -173,8 +190,10 @@ def save_ave_entro(topdir,savepath, results_key='Entropy_partial',
 						entropy[i] = _entro_ave(value[1], results_key,
 							disorder_key)
 
+					# sort according to disorder
+					entropy = entropy[entropy[:,0].argsort()]
 					savename = 'entro_sweep_{}_{}'.format(syspar, savefolder)
-					np.savetxt(savename, entropy)
+					np.savetxt(_join(savefolder,savename), entropy, footer=footer)
 
 
 
