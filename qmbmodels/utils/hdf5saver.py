@@ -294,7 +294,7 @@ if __name__ == '__main__':
 
                 # check for duplicates
                 indices = np.array([i for i, name in enumerate(filenames)
-                                    if name not in
+                                    if name.strip('.npy').strip('.npz') not in
                                     f[fnamekey][()]], dtype=np.int8)
 
                 datasets[reskey] = datasets[reskey][indices, :]
