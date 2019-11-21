@@ -101,6 +101,73 @@ def _entro_ave(h5file, results_key='Entropy_partial',
     return dW, ave_entro, entro_rescaled, std_entro, size, nener, nsamples
 
 
+def _get_r(h5file, results_key='r_data_partial',
+           disorder_key='dW'):
+    """
+    A function that extracts the
+    r_values
+    data stored in a .hdf5 file
+    under the key "r_data_partial"
+    or 'r_data'
+
+    Parameters:
+    -----------
+
+    h5file: string
+                    Filename of a hdf5 file
+                    to be opened.
+
+    results_key: string
+                    Which type of results do we want to
+                    extract.
+
+    disorder_key: string
+                    Which key denotes the disorder
+                    parameter in the attributes dict.
+
+    """
+
+    try:
+        with h5py.File(h5file, 'r') as file:
+
+            key = results_key
+            if key in file.keys():
+
+                r_data = file[key][()]
+
+                nsamples = file[key].attrs['nsamples']
+                nener = file[key].attrs['nener']
+                dW = file[key].attrs['dW']
+                size = file[key].attrs['L']
+                r_val = r_data[1]
+                r_err = r_data[2]
+
+            else:
+
+                dW = nsamples = nener = size \
+                    = r_val = r_err = None
+                print('Key {} not present in the HDF5 file!'.format(key))
+
+    except IOError:
+        print('File {} not present!'.format(h5file))
+        dW = nsamples = nener = size \
+            = r_val = r_err = None
+
+    return dW, r_val, r_err, size, nener, nsamples
+
+
+# a private dict which specifies which routine should
+# be called to perform a desired operation, what
+# is the key in the hdf5 dict that returns the
+# desired data and what
+# is the shape of the return of the associated function.
+_routines_dict = {
+    'get_entro_ave': [_entro_ave, 'Entropy', 7],
+    'get_r': [_get_r, 'r_data', 6]
+
+}
+
+
 def _crawl_folder_tree(topdir, results_key='Entropy_partial',
                        disorder_key='dW'):
     """
@@ -170,10 +237,19 @@ def _crawl_folder_tree(topdir, results_key='Entropy_partial',
     return savedict
 
 
-def save_ave_entro(topdir, savepath, results_key='Entropy_partial',
-                   disorder_key='dW', arr_shape=6, footer=footer):
+def save_ave_entro(topdir, savepath, routine='get_entro_ave',
+                   partial=True, disorder_key='dW',
+                   footer=footer,
+                   savename='entro_sweep'):
 
-    savedict = _crawl_folder_tree(topdir, disorder_key)
+    routine = _routines_dict[routine]
+    get_fun = routine[0]
+    results_key = routine[1]
+    if partial:
+        results_key += '_partial'
+    arr_shape = routine[2]
+    savedict = _crawl_folder_tree(
+        topdir, disorder_key, results_key=results_key)
 
     for desc in savedict.keys():
 
@@ -193,16 +269,16 @@ def save_ave_entro(topdir, savepath, results_key='Entropy_partial',
 
                 vals = savedict[desc][syspar][savefolder]
 
-                entropy = np.zeros((len(vals), arr_shape))
+                data = np.zeros((len(vals), arr_shape))
 
                 for i, value in enumerate(vals):
 
-                    entropy[i] = _entro_ave(value[1], results_key,
-                                            disorder_key)
+                    data[i] = get_fun(value[1], results_key,
+                                      disorder_key)
 
                 # sort according to disorder
-                entropy = entropy[entropy[:, 0].argsort()]
-                savename = 'entro_sweep_{}_{}'.format(syspar, savefolder)
+                data = data[data[:, 0].argsort()]
+                savename = '{}_{}_{}'.format(savename, syspar, savefolder)
                 print(_join(savefolder_, savename))
                 np.savetxt(_join(savefolder_, savename),
-                           entropy, footer=footer)
+                           data, footer=footer)
