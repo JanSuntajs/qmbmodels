@@ -44,8 +44,7 @@ def _check(head, tail):
     return os.path.isfile(_join(head, tail))
 
 
-def _entro_ave(h5file, results_key='Entropy_partial',
-               disorder_key='dW'):
+def _entro_ave(h5file, results_key, disorder_key='dW'):
     """
     A function that calculates
     the average entropy of the
@@ -101,7 +100,7 @@ def _entro_ave(h5file, results_key='Entropy_partial',
     return dW, ave_entro, entro_rescaled, std_entro, size, nener, nsamples
 
 
-def _get_r(h5file, results_key='r_data_partial',
+def _get_r(h5file, results_key,
            disorder_key='dW'):
     """
     A function that extracts the
@@ -168,7 +167,7 @@ _routines_dict = {
 }
 
 
-def _crawl_folder_tree(topdir, results_key='Entropy_partial',
+def _crawl_folder_tree(topdir, results_key,
                        disorder_key='dW'):
     """
     Crawls the subdirectories of the top results folder
@@ -249,7 +248,7 @@ def save_ave_entro(topdir, savepath, routine='get_entro_ave',
         results_key += '_partial'
     arr_shape = routine[2]
     savedict = _crawl_folder_tree(
-        topdir, disorder_key=disorder_key, results_key=results_key)
+        topdir, results_key, disorder_key=disorder_key)
 
     for desc in savedict.keys():
 
@@ -278,7 +277,7 @@ def save_ave_entro(topdir, savepath, routine='get_entro_ave',
 
                 # sort according to disorder
                 data = data[data[:, 0].argsort()]
-                savename = '{}_{}_{}'.format(savename, syspar, savefolder)
-                print(_join(savefolder_, savename))
-                np.savetxt(_join(savefolder_, savename),
+                savename_ = '{}_{}_{}'.format(savename, syspar, savefolder)
+                print(_join(savefolder_, savename_))
+                np.savetxt(_join(savefolder_, savename_),
                            data, footer=footer)
