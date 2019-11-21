@@ -15,7 +15,7 @@ import collections
 
 from glob import glob
 
-footer = """
+footer_entro = """
 Each row is organised as follows:
 
 dW: disorder strength
@@ -23,6 +23,18 @@ average_entropy S: average entropy for a given number of states and samples
 rescaled entropy S_re: |log(2) - 2**(2*LA - L - 1) / LA - S/LA|; L-> system,
 LA-> subsystem
 Delta S: standard deviation of S
+size L: system size
+nener: number of energies obtained using partial diagonalization
+nsamples: number of random samples
+
+"""
+
+footer_r = """
+Each row is organised as follows:
+
+dW: disorder strength
+r_val r: mean ratio of the level spacings
+delta r_val Delta r: standard deviation of the r value
 size L: system size
 nener: number of energies obtained using partial diagonalization
 nsamples: number of random samples
@@ -161,8 +173,8 @@ def _get_r(h5file, results_key,
 # desired data and what
 # is the shape of the return of the associated function.
 _routines_dict = {
-    'get_entro_ave': [_entro_ave, 'Entropy', 7],
-    'get_r': [_get_r, 'r_data', 6]
+    'get_entro_ave': [_entro_ave, 'Entropy', 7, footer_entro],
+    'get_r': [_get_r, 'r_data', 6, footer_r]
 
 }
 
@@ -236,14 +248,14 @@ def _crawl_folder_tree(topdir, results_key,
     return savedict
 
 
-def save_ave_entro(topdir, savepath, routine='get_entro_ave',
-                   partial=True, disorder_key='dW',
-                   footer=footer,
-                   savename='entro_sweep'):
+def extract_data(topdir, savepath, routine='get_entro_ave',
+                 partial=True, disorder_key='dW',
+                 savename='entro_sweep'):
 
     routine = _routines_dict[routine]
     get_fun = routine[0]
     results_key = routine[1]
+    footer = routine[3]
     if partial:
         results_key += '_partial'
     arr_shape = routine[2]
