@@ -249,7 +249,7 @@ def save_ave_entro(topdir, savepath, routine='get_entro_ave',
         results_key += '_partial'
     arr_shape = routine[2]
     savedict = _crawl_folder_tree(
-        topdir, disorder_key, results_key=results_key)
+        topdir, disorder_key=disorder_key, results_key=results_key)
 
     for desc in savedict.keys():
 
