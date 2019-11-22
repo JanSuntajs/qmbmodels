@@ -342,6 +342,7 @@ def prepare_dependency_script(scripts, name, *args, **kwargs):
         # remove the scripts to avoid cluttering
         # of the folder
 
+        dep_script += "\n"
         for script in scripts:
 
             # copy_path to a dedicated subfolder in the
