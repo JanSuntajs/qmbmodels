@@ -23,6 +23,16 @@ moddict = {}
 
 dicts = [metadata, sysdict, moddict]
 
+
+def _strip(name):
+    """
+    Strip fileformat specifiers
+    from a name.
+    """
+
+    return name.strip('.npy').strip('.npz')
+
+
 def format_filenames(filenames):
     """
     A function that takes care of proper
@@ -54,7 +64,7 @@ def format_filenames(filenames):
 
     """
     filenames_ = np.array([os.path.split(name)[1]
-                      for name in filenames], dtype=object)
+                           for name in filenames], dtype=object)
 
     filename = filenames_[0].split('_seed', 1)[0]
 
@@ -62,7 +72,7 @@ def format_filenames(filenames):
 
         partial = True
     else:
-        partial=False
+        partial = False
 
     filename = filename.replace('partial_', '')
     return filenames_, filename, partial
@@ -117,7 +127,7 @@ def prepare_files(filenames):
     # case of partial diagonalization results
     append_part = ''
     if partial:
-        append_part = '_partial' 
+        append_part = '_partial'
 
     results_dict['Eigenvalues_filenames'] = filenames
 
@@ -152,10 +162,13 @@ def prepare_files(filenames):
 
     key_specifiers = {}
 
-    key_specifiers['fnamekeys'] = [key for key in results_dict.keys() if 'filenames' in key] 
-    key_specifiers['metakeys'] = [key for key in results_dict.keys() if 'Metadata' in key]
-    key_specifiers['reskeys'] = [key for key in results_dict.keys() if (('filenames' not in key) and
-        'Metadata' not in key)]
+    key_specifiers['fnamekeys'] = [
+        key for key in results_dict.keys() if 'filenames' in key]
+    key_specifiers['metakeys'] = [
+        key for key in results_dict.keys() if 'Metadata' in key]
+    key_specifiers['reskeys'] = [key for key in results_dict.keys()
+                                 if (('filenames' not in key) and
+                                     'Metadata' not in key)]
 
     return results_dict, key_specifiers
 
@@ -206,8 +219,8 @@ if __name__ == '__main__':
     datasets, key_specifiers = prepare_files(filenames_)
     print(key_specifiers)
 
-    enerkey = [key for key in key_specifiers['reskeys'] if (key=='Eigenvalues'
-        or key=='Eigenvalues_partial')][0]
+    enerkey = [key for key in key_specifiers['reskeys']
+               if (key == 'Eigenvalues' or key == 'Eigenvalues_partial')][0]
     fnamekey = key_specifiers['fnamekeys'][0]
     nsamples, nener = datasets[enerkey].shape
 
@@ -293,9 +306,11 @@ if __name__ == '__main__':
                 nsamples0 = f[reskey].shape[0]
 
                 # check for duplicates
+                filenames_strip = [_strip(filename)
+                                   for filename in f[fnamekey][()]]
                 indices = np.array([i for i, name in enumerate(filenames)
-                                    if name.strip('.npy').strip('.npz') not in
-                                    f[fnamekey][()]], dtype=np.int8)
+                                    if _strip(name) not in
+                                    filenames_strip], dtype=np.int8)
 
                 datasets[reskey] = datasets[reskey][indices, :]
                 datasets[fnamekey] = filenames[indices]

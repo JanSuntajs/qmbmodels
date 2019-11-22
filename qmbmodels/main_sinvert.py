@@ -85,6 +85,8 @@ if __name__ == '__main__':
     matrix.assemblyBegin(matrix.AssemblyType.FINAL_ASSEMBLY)
     matrix.assemblyEnd(matrix.AssemblyType.FINAL_ASSEMBLY)
 
+    matrix_sq = matrix.matMult(matrix)
+
     # ------------------------------------------------------------
     #
     #       DETERMINING THE SPECTRAL EXTREMA
