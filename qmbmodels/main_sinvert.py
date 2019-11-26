@@ -63,7 +63,8 @@ if __name__ == '__main__':
     model, fields = heisenberg.construct_hamiltonian(argsDict, parallel=True,
                                                      mpirank=mpirank,
                                                      mpisize=mpisize)
-
+    print('fields:')
+    print(fields)
     # prepare for parallel PETSc assembly
     nnz = (model._d_nnz, model._o_nnz)
 
@@ -86,6 +87,51 @@ if __name__ == '__main__':
     matrix.assemblyEnd(matrix.AssemblyType.FINAL_ASSEMBLY)
 
     matrix_sq = matrix.matMult(matrix)
+    # ------------------------------------------------------------
+    #
+    #
+    #      GETTING THE HAMILTONIAN TRACE AND TRACE
+    #      OF THE HAMILTONIAN SQUARED
+    #
+    # ------------------------------------------------------------
+    # get the square of the matrix from which trace of the
+    # squared hamiltonian can be extracted.
+    # create a global scatter context which has
+    # access to the whole vector contents on all
+    # the processes.
+
+    # prepare the vector structure for the
+    # diagonal of the hamiltonian array
+    # and the diagonal of the square of the
+    # hamiltonian array
+    diag_H, tmp = matrix.getVecs()
+    diag_H_sq, tmp = matrix_sq.getVecs()
+
+    # obtain the diagonals
+    diagonals = []
+    matrix.getDiagonal(diag_H)
+    matrix_sq.getDiagonal(diag_H_sq)
+
+    # prepare the scatter contexts for
+    # obtaining the data
+    for i, vec in enumerate([diag_H, diag_H_sq]):
+
+        ctx = PETSc.Scatter()
+        toall, zvec = ctx.toAll(vec)
+        toall.scatterBegin(vec, zvec, 1, 0)
+        toall.scatterEnd(vec, zvec, 1, 0)
+
+        # ave ener is needed for selecting
+        # the shift and invert target energy
+        if i == 0:
+            ave_ener = np.mean(zvec)
+        if mpirank == 0:
+
+            diagonals.append(np.array(zvec))
+
+        ctx.destroy()
+        toall.destroy()
+        zvec.destroy()
 
     # ------------------------------------------------------------
     #
@@ -131,7 +177,8 @@ if __name__ == '__main__':
     E_si.setProblemType(SLEPc.EPS.ProblemType.HEP)
 
     E_si.setWhichEigenpairs(E_si.Which.TARGET_REAL)
-    E_si.setTarget(ener0 + (ener1 - ener0) * 0.5)
+    E_si.setTarget(ave_ener)
+    # E_si.setTarget(ener0 + (ener1 - ener0) * 0.5)
     E_si.solve()
 
     nconv = E_si.getConverged()
@@ -213,7 +260,7 @@ if __name__ == '__main__':
                     argsDict['L'] / 2.))
                 rdm_eigvals = LA.eigvalsh(rdm_matrix.todense())
                 rdm_eigvals = rdm_eigvals[rdm_eigvals > 1e-014]
-                entro = np.dot(rdm_eigvals, np.log(rdm_eigvals))
+                entro = -np.dot(rdm_eigvals, np.log(rdm_eigvals))
                 entropy.append(entro)
 
             # destroy the scatter context before the new
@@ -235,11 +282,16 @@ if __name__ == '__main__':
                         syspar_keys, modpar_keys, 'partial')
 
             savedict = {'Eigenvalues_partial': eigvals,
+                        'Hamiltonian_diagonal_matelts_partial': diagonals[0],
+                        'Hamiltonian_squared_diagonal_matelts_partial':
+                        diagonals[1],
+                        'Hamiltonian_random_disorder_partial': fields,
                         'Entropy_partial': entropy,
                         'Eigenvalues_partial_spectral_info': metadata}
             # save the eigenvalues, entropy and spectral info as
             # a npz array
             savefile(savedict, *saveargs, True, save_type='npz')
-            
+
     E_si.destroy()
     matrix.destroy()
+    matrix_sq.destroy()

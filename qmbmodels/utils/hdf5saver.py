@@ -80,16 +80,20 @@ def format_filenames(filenames):
 
 def prepare_files(filenames):
     """
-    Function that takes care of the fact
-    that partial diagonalization does
-    not always return the same number
-    of eigenvalues -> hence it reshapes
-    the whole list of values so that shapes
-    of individual 1D spectra match.
-
-    Returns a dictionary where arrays of results
-    and additional information ('Metadata') correspond
-    to their keys.
+    A function that takes care of the
+    fact that partial diagonalization
+    does not always return the same
+    number of eigenvalues and that
+    individual datasets also do not
+    necessairily have the same shapes
+    (the data about the random disorder
+    fields and the eigenspectra results
+    differ considerably in that respect,
+    for instance). Hence this function
+    takes care of properly reshaping the
+    data which is particularly important
+    once the new data are appended to
+    the exsisting ones.
 
     Parameters:
     -----------
@@ -97,29 +101,25 @@ def prepare_files(filenames):
     filenames: list, str
                A list of full paths to the results files
 
-    Returns:
-    --------
 
-    results_dict: dict
-               A dict of keys providing human-readable
-               descriptions, while the values are their
-               corresponding data arrays.
-    key_specifiers: dict
-               A dict which specifies which keys in the
-               results dict represent results ('reskeys'
-               entry), which ones are for metadata
-               ('metakeys') and which ones for filenames
-               lists ('fnamekeys')
     """
 
     files = [np.load(file) for file in filenames]
+
+    # the loaded files are stored in numpy's .npz
+    # format. We first extract the keys describing
+    # the files' contents
     filekeys = files[0].files
 
-    # keys corresponding to the metadata
+    # get the metadata -> if 'Metadata' string is
+    # present a key from the filekeys list
     metakeys = [key for key in filekeys if 'Metadata' in key]
-    # the numerical results
+
+    # everything else are results
     reskeys = [key for key in files[0].files if 'Metadata' not in key]
     results_dict = {}
+    # shapes of the arrays within the results_dict
+    shapes_dict = {}
 
     filenames, filename, partial = format_filenames(filenames)
 
@@ -130,13 +130,14 @@ def prepare_files(filenames):
         append_part = '_partial'
 
     results_dict['Eigenvalues_filenames'] = filenames
+    shapes_dict['Eigenvalues_filenames'] = filenames.shape
 
     # metadata dictionary
     for key in metakeys:
 
-        results_dict[key] = [file[key] for file in files]
+        results_dict[key] = np.array([file[key] for file in files])
+        shapes_dict[key] = results_dict[key].shape
 
-    # reshape the files if partial diagonalization is in order
     if partial:
         for key in reskeys:
 
@@ -146,31 +147,38 @@ def prepare_files(filenames):
             minshape = np.min(shapes)
             files_ = [file[:minshape] for file in files_]
             results_dict[key] = np.array(files_)
+            shapes_dict[key] = results_dict[key].shape
     # just fill the dictionary if all the entries are supposed to be
     # of the same shape
     else:
         for key in reskeys:
 
-            results_dict[key] = files[key]
+            results_dict[key] = np.array([file[key] for file in files])
+            shapes_dict[key] = results_dict[key].shape
 
     # add '_partial' suffix for partial diagonalization results
     for key in results_dict.keys():
 
         if (partial and 'partial' not in key):
 
-            results_dict[key + append_part] = results_dict.pop(key)
+            for dict_ in [results_dict, shapes_dict]:
+                newkey = key + append_part
+                dict_[newkey] = dict_.pop(key)
 
     key_specifiers = {}
 
     key_specifiers['fnamekeys'] = [
         key for key in results_dict.keys() if 'filenames' in key]
+    # key_specifiers['fields'] = [key for key in results_dict.keys() if
+    #                             'random_disorder' in key]
     key_specifiers['metakeys'] = [
         key for key in results_dict.keys() if 'Metadata' in key]
-    key_specifiers['reskeys'] = [key for key in results_dict.keys()
-                                 if (('filenames' not in key) and
-                                     'Metadata' not in key)]
 
-    return results_dict, key_specifiers
+    exclude = ['filenames', 'Metadata']
+    key_specifiers['reskeys'] = [key for key in results_dict.keys()
+                                 if all([(exc not in key) for exc in exclude])]
+
+    return results_dict, shapes_dict, key_specifiers
 
 
 if __name__ == '__main__':
@@ -216,13 +224,15 @@ if __name__ == '__main__':
     filenames, filename, partial = format_filenames(filenames_)
 
     # eigenkey, fnamekey = full_partial(partial)
-    datasets, key_specifiers = prepare_files(filenames_)
+    datasets, shapes_dict, key_specifiers = prepare_files(filenames_)
+    print(shapes_dict)
     print(key_specifiers)
 
     enerkey = [key for key in key_specifiers['reskeys']
                if (key == 'Eigenvalues' or key == 'Eigenvalues_partial')][0]
+    # disorder_key = key_specifiers['fields'][0]
     fnamekey = key_specifiers['fnamekeys'][0]
-    nsamples, nener = datasets[enerkey].shape
+    nsamples, nener = shapes_dict[enerkey]
 
     # datasets = {eigenkey: files,
     #             fnamekey: filenames}
@@ -278,14 +288,14 @@ if __name__ == '__main__':
                 # eigenvalues are stored as a numpy array
                 if key in key_specifiers['reskeys']:
                     if not partial:
-                        maxshape = (None, nener)
+                        maxshape = (None, shapes_dict[key][1])
                     else:
                         maxshape = (None, None)
 
                     eigset = f.create_dataset(
                         key, data=value, maxshape=maxshape)
 
-                # this is aY¸ numpy array of the object datatype
+                # this is numpy array of the object datatype
                 elif key in key_specifiers['fnamekeys']:
                     string_dt = h5py.special_dtype(vlen=str)
 
@@ -302,39 +312,41 @@ if __name__ == '__main__':
         # append to the existing datasets if the datasets already exist
         else:
             print('Appending spectra to the existing values!')
+
+            filenames_strip = [_strip(filename)
+                               for filename in f[fnamekey][()]]
+            indices = np.array([i for i, name in enumerate(filenames)
+                                if _strip(name) not in
+                                filenames_strip], dtype=np.int8)
+            datasets[fnamekey] = filenames[indices]
+
             for reskey in key_specifiers['reskeys']:
+
+                nsamples = indices.shape[0]
                 nsamples0 = f[reskey].shape[0]
 
-                # check for duplicates
-                filenames_strip = [_strip(filename)
-                                   for filename in f[fnamekey][()]]
-                indices = np.array([i for i, name in enumerate(filenames)
-                                    if _strip(name) not in
-                                    filenames_strip], dtype=np.int8)
-
                 datasets[reskey] = datasets[reskey][indices, :]
-                datasets[fnamekey] = filenames[indices]
-                nsamples = indices.shape[0]
 
                 nsamples += nsamples0
                 attrs['nsamples'] = nsamples
-
+                shape_resize = f[reskey].shape[1]
                 if partial:
-                    nener_ = f[reskey].shape[1]
-                    if nener > nener_:
-                        nener = nener_
-                f[reskey].resize((nsamples, nener))
+                    nener_ = shape_resize
+                    if shapes_dict[reskey][1] > nener_:
+                        shape_resize = nener_
+                f[reskey].resize((nsamples, shape_resize))
 
                 f[reskey][nsamples0:, :] = datasets[reskey]
-                f[fnamekey].resize((nsamples,))
-                f[fnamekey][nsamples0:] =  \
-                    datasets[fnamekey]
 
                 # if attributes have also changed
                 for key, value in attrs.items():
 
                     f[reskey].attrs[key] = value
 
+            f[fnamekey].resize((nsamples,))
+
+            f[fnamekey][nsamples0:] =  \
+                datasets[fnamekey]
     # -------------------------------------------------
     #
     #
