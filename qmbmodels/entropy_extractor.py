@@ -92,7 +92,7 @@ def _entro_ave(h5file, results_key, disorder_key='dW'):
                 dW = file[key].attrs['dW']
                 size = file[key].attrs['L']
                 sub = size / 2.
-                ave_entro = -np.mean(entropy)
+                ave_entro = np.mean(entropy)
                 entro_rescaled = np.abs(
                     np.log(2) - (2**(2 * sub - size - 1)) / sub -
                     ave_entro / sub)
