@@ -89,7 +89,7 @@ def _entro_ave(h5file, results_key, disorder_key='dW'):
 
                 nsamples = file[key].attrs['nsamples']
                 nener = file[key].attrs['nener']
-                dW = file[key].attrs[disorder_key]
+                dW = np.float(file[key].attrs[disorder_key])
                 size = file[key].attrs['L']
                 sub = size / 2.
                 ave_entro = np.mean(entropy)
@@ -148,7 +148,7 @@ def _get_r(h5file, results_key,
 
                 nsamples = file[key].attrs['nsamples']
                 nener = file[key].attrs['nener']
-                dW = file[key].attrs[disorder_key]
+                dW = np.float(file[key].attrs[disorder_key])
                 size = file[key].attrs['L']
                 r_val = r_data[1]
                 r_err = r_data[2]
@@ -177,6 +177,41 @@ _routines_dict = {
     'get_r': [_get_r, 'r_data', 6, footer_r]
 
 }
+
+
+def _extract_disorder(string, disorder_key):
+    """
+    An internal routine for returning the
+    disorder key and the rest of the input
+    string
+    """
+
+    # append '_' at the beginning of the
+    # string to make splitting w.r.t. the
+    # disorder_key easier
+    string = '_' + string
+
+    # make sure there are no trailing or preceeding
+    # multiple underscore by removing them
+    disorder_key = disorder_key.lstrip('_').rstrip('_')
+    # now make sure there is exactly one trailing
+    # and one preceeding underscore
+    disorder_key = '_{}_'.format(disorder_key)
+    # split w.r.t. the disorder_key. The first
+    # part does not contain the disorder parameter
+    # value, while the second one does
+    rest1, dis_string = string.split(disorder_key)
+    # find the first occurence of '_' in the
+    # dis_string, which indicates the length of
+    # the disorder parameter value
+    splitter = dis_string.find('_')
+    disorder, rest2 = dis_string[:splitter], dis_string[splitter:]
+
+    disorder = np.float(disorder)
+
+    # the part without the disorder value
+    rest = rest1.lstrip('_') + rest2
+    return rest, disorder
 
 
 def _crawl_folder_tree(topdir, results_key,
@@ -226,15 +261,13 @@ def _crawl_folder_tree(topdir, results_key,
                            if not _check(modpath, modp)]
 
                 for modpar in modpars:
-                    savefolder = modpar.split('_{}_'.format(disorder_key))[0]
+                    savefolder, tmp = _extract_disorder(modpar, disorder_key)
+                    print(savefolder)
                     savedict[descriptor][syspar][savefolder] = []
 
                 for modpar in modpars:
-                    savefolder, disorder = modpar.split('_{}_'.format(
-                        disorder_key))
-                    disorder = disorder.split('_')[0]
-                    disorder = np.float(disorder)
-
+                    savefolder, disorder = _extract_disorder(
+                        modpar, disorder_key)
                     filepath = os.path.join(modpath, modpar)
                     print('filepath')
                     print(filepath)
@@ -282,7 +315,7 @@ def extract_data(topdir, savepath, routine='get_entro_ave',
                     os.makedirs(savefolder_)
 
                 vals = savedict[desc][syspar][savefolder]
-
+                print(vals)
                 data = np.zeros((len(vals), arr_shape))
 
                 for i, value in enumerate(vals):

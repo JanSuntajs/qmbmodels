@@ -325,7 +325,8 @@ if __name__ == '__main__':
             datasets[fnamekey] = filenames[indices]
 
             for reskey in key_specifiers['reskeys']:
-
+                print('reskey')
+                print(reskey)
                 nsamples = indices.shape[0]
                 nsamples0 = f[reskey].shape[0]
 
@@ -338,7 +339,10 @@ if __name__ == '__main__':
                 if partial:
                     if shapes_dict[reskey][1] < orig_shape:
                         shape_resize = shapes_dict[reskey][1]
+                    elif shapes_dict[reskey][1] > orig_shape:
+                        datasets[reskey] = datasets[reskey][:, :orig_shape]
                 f[reskey].resize((nsamples, shape_resize))
+
                 f[reskey][nsamples0:, :] = datasets[reskey]
 
                 # if attributes have also changed
