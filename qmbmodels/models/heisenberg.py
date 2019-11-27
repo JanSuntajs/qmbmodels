@@ -78,4 +78,4 @@ def construct_hamiltonian(argsdict, parallel=False, mpirank=0, mpisize=0):
     hamiltonian = ham(L, static_list, [], Nu=int(nu), parallel=parallel,
                       mpirank=mpirank, mpisize=mpisize)
 
-    return hamiltonian, fields
+    return hamiltonian, {'Hamiltonian_random_disorder': fields}

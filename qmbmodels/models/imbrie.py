@@ -54,6 +54,9 @@ def construct_hamiltonian(argsdict, parallel=False, mpirank=0, mpisize=0):
         hamiltonian = ham(L, static_list, [], Nu=None, parallel=parallel,
                           mpirank=mpirank, mpisize=mpisize)
 
+        fields = {'Hamiltonian_J_random_disorder': J_fields,
+                  'Hamiltonian_H_random_disorder': H_fields,
+                  'Hamiltonian_Gamma_random_disorder': Gamma_fields}
         return hamiltonian, fields
 
     else:

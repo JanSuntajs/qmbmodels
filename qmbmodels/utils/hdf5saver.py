@@ -117,6 +117,8 @@ def prepare_files(filenames):
 
     # everything else are results
     reskeys = [key for key in files[0].files if 'Metadata' not in key]
+    print('reskeys')
+    print(reskeys)
     results_dict = {}
     # shapes of the arrays within the results_dict
     shapes_dict = {}
@@ -178,6 +180,8 @@ def prepare_files(filenames):
     key_specifiers['reskeys'] = [key for key in results_dict.keys()
                                  if all([(exc not in key) for exc in exclude])]
 
+    print('key_specifiers')
+    print(key_specifiers)
     return results_dict, shapes_dict, key_specifiers
 
 
@@ -279,7 +283,7 @@ if __name__ == '__main__':
 
         # if 'misc', 'metadata' and 'system_info' were
         # not yet created -> the file was not opened before
-        if all([(key not in f.keys()) for key in datasets.keys()]):
+        if any([(key not in f.keys()) for key in datasets.keys()]):
             print('Creating the dataset!')
 
             # now add the values for the first time
@@ -329,13 +333,12 @@ if __name__ == '__main__':
 
                 nsamples += nsamples0
                 attrs['nsamples'] = nsamples
-                shape_resize = f[reskey].shape[1]
+                orig_shape = f[reskey].shape[1]
+                shape_resize = orig_shape
                 if partial:
-                    nener_ = shape_resize
-                    if shapes_dict[reskey][1] > nener_:
-                        shape_resize = nener_
+                    if shapes_dict[reskey][1] < orig_shape:
+                        shape_resize = shapes_dict[reskey][1]
                 f[reskey].resize((nsamples, shape_resize))
-
                 f[reskey][nsamples0:, :] = datasets[reskey]
 
                 # if attributes have also changed

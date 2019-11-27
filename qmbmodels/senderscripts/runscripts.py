@@ -83,6 +83,9 @@ diag_modes = ['diag', 'sinvert']
 # st_pc_type -> preconditioner type
 # st_pc_factor_mat_solver_type -> which solver to use
 #
+# sinvert_keys are not considered when the job is not
+# meant to exploit mpi (hence if the value of the
+# mpi key in programs dict is set to False)
 
 sinvert_keys = ['eps_type', 'eps_nev', 'st_type', 'st_ksp_type',
                 'st_pc_type',

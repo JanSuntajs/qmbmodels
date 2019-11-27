@@ -27,22 +27,25 @@ from slepc4py import SLEPc
 import numpy as np
 from scipy import linalg as LA
 
-from models import heisenberg
 from ham1d.entropy.rdm import build_rdm
+from ham1d.entropy.ententro import Entangled
 from utils.cmd_parser_tools import arg_parser
 from utils.filesaver import savefile
+from models.prepare_model import select_model
 
 store_eigvecs = False
 
 if __name__ == '__main__':
+
+    mod = select_model()
 
     comm = PETSc.COMM_WORLD
 
     mpisize = comm.size
     mpirank = comm.rank
 
-    syspar_keys = heisenberg.syspar_keys
-    modpar_keys = heisenberg._modpar_keys
+    syspar_keys = mod.syspar_keys
+    modpar_keys = mod._modpar_keys
 
     argsDict, extra = arg_parser(syspar_keys, modpar_keys)
 
@@ -60,9 +63,11 @@ if __name__ == '__main__':
 
     # get the instance of the appropriate hamiltonian
     # class and the diagonal random fields used
-    model, fields = heisenberg.construct_hamiltonian(argsDict, parallel=True,
-                                                     mpirank=mpirank,
-                                                     mpisize=mpisize)
+    model, fields = mod.construct_hamiltonian(argsDict, parallel=True,
+                                              mpirank=mpirank,
+                                              mpisize=mpisize)
+    for key in fields.keys():
+        fields[key + '_partial'] = fields.pop(key)
     print('fields:')
     print(fields)
     # prepare for parallel PETSc assembly
@@ -253,14 +258,26 @@ if __name__ == '__main__':
             # the vector is composed from all the
             # processes
             if mpirank == 0:
+
                 eigvals.append(eigval)
                 eigvec = np.array(zvec)
-                rdm_matrix = build_rdm(eigvec, int(
-                    argsDict['L'] / 2.), argsDict['L'], int(
-                    argsDict['L'] / 2.))
-                rdm_eigvals = LA.eigvalsh(rdm_matrix.todense())
-                rdm_eigvals = rdm_eigvals[rdm_eigvals > 1e-014]
-                entro = -np.dot(rdm_eigvals, np.log(rdm_eigvals))
+
+                if model.Nu is not None:
+
+                    rdm_matrix = build_rdm(eigvec, int(
+                        argsDict['L'] / 2.), argsDict['L'], int(
+                        argsDict['L'] / 2.))
+                    rdm_eigvals = LA.eigvalsh(rdm_matrix.todense())
+                    rdm_eigvals = rdm_eigvals[rdm_eigvals > 1e-014]
+                    entro = -np.dot(rdm_eigvals, np.log(rdm_eigvals))
+                else:
+
+                    entangled = Entangled(eigvec, argsDict['L'],
+                                          int(argsDict['L'] / 2.))
+                    entangled.partitioning('homogenous')
+                    entangled.svd()
+                    entro = entangled.eentro()
+
                 entropy.append(entro)
 
             # destroy the scatter context before the new
@@ -285,9 +302,9 @@ if __name__ == '__main__':
                         'Hamiltonian_diagonal_matelts_partial': diagonals[0],
                         'Hamiltonian_squared_diagonal_matelts_partial':
                         diagonals[1],
-                        'Hamiltonian_random_disorder_partial': fields,
                         'Entropy_partial': entropy,
-                        'Eigenvalues_partial_spectral_info': metadata}
+                        'Eigenvalues_partial_spectral_info': metadata,
+                        **fields}
             # save the eigenvalues, entropy and spectral info as
             # a npz array
             savefile(savedict, *saveargs, True, save_type='npz')

@@ -89,7 +89,7 @@ def _entro_ave(h5file, results_key, disorder_key='dW'):
 
                 nsamples = file[key].attrs['nsamples']
                 nener = file[key].attrs['nener']
-                dW = file[key].attrs['dW']
+                dW = file[key].attrs[disorder_key]
                 size = file[key].attrs['L']
                 sub = size / 2.
                 ave_entro = np.mean(entropy)
@@ -144,11 +144,11 @@ def _get_r(h5file, results_key,
             key = results_key
             if key in file.keys():
 
-                r_data = file[key][()]
+                r_data = file[key][()][0]
 
                 nsamples = file[key].attrs['nsamples']
                 nener = file[key].attrs['nener']
-                dW = file[key].attrs['dW']
+                dW = file[key].attrs[disorder_key]
                 size = file[key].attrs['L']
                 r_val = r_data[1]
                 r_err = r_data[2]
@@ -232,9 +232,12 @@ def _crawl_folder_tree(topdir, results_key,
                 for modpar in modpars:
                     savefolder, disorder = modpar.split('_{}_'.format(
                         disorder_key))
+                    disorder = disorder.split('_')[0]
                     disorder = np.float(disorder)
-                    filepath = os.path.join(modpath, modpar)
 
+                    filepath = os.path.join(modpath, modpar)
+                    print('filepath')
+                    print(filepath)
                     try:
                         file = glob('{}/*.hdf5'.format(filepath))[0]
 

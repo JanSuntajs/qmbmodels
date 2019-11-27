@@ -63,7 +63,7 @@ def arg_parser(system_keys, module_keys):
     parser = argparse.ArgumentParser(prog='Obtain runtime command arguments '
                                      'for the executable script.')
 
-    spec_system_keys = ['pbc', 'disorder', 'ham_type']
+    spec_system_keys = ['pbc', 'disorder', 'ham_type', 'model']
     for key in system_keys:
         if key not in spec_system_keys:
             type_ = int
@@ -71,16 +71,25 @@ def arg_parser(system_keys, module_keys):
             parser.add_argument('--{}'.format(key),
                                 type=type_, default=default)
         else:
+            # pbc or obc (periodic or open boundary conditions)
             if key == 'pbc':
                 parser.add_argument('--{}'.format(key),
                                     type=str2bool, default=True)
+            # select the disorder type
             if key == 'disorder':
                 parser.add_argument('--{}'.format(key),
                                     type=str, default='none')
 
+            # select the hamiltonian type ->
+            # can be spin1d, ferm1d, or free
             if key == 'ham_type':
                 parser.add_argument('--{}'.format(key),
                                     type=str, default='spin1d')
+            # select the actual physical model, such as
+            # the heisenberg or imbrie model
+            if key == 'model':
+                parser.add_argument('--{}'.format(key),
+                                    type=str, default='')
 
     for key in module_keys:
 
@@ -129,7 +138,6 @@ def arg_parser_general(*args):
 
             parser.add_argument('--{}'.format(key),
                                 type=type_, default=default)
-
 
     args, extra = parser.parse_known_args()
 
