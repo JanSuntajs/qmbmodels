@@ -325,30 +325,31 @@ if __name__ == '__main__':
             datasets[fnamekey] = filenames[indices]
 
             for reskey in key_specifiers['reskeys']:
-                print('reskey')
-                print(reskey)
-                nsamples = indices.shape[0]
-                nsamples0 = f[reskey].shape[0]
+                if reskey not in f.keys():
+                    pass
+                else:
+                    nsamples = indices.shape[0]
+                    nsamples0 = f[reskey].shape[0]
 
-                datasets[reskey] = datasets[reskey][indices, :]
+                    datasets[reskey] = datasets[reskey][indices, :]
 
-                nsamples += nsamples0
-                attrs['nsamples'] = nsamples
-                orig_shape = f[reskey].shape[1]
-                shape_resize = orig_shape
-                if partial:
-                    if shapes_dict[reskey][1] < orig_shape:
-                        shape_resize = shapes_dict[reskey][1]
-                    elif shapes_dict[reskey][1] > orig_shape:
-                        datasets[reskey] = datasets[reskey][:, :orig_shape]
-                f[reskey].resize((nsamples, shape_resize))
+                    nsamples += nsamples0
+                    attrs['nsamples'] = nsamples
+                    orig_shape = f[reskey].shape[1]
+                    shape_resize = orig_shape
+                    if partial:
+                        if shapes_dict[reskey][1] < orig_shape:
+                            shape_resize = shapes_dict[reskey][1]
+                        elif shapes_dict[reskey][1] > orig_shape:
+                            datasets[reskey] = datasets[reskey][:, :orig_shape]
+                    f[reskey].resize((nsamples, shape_resize))
 
-                f[reskey][nsamples0:, :] = datasets[reskey]
+                    f[reskey][nsamples0:, :] = datasets[reskey]
 
-                # if attributes have also changed
-                for key, value in attrs.items():
+                    # if attributes have also changed
+                    for key, value in attrs.items():
 
-                    f[reskey].attrs[key] = value
+                        f[reskey].attrs[key] = value
 
             f[fnamekey].resize((nsamples,))
 
