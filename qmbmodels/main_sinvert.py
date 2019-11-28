@@ -66,9 +66,11 @@ if __name__ == '__main__':
     model, fields = mod.construct_hamiltonian(argsDict, parallel=True,
                                               mpirank=mpirank,
                                               mpisize=mpisize)
+    print(fields.keys())
     for key in fields.keys():
         oldkey = key
-        fields[key + '_partial'] = fields.pop(oldkey)
+        if '_partial' not in key:
+            fields[key + '_partial'] = fields.pop(oldkey)
     print('fields:')
     print(fields)
     # prepare for parallel PETSc assembly
