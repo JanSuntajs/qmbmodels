@@ -67,7 +67,8 @@ if __name__ == '__main__':
                                               mpirank=mpirank,
                                               mpisize=mpisize)
     for key in fields.keys():
-        fields[key + '_partial'] = fields.pop(key)
+        oldkey = key
+        fields[key + '_partial'] = fields.pop(oldkey)
     print('fields:')
     print(fields)
     # prepare for parallel PETSc assembly
