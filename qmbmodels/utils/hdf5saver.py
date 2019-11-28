@@ -283,7 +283,7 @@ if __name__ == '__main__':
 
         # if 'misc', 'metadata' and 'system_info' were
         # not yet created -> the file was not opened before
-        if any([(key not in f.keys()) for key in datasets.keys()]):
+        if all([(key not in f.keys()) for key in datasets.keys()]):
             print('Creating the dataset!')
 
             # now add the values for the first time
