@@ -37,7 +37,7 @@ store_eigvecs = False
 
 if __name__ == '__main__':
 
-    mod = select_model()
+    mod, model_name = select_model()
 
     comm = PETSc.COMM_WORLD
 
@@ -48,6 +48,8 @@ if __name__ == '__main__':
     modpar_keys = mod._modpar_keys
 
     argsDict, extra = arg_parser(syspar_keys, modpar_keys)
+    argsDict['model'] = model_name
+    syspar_keys.append('model')
 
     savepath = argsDict['results']
     syspar = argsDict['syspar']

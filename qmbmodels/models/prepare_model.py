@@ -14,6 +14,13 @@ def select_model():
     This function is called in the main running scripts
     to determine which hamiltonian should be used
     base on the provided command-line arguments.
+
+    returns
+    -------
+
+    mod: python module with a Hamiltonian model definition
+
+    model['model']: the name of the module with the definition
     """
 
     model, tmp = arg_parser_general({'model': [str, '']})
@@ -28,7 +35,7 @@ def select_model():
         sys.exit(0)
     print('Using model {}'.format(model['model']))
 
-    return mod
+    return mod, model['model']
 
 
 def import_model(model):

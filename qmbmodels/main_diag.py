@@ -8,14 +8,15 @@ from models.prepare_model import select_model
 
 if __name__ == '__main__':
 
-    mod = select_model()
+    mod, model_name = select_model()
     syspar_keys = mod.syspar_keys
     modpar_keys = mod._modpar_keys
 
     # argsDict -> system and module dependent parameters
     # extra -> path for saving the results
     argsDict, extra = arg_parser(syspar_keys, modpar_keys)
-
+    argsDict['model'] = model_name
+    syspar_keys.append('model')
     # define attributes for the hdf5
 
     savepath = argsDict['results']
