@@ -4,7 +4,7 @@ from ham1d.models.spin1d import hamiltonian as sphm
 
 from .disorder import get_disorder_dist
 
-syspar_keys = ['L', 'pbc', 'disorder', 'ham_type', 'model']
+syspar_keys = ['L', 'pbc', 'disorder', 'ham_type']
 modpar_keys = ['J', 'dJ', 'H', 'dH',
                'Gamma', 'dGamma', 'min_seed', 'max_seed']
 
