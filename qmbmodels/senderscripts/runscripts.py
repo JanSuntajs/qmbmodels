@@ -68,12 +68,16 @@ programs = {
                'mpi': False},
     'sinvert': {'name': './main_sinvert.py', 'array': True,
                 'save': 'Eigvals', 'vectors': True,
-                'noqueue': False, 'mpi': True}
+                'noqueue': False, 'mpi': True},
+    'sinvert_short': {'name': './main_sinvert_short.py',
+                      'array': False, 'save': 'Eigvals',
+                      'vectors': True, 'noqueue': False,
+                      'mpi': True}
 
 }
 
 # diagonalization modes
-diag_modes = ['diag', 'sinvert']
+diag_modes = ['diag', 'sinvert', 'sinvert_short']
 # define shift-and-invert keys:
 #
 # eps_type -> eps_solver
@@ -229,7 +233,7 @@ def prep_sub_script(mode='diag', queue=False, cmd_arg='',
     slurm_opt = slurm_opt.copy()
     prog = programs[mode]
     minseed = slurmargs[7]
-    maxseed = slurmargs[8]
+    maxseed = minseed + slurmargs[8]
     seedlist = ['']
 
     if prog['array']:
@@ -247,11 +251,14 @@ def prep_sub_script(mode='diag', queue=False, cmd_arg='',
     results = f"{storage}/{name}/{head}/{tail}/{modpar}"
 
     if prog['mpi']:
-        if queue:
-            nproc = '${SLURM_NTASKS}'
+        if 'short' not in prog['name']:
+            if queue:
+                nproc = '${SLURM_NTASKS}'
+            else:
+                nproc = slurmargs[2]
+            execname = 'mpiexec -np {} python'.format(nproc)
         else:
-            nproc = slurmargs[2]
-        execname = 'mpiexec -np {} python'.format(nproc)
+            execname = 'python'
         # execname = 'mpiexec python'
         cmd_opt_ = cmd_opt.copy()
     else:

@@ -7,6 +7,8 @@ main script.
 """
 import sys
 from utils.cmd_parser_tools import arg_parser_general
+from utils.cmd_parser_tools import arg_parser
+from models._common_keys import minmax_seed_default
 
 
 def select_model():
@@ -59,3 +61,80 @@ def import_model(model):
         sys.exit(0)
 
     return mod
+
+
+def get_module_info():
+    """
+    Obtain the system and model parameter
+    keys relevant for the model used.
+
+    Parameters:
+    -----------
+    None
+
+    Returns:
+    --------
+
+    mod: python module containing the defs.
+         of the used hamiltonian (for instance,
+         imbrie.py or heisenberg.py)
+    model_name: str
+         the name corresponding to the used
+         python module defining the model
+         hamiltonian.
+    argsDict: dict
+         Dictionary containing formatted pairs
+         of parameter keys and their corresponding
+         values which are parsed from the command-line
+         arguments.
+    seedDict: dict
+         Dictionary containing the keys corresponding
+         to the range of random seed values we should
+         be iterating over when performing different
+         disorder realizations.
+         The seedDict should have the following keys:
+         'min_seed', indicating the starting seed
+         number and 'num_seed', indicating the number
+         of seed values we should be using. The maximum
+         seed number is determined as:
+         seedDict['min_seed'] + seedDict['num_seed']
+    syspar_keys: list
+         A list of strings indicating which of the keys
+         in the argsDict correspond to the system parameters.
+    modpar_keys: list
+         A list of strings indicating which of the keys in the
+         argsDict correspond to the model parameters.
+    savepath: string
+         Path to the root of the storage forlder where one
+         wants to store the results.
+    syspar: string
+         A formatted string containing information about all
+         the relevant system parameters.
+    modpar: string
+         A formatted string containing information about all
+         the relevant model parameters.
+    minseed, maxseed: int
+         Integers indicating the minimum and maximum seed
+         numbers. See above for their definitions.
+    """
+
+    mod, model_name = select_model()
+    syspar_keys = mod.syspar_keys
+    modpar_keys = mod._modpar_keys
+
+    argsDict, extra = arg_parser(syspar_keys, modpar_keys)
+    syspar_keys.append('model')
+    argsDict['model'] = model_name
+
+    seedDict, extra = arg_parser_general(minmax_seed_default)
+
+    minseed = seedDict['min_seed']
+    maxseed = minseed + seedDict['num_seed']
+
+    savepath = argsDict['results']
+    syspar = argsDict['syspar']
+    modpar = argsDict['modpar']
+
+    return (mod, model_name, argsDict, seedDict,
+            syspar_keys, modpar_keys, savepath,
+            syspar, modpar, minseed, maxseed)

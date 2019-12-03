@@ -140,7 +140,7 @@ class SubmittedScript(object):
 
         try:
             minseed = job.params['min_seed']
-            maxseed = job.params['max_seed']
+            maxseed = job.params['num_seed']
         except KeyError:
             print("min_seed and max_seed keys not present!")
 

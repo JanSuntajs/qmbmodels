@@ -12,7 +12,11 @@ a selected region of the hamiltonian's spectrum
 and to also calculate the eigenvector's entanglement
 entropy.
 
-
+The suffix short indicates the job is intended for
+running shorter jobs using a for loop since sending
+a large number of short jobs to a SLURM cluster can
+cause a significant overlay and slowning down of the
+scheduling system.
 """
 
 from utils.set_petsc_slepc import *
@@ -23,25 +27,26 @@ from models.prepare_model import get_module_info
 from _sinvert import sinvert_body
 
 store_eigvecs = False
-save_metadata = True
+
 if __name__ == '__main__':
 
     comm = PETSc.COMM_WORLD
-
-    mpisize = comm.size
-    mpirank = comm.rank
+    mpirank = 0
+    mpisize = 1
 
     # extract all the relevant data from the command-line arguments
     # and prepare the model-specific parameters
     (mod, model_name, argsDict, seedDict, syspar_keys, modpar_keys,
-     savepath, syspar, modpar, *rest) = get_module_info()
+        savepath, syspar, modpar, min_seed, max_seed) = get_module_info()
 
-    print(argsDict)
-    print('Using seed: {}'.format(argsDict['seed']))
+    save_metadata = True
+    for seed in range(min_seed, max_seed):
+        print('Using seed: {}'.format(seed))
+        argsDict['seed'] = seed
 
-    sinvert_body(mod, argsDict, syspar, syspar_keys, modpar,
-                 modpar_keys, mpirank, mpisize, comm, save_metadata,
-                 savepath,
-                 PETSc, SLEPc)
+        sinvert_body(mod, argsDict, syspar, syspar_keys, modpar,
+                     modpar_keys, mpirank, mpisize, comm, save_metadata,
+                     savepath,
+                     PETSc, SLEPc)
 
-
+        save_metadata = False

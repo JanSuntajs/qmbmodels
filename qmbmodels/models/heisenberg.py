@@ -4,12 +4,13 @@ from ham1d.models.spin1d import hamiltonian as sphm
 from ham1d.models.ferm1d import hamiltonian as fehm
 
 from .disorder import get_disorder_dist
+from ._common_keys import comm_modpar_keys, comm_syspar_keys
 
-syspar_keys = ['L', 'nu', 'pbc', 'disorder', 'ham_type']
+syspar_keys = ['L', 'nu'] + comm_syspar_keys
 modpar_keys = ['J1', 'J2', 'delta1', 'delta2',
-               'W', 'dW', 'min_seed', 'max_seed']
+               'W', 'dW'] + comm_modpar_keys
 
-_modpar_keys = [key for key in modpar_keys if 'seed' not in key]
+_modpar_keys = [key for key in modpar_keys if '_seed' not in key]
 _modpar_keys.append('seed')
 
 
