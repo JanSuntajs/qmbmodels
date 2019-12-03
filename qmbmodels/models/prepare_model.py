@@ -129,7 +129,8 @@ def get_module_info():
     seedDict, extra = arg_parser_general(minmax_seed_default)
 
     minseed = seedDict['min_seed']
-    maxseed = minseed + seedDict['num_seed']
+    maxseed = seedDict['max_seed']
+    stepseed = seedDict['step_seed']
 
     savepath = argsDict['results']
     syspar = argsDict['syspar']

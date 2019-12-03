@@ -26,7 +26,9 @@ import subprocess as sp
 #                              structure.
 # programs[mode]['mpi'] -> whether the job can be executed in
 #                          parallel using the mpi paradigm
-#
+# programs[mode]['short'] -> whether the job is tailored
+#                            for running a loop over shorter
+#                            (time-wise) jobs
 # What different modes do:
 #
 #   diag -> full diagonalization
@@ -50,29 +52,34 @@ programs = {
 
     'diag': {'name': './main_diag.py', 'array': True,
              'save': 'Eigvals', 'vectors': True,
-             'noqueue': False, 'mpi': False},
+             'noqueue': False, 'mpi': False,
+             'short': False},
     'sff': {'name': './main_sff.py', 'array': False,
             'save': 'Spectral_stats', 'vectors': False,
-            'noqueue': False, 'mpi': False},
+            'noqueue': False, 'mpi': False,
+            'short': None, },
     'gaps': {'name': './main_r.py', 'array': False,
              'save': 'Spectral_stats', 'vectors': False,
-             'noqueue': False, 'mpi': False},
+             'noqueue': False, 'mpi': False,
+             'short': None},
     'gaps_partial': {'name': './main_r_partial.py', 'array': False,
                      'save': 'Spectral_stats', 'vectors': False,
-                     'noqueue': False, 'mpi': False},
+                     'noqueue': False, 'mpi': False,
+                     'short': None},
     'hdf5': {'name': './utils/hdf5saver.py', 'array': False,
              'save': 'Eigvals', 'vectors': False,
-             'noqueue': False, 'mpi': False},
+             'noqueue': False, 'mpi': False, 'short': None},
     'folder': {'name': './utils/prepfolders.py', 'array': False,
                'save': None, 'array': False, 'noqueue': True,
-               'mpi': False},
+               'mpi': False, 'short': None},
     'sinvert': {'name': './main_sinvert.py', 'array': True,
                 'save': 'Eigvals', 'vectors': True,
-                'noqueue': False, 'mpi': True},
+                'noqueue': False, 'mpi': True,
+                'short': False},
     'sinvert_short': {'name': './main_sinvert_short.py',
-                      'array': False, 'save': 'Eigvals',
+                      'array': True, 'save': 'Eigvals',
                       'vectors': True, 'noqueue': False,
-                      'mpi': True}
+                      'mpi': True, 'short': True}
 
 }
 
@@ -102,7 +109,7 @@ def prep_sub_script(mode='diag', queue=False, cmd_arg='',
                     modpar='',
                     slurmargs=["00:00:01",
                                1, 1, 1, 4, 'test', 'log',
-                               1, 1],
+                               1, 1, 1],
                     cmd_opt=[],
                     slurm_opt=[],
                     module='',
@@ -233,16 +240,37 @@ def prep_sub_script(mode='diag', queue=False, cmd_arg='',
     slurm_opt = slurm_opt.copy()
     prog = programs[mode]
     minseed = slurmargs[7]
-    maxseed = minseed + slurmargs[8]
+    maxseed = slurmargs[8]
+    stepseed = slurmargs[9]
     seedlist = ['']
 
     if prog['array']:
-        if queue:
-            slurm_opt.append(f'#SBATCH --array={minseed}-{maxseed}')
-            seedlist = ['--seed=${SLURM_ARRAY_TASK_ID}']
+
+        if prog['short']:
+            arrayspec = f'--array={minseed}-{maxseed}:{stepseed}'
+
         else:
-            seedlist = [f'--seed={seed}' for seed in
-                        range(minseed, maxseed, 1)]
+            arrayspec = f'--array={minseed}-{maxseed}'
+
+        if queue:
+
+            slurm_opt.append(f'#SBATCH {arrayspec}')
+
+            if prog['short']:
+
+                seedlist = [('--min_seed=${{SLURM_ARRAY_TASK_ID}} --max_seed='
+                             '$(({{SLURM_ARRAY_TASK_ID}} + {}))').format(
+                    stepseed)]
+            else:
+
+                seedlist = ['--seed=${SLURM_ARRAY_TASK_ID}']
+                
+        else:
+            if not prog['short']:
+                seedlist = [f'--seed={seed}' for seed in
+                            range(minseed, maxseed, 1)]
+            else:
+                seedlist = [f'--min_seed={minseed} --max_seed={maxseed}']
 
     # The actual command line arguments which are used for running a
     # given program
@@ -251,7 +279,7 @@ def prep_sub_script(mode='diag', queue=False, cmd_arg='',
     results = f"{storage}/{name}/{head}/{tail}/{modpar}"
 
     if prog['mpi']:
-        if 'short' not in prog['name']:
+        if not prog['short']:
             if queue:
                 nproc = '${SLURM_NTASKS}'
             else:

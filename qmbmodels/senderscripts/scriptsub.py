@@ -140,9 +140,10 @@ class SubmittedScript(object):
 
         try:
             minseed = job.params['min_seed']
-            maxseed = job.params['num_seed']
+            maxseed = job.params['max_seed']
+            stepseed = job.params['step_seed']
         except KeyError:
-            print("min_seed and max_seed keys not present!")
+            print("min_seed,max_seed or step_seed keys not present!")
 
         #  Define commonly used objects which differ depending on
         #  whether the code is run on the SLURM-based cluster
@@ -150,7 +151,7 @@ class SubmittedScript(object):
 
         slurm_args = [self.time, self.nodes, self.ntasks, self.cputask,
                       self.memcpu * 1000, self.name, sender.log,
-                      minseed, maxseed]
+                      minseed, maxseed, stepseed]
 
         scripts = []
 
