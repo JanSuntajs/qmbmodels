@@ -316,7 +316,7 @@ def extract_data(topdir, savepath, routine='get_entro_ave',
 
                 vals = savedict[desc][syspar][savefolder]
                 print(vals)
-                data = np.zeros((len(vals), arr_shape))
+                data = np.zeros((len(vals), arr_shape), dtype=np.float64)
 
                 for i, value in enumerate(vals):
 

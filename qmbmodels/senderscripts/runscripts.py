@@ -259,12 +259,12 @@ def prep_sub_script(mode='diag', queue=False, cmd_arg='',
             if prog['short']:
 
                 seedlist = [('--min_seed=${{SLURM_ARRAY_TASK_ID}} --max_seed='
-                             '$(({{SLURM_ARRAY_TASK_ID}} + {}))').format(
+                             '$((${{SLURM_ARRAY_TASK_ID}} + {}))').format(
                     stepseed)]
             else:
 
                 seedlist = ['--seed=${SLURM_ARRAY_TASK_ID}']
-                
+
         else:
             if not prog['short']:
                 seedlist = [f'--seed={seed}' for seed in
