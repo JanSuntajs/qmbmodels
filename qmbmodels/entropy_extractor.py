@@ -205,6 +205,8 @@ def _extract_disorder(string, disorder_key):
     # dis_string, which indicates the length of
     # the disorder parameter value
     splitter = dis_string.find('_')
+    if splitter < 0:
+        splitter = None
     disorder, rest2 = dis_string[:splitter], dis_string[splitter:]
 
     disorder = np.float(disorder)
