@@ -98,8 +98,8 @@ programs = {
 # resources
 # the scheme:
 # [<time>, <nodes>, <ntasks>, <cpus-per-task>,<mem-per-cpu>]
-
-default_postprocessing_params = ['02:59:59', 1, 1, 4, 4]
+# NOTE: mem-per-cpu is in MB
+default_postprocessing_params = ["02:59:59", 1, 1, 4, 4000]
 # diagonalization modes
 diag_modes = ['diag', 'sinvert', 'sinvert_short']
 # define shift-and-invert keys:
@@ -125,7 +125,7 @@ def prep_sub_script(mode='diag', queue=False, cmd_arg='',
                     storage='', syspar='',
                     modpar='',
                     slurmargs=["00:00:01",
-                               1, 1, 1, 4, 'test', 'log',
+                               1, 1, 1, 4000, 'test', 'log',
                                1, 1, 1],
                     cmd_opt=[],
                     slurm_opt=[],
