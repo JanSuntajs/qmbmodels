@@ -265,8 +265,8 @@ def prep_sub_script(mode='diag', queue=False, cmd_arg='',
     # make sure that the slurmargs are modified for postprocessing
     # jobs
 
-    if prog['postprocessing']:
-
+    if prog['postprocess']:
+        slurmargs = slurmargs.copy()
         slurmargs[:len(default_postprocessing_params)
                   ] = default_postprocessing_params
 
