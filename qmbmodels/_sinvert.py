@@ -302,7 +302,6 @@ def sinvert_body(mod, argsDict, syspar, syspar_keys,
                 eigvec = np.array(zvec)
 
                 if model.Nu is not None:
-
                     rdm_matrix = build_rdm(eigvec, int(
                         argsDict['L'] / 2.), argsDict['L'], int(
                         argsDict['nu']))

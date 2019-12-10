@@ -29,6 +29,14 @@ import subprocess as sp
 # programs[mode]['short'] -> whether the job is tailored
 #                            for running a loop over shorter
 #                            (time-wise) jobs
+# programs[mode]['postprocess'] -> if the job is not intended
+#                                  to do some computationally
+#                                  demanding task but rather
+#                                  do some post-processing of
+#                                  the obtained eigenspectra,
+#                                  one should make sure that the
+#                                  job uses less resources
+
 # What different modes do:
 #
 #   diag -> full diagonalization
@@ -53,36 +61,45 @@ programs = {
     'diag': {'name': './main_diag.py', 'array': True,
              'save': 'Eigvals', 'vectors': True,
              'noqueue': False, 'mpi': False,
-             'short': False},
+             'short': False, 'postprocess': False},
     'sff': {'name': './main_sff.py', 'array': False,
             'save': 'Spectral_stats', 'vectors': False,
             'noqueue': False, 'mpi': False,
-            'short': None, },
+            'short': None, 'postprocess': False},
     'gaps': {'name': './main_r.py', 'array': False,
              'save': 'Spectral_stats', 'vectors': False,
              'noqueue': False, 'mpi': False,
-             'short': None},
+             'short': None, 'postprocess': True},
     'gaps_partial': {'name': './main_r_partial.py', 'array': False,
                      'save': 'Spectral_stats', 'vectors': False,
                      'noqueue': False, 'mpi': False,
-                     'short': None},
+                     'short': None, 'postprocess': True},
     'hdf5': {'name': './utils/hdf5saver.py', 'array': False,
              'save': 'Eigvals', 'vectors': False,
-             'noqueue': False, 'mpi': False, 'short': None},
+             'noqueue': False, 'mpi': False, 'short': None,
+             'postprocess': True},
     'folder': {'name': './utils/prepfolders.py', 'array': False,
                'save': None, 'array': False, 'noqueue': True,
-               'mpi': False, 'short': None},
+               'mpi': False, 'short': None, 'postprocess': True},
     'sinvert': {'name': './main_sinvert.py', 'array': True,
                 'save': 'Eigvals', 'vectors': True,
                 'noqueue': False, 'mpi': True,
-                'short': False},
+                'short': False, 'postprocess': False},
     'sinvert_short': {'name': './main_sinvert_short.py',
                       'array': True, 'save': 'Eigvals',
                       'vectors': True, 'noqueue': False,
-                      'mpi': True, 'short': True}
+                      'mpi': True, 'short': True,
+                      'postprocess': False}
 
 }
 
+# define the default post-processing parameters so that
+# the 'trivial' postprocessing jobs do not take too much
+# resources
+# the scheme:
+# [<time>, <nodes>, <ntasks>, <cpus-per-task>,<mem-per-cpu>]
+
+default_postprocessing_params = ['02:59:59', 1, 1, 4, 4]
 # diagonalization modes
 diag_modes = ['diag', 'sinvert', 'sinvert_short']
 # define shift-and-invert keys:
@@ -237,12 +254,21 @@ def prep_sub_script(mode='diag', queue=False, cmd_arg='',
             script is prepared for each seed number. In all other
             cases, only one submission script is prepared.
     """
+
     slurm_opt = slurm_opt.copy()
     prog = programs[mode]
     minseed = slurmargs[7]
     maxseed = slurmargs[8]
     stepseed = slurmargs[9]
     seedlist = ['']
+
+    # make sure that the slurmargs are modified for postprocessing
+    # jobs
+
+    if prog['postprocessing']:
+
+        slurmargs[:len(default_postprocessing_params)
+                  ] = default_postprocessing_params
 
     if prog['array']:
 
