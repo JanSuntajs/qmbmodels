@@ -40,7 +40,7 @@ if __name__ == '__main__':
         savepath, syspar, modpar, min_seed, max_seed) = get_module_info()
 
     save_metadata = True
-    for seed in range(min_seed, max_seed):
+    for seed in range(min_seed, max_seed + 1):
         print('Using seed: {}'.format(seed))
         argsDict['seed'] = seed
 

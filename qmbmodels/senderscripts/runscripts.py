@@ -294,7 +294,7 @@ def prep_sub_script(mode='diag', queue=False, cmd_arg='',
         else:
             if not prog['short']:
                 seedlist = [f'--seed={seed}' for seed in
-                            range(minseed, maxseed, 1)]
+                            range(minseed, maxseed + 1, 1)]
             else:
                 seedlist = [f'--min_seed={minseed} --max_seed={maxseed}']
 
