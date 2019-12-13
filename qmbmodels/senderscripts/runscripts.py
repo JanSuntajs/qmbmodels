@@ -337,6 +337,18 @@ def prep_sub_script(mode='diag', queue=False, cmd_arg='',
         f"conda activate {environment}\n"
     )
 
+    # properly order the sbatch_script list
+    temp_sbatch_script = []
+    for sbatch in sbatch_script:
+
+        if '#SBATCH' not in sbatch_script:
+            sbatch_script.remove(sbatch)
+            temp_sbatch_script.append(sbatch)
+
+    for sbatch in temp_sbatch_script:
+
+        sbatch_script.append(sbatch)
+
     sbatch_script = (
         "#!/bin/bash"
         "\n#SBATCH --time={0}\n"
