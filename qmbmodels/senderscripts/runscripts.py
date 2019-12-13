@@ -266,6 +266,7 @@ def prep_sub_script(mode='diag', queue=False, cmd_arg='',
     # jobs
 
     if prog['postprocess']:
+        slurm_opt = []
         slurmargs = slurmargs.copy()
         slurmargs[:len(default_postprocessing_params)
                   ] = default_postprocessing_params
@@ -352,7 +353,7 @@ def prep_sub_script(mode='diag', queue=False, cmd_arg='',
         "hostname\n"
         "pwd\n"
         "echo $SLURM_CPUS_PER_TASK\n"
-        "OMP_NUM_THREADS=${{SLURM_CPUS_PER_TASK}}\n"
+        "export OMP_NUM_THREADS=${{SLURM_CPUS_PER_TASK}}\n"
     ).format(cd)
 
     if queue:
