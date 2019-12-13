@@ -338,16 +338,16 @@ def prep_sub_script(mode='diag', queue=False, cmd_arg='',
     )
 
     # properly order the sbatch_script list
-    temp_sbatch_script = []
-    for sbatch in sbatch_script:
+    temp_slurm_opt = []
+    for opt in slurm_opt:
 
-        if '#SBATCH' not in sbatch_script:
-            sbatch_script.remove(sbatch)
-            temp_sbatch_script.append(sbatch)
+        if '#SBATCH' not in opt:
+            slurm_opt.remove(opt)
+            temp_slurm_opt.append(opt)
 
-    for sbatch in temp_sbatch_script:
+    for opt in temp_slurm_opt:
 
-        sbatch_script.append(sbatch)
+        slurm_opt.append(opt)
 
     sbatch_script = (
         "#!/bin/bash"
