@@ -37,3 +37,83 @@ To activate the environment, use the ```conda activate petscenv``` command.
 Should you encounter any issues with the execution of the above
 script, replacing the command ```source activate```
 with ```conda activate``` should most likely fix the trouble.
+
+## First calculations
+
+In order to run the calculations, it is the most convenient to first prepare a runner script, such as the one shown below, which is intended for running simulations of the Heisenberg "weak-link" model, which was used in the paper on
+[Spin subdiffusion in the disordered Hubbard chain](https://journals.aps.org/prl/abstract/10.1103/PhysRevLett.120.246602) by M. Kozarzewski, P. Prelovšek and M. Mierzejewski (2018). The runner script is as follows:
+```python
+from senderscripts.batchsend import BatchSender
+from utils.cmd_parser_tools import mode_parser
+
+from models.prepare_model import import_model
+import numpy as np
+
+if __name__ == '__main__':
+    storage = '.' # dictates where the results are stored
+    ham_type = 'spin1d' # other options are: 'ferm1d', 'free1d', 'spin1d_kron'
+    model = 'heisenberg_weak_links' # other currently implemented: 'imbrie', 'heisenberg'
+    mod = import_model(model)
+    params = {
+        'L': [10], # system size
+        'nu': [5], # number of up-spins
+        'J': [1.], # maximum possible J
+        'lambda': [1.], # parameter of the disorder distribution (see paper for more details)
+        'pbc': [True], # periodic boundary conditions
+        'ham_type': [ham_type], # see above
+        'disorder': ['powerlaw'], # choose the disorder distribution -> only powerlaw is allowed for this model
+        'min_seed': [3], # minimum disorder seed -> relevant for different disorder realizations
+        'max_seed': [7], # maximum disorder seed
+        'step_seed': [2], # matters if job_type is sinvert_short only. Specifies how many different seeds are
+                          # considered sequentially
+        'sff_min_tau': [-5], # parameter for sff calculations -> minimum (unfolded) tau exponent -> 10 ** sff_min_tau
+        'sff_max_tau': [2],  # maximum (unfolded) tau exponent -> 10 ** sff_max_tau
+        'sff_n_tau': [30], # number of sff tau values
+        'sff_eta': [0.5],  # eta for sff filtering
+        'sff_unfolding_n': [3], # sff unfolding polynomial degree
+        'sff_filter': ['gaussian'], # type of filtering to use in the sff calculation
+        'r_step': [0.05], # in case <r> is calculated on the entire spectrum, this determines for how many 
+                          # percentages of states the quantity is calculated
+    }
+  
+    # Only relevant if shift-and invert method is used
+    # shift and invert parameters -> leave this as it is for now except for '-eps_nev'
+    sinvert_params = ['--model={}'.format(model),
+                      '-eps_type krylovschur', '-eps_nev 10', # '-eps_nev' -> selects the number of eigenvalues
+                      '-st_type sinvert',
+                      '-st_ksp_type preonly',
+                      '-st_pc_type lu',
+                      '-st_pc_factor_mat_solver_type mumps',
+                      '-mat_mumps_icntl_28 2',
+                      '-mat_mumps_icntl_29 2']
+
+    syspar_keys = mod.syspar_keys
+    modpar_keys = mod.modpar_keys
+    auxpar_keys = ['sff_min_tau', 'sff_max_tau', 'sff_n_tau', 'sff_eta',
+                   'sff_unfolding_n', 'sff_filter', 'r_step']
+    
+    # select a human readable name for the job
+    name = f'{model}_{ham_type}_test'
+    # these parameters are only relevant if job is ran on the cluster
+    time = "00:59:59"
+    nodes = 1   # number of nodes
+    ntasks = 1  # number of threads
+    memcpu = 4  # memory in GB per CPU!
+    
+    
+    # this takes care of the job's execution
+    queue, mode = mode_parser()
+
+    print(f"{mode}")
+
+    sender = BatchSender(params, syspar_keys, modpar_keys,
+                         auxpar_keys, cmd_opt=sinvert_params,
+                         storage=storage)
+
+    sender.run_jobs(mode, queue=queue,
+                    time=time, nodes=nodes, ntasks=ntasks,
+                    memcpu=memcpu, name=name)
+
+
+```
+
