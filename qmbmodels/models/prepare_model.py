@@ -11,6 +11,44 @@ from utils.cmd_parser_tools import arg_parser
 from models._common_keys import minmax_seed_default
 
 
+def _importer(model, mode='select'):
+    """
+    An internal helper routine for importing
+    the appropriate hamiltonian module.
+
+    Parameters:
+    -----------
+
+    model: dict
+
+    mode: string
+          either 'select' or 'import',
+          depending on whether the function is used
+          in the select_model() or import_model()
+          function
+    """
+    if mode == 'select':
+
+        model_ = model['model']
+    elif mode == 'import':
+        model_ = model
+
+    if model_ == 'heisenberg':
+        from models import heisenberg as mod
+    elif model_ == 'imbrie':
+        from models import imbrie as mod
+    elif model_ == 'heisenberg_weak_links':
+        from models import heisenberg_weak_links as mod
+    else:
+        print(('model {} not '
+               'recognised! Exiting!').format(model['model']))
+        sys.exit(0)
+
+    # print('Using model {}'.format(model['model']))
+
+    return mod
+
+
 def select_model():
     """
     This function is called in the main running scripts
@@ -27,14 +65,8 @@ def select_model():
 
     model, tmp = arg_parser_general({'model': [str, '']})
 
-    if model['model'] == 'heisenberg':
-        from models import heisenberg as mod
-    elif model['model'] == 'imbrie':
-        from models import imbrie as mod
-    else:
-        print(('model {} not '
-               'recognised! Exiting!').format(model['model']))
-        sys.exit(0)
+    mod = _importer(model)
+
     print('Using model {}'.format(model['model']))
 
     return mod, model['model']
@@ -51,14 +83,7 @@ def import_model(model):
 
     """
 
-    if model == 'heisenberg':
-        from models import heisenberg as mod
-    elif model == 'imbrie':
-        from models import imbrie as mod
-    else:
-        print(('model {} not '
-               'recognised! Exiting!').format(model))
-        sys.exit(0)
+    mod = _importer(model, mode='import')
 
     return mod
 

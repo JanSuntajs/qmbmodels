@@ -30,12 +30,11 @@ cosuniform (cosine of a random number:
 
 
 
-
 """
 import numpy as np
 
 _available_disorders = ['none', 'uniform', 'binary', 'gaussian',
-                        'incomm', 'cosuniform']
+                        'incomm', 'cosuniform', 'powerlaw']
 
 
 def get_disorder_dist(L, disorder_type='none', *params):
@@ -126,5 +125,11 @@ def get_disorder_dist(L, disorder_type='none', *params):
         lattice = np.random.uniform(0., 2 * np.pi, size=L)
 
         disorder = dW * np.cos(lattice)
+
+    if disorder_type == 'powerlaw':
+
+        disorder = np.random.uniform(0., 1., size=L)
+
+        disorder = dW * disorder ** (1 / W)
 
     return disorder
