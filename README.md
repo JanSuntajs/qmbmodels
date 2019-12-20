@@ -116,4 +116,23 @@ if __name__ == '__main__':
 
 
 ```
+## Running the code
+To run an example script ```runner_script.py``` on your home machine and calculate various
+quantities of interest, do the following:
 
+```python runner_script.py diag sff gaps```
+
+This would run the full diagonalization script, then calculate the spectral form factor and finaly the mean
+ratio of the adjacent level spacing. As long as the diagonalization data already exist, one can calculate
+sff and the mean ratio independently as well. The above command would run the code on a home machine or on
+the cluster's headnode. To send the jobs to SLURM, do the following:
+
+```python runner_script.py --queue diag sff gaps```
+
+To perform a partial diagonalization calculation instead of a full one, do one of the following:
+
+```python runner_script.py --queue sinvert sff gaps_partial```
+
+```python runner_script.py --queue sinvert_short sff gaps_partial```
+
+Note how ```gaps``` was replaced with ```gaps_partial``` as well.
