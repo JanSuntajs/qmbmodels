@@ -91,16 +91,18 @@ def construct_hamiltonian(argsdict, parallel=False, mpirank=0, mpisize=0):
         J_fields = get_disorder_dist(len(coup), 'powerlaw', argsdict['lambda'],
                                      argsdict['J'], argsdict['seed'])
 
-        pm = [['+-', [[0.5 * J_fields[i], *inter]
+        pm = [['xx', [[J_fields[i], *inter]
                       for i, inter in enumerate(coup)]]]
 
-        mp = [['-+', [[0.5 * J_fields[i], *inter]
-               for i, inter in enumerate(coup)]]]
+        mp = [['yy', [[J_fields[i], *inter]
+                      for i, inter in enumerate(coup)]]]
 
         zz = [['zz', [[J_fields[i], *inter]
-               for i, inter in enumerate(coup)]]]
+                      for i, inter in enumerate(coup)]]]
 
-        static_list = [*pm, *mp, *zz]
+        rnd_noise = np.random.uniform(-1e-011, 1e-011, size=L)
+        z_loc = ['z', [[rnd_noise[i], i] for i in range(L)]]
+        static_list = [*pm, *mp, *zz, z_loc]
 
         hamiltonian = ham(L, static_list, [], Nu=None, parallel=parallel,
                           mpirank=mpirank, mpisize=mpisize)

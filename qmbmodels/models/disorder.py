@@ -130,6 +130,6 @@ def get_disorder_dist(L, disorder_type='none', *params):
 
         disorder = np.random.uniform(0., 1., size=L)
 
-        disorder = dW * disorder ** (1 / W)
+        disorder = dW * disorder ** (1. / W)
 
     return disorder

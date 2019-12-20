@@ -28,7 +28,6 @@ def _importer(model, mode='select'):
           function
     """
     if mode == 'select':
-
         model_ = model['model']
     elif mode == 'import':
         model_ = model
