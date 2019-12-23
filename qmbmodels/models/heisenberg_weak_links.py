@@ -59,7 +59,7 @@ from .disorder import get_disorder_dist
 from ._common_keys import comm_modpar_keys, comm_syspar_keys
 
 syspar_keys = ['L', 'nu'] + comm_syspar_keys
-modpar_keys = ['J', 'lambda'] + comm_modpar_keys
+modpar_keys = ['J', 'lambda', 'z_noise'] + comm_modpar_keys
 
 _modpar_keys = [key for key in modpar_keys if '_seed' not in key]
 _modpar_keys.append('seed')
@@ -100,7 +100,8 @@ def construct_hamiltonian(argsdict, parallel=False, mpirank=0, mpisize=0):
         zz = [['zz', [[J_fields[i], *inter]
                       for i, inter in enumerate(coup)]]]
 
-        rnd_noise = np.random.uniform(-1e-011, 1e-011, size=L)
+        rnd_noise = np.random.uniform(-argsdict['z_noise'],
+                                      argsdict['z_noise'], size=L)
         z_loc = ['z', [[rnd_noise[i], i] for i in range(L)]]
         static_list = [*pm, *mp, *zz, z_loc]
 
