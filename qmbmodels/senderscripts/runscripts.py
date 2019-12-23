@@ -60,7 +60,7 @@ programs = {
 
     'diag': {'name': './main_diag.py', 'array': True,
              'save': 'Eigvals', 'vectors': True,
-             'noqueue': False, 'mpi': False,
+             'noqueue': False, 'mpi': True,
              'short': True, 'postprocess': False},
     'sff': {'name': './main_sff.py', 'array': False,
             'save': 'Spectral_stats', 'vectors': False,
