@@ -22,7 +22,8 @@ if __name__ == '__main__':
         argsDict['seed'] = seed
         # get the instance of the appropriate hamiltonian
         # class and the diagonal random fields used
-        model, fields = mod.construct_hamiltonian(argsDict)
+        model, fields = mod.construct_hamiltonian(
+            argsDict, parallel=False, mpisize=1)
 
         print('Starting diagonalization ...')
         eigvals = model.eigvals(complex=False)
