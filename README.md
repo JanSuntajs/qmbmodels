@@ -99,8 +99,8 @@ if __name__ == '__main__':
     nodes = 1   # number of nodes
     ntasks = 1  # number of threads
     memcpu = 4  # memory in GB per CPU!
-    
-    
+    cputask = 2
+
     # this takes care of the job's execution
     queue, mode = mode_parser()
 
@@ -112,7 +112,8 @@ if __name__ == '__main__':
 
     sender.run_jobs(mode, queue=queue,
                     time=time, nodes=nodes, ntasks=ntasks,
-                    memcpu=memcpu, name=name)
+                    memcpu=memcpu, name=name, cputask=cputask,
+                    sourcename='petscenv')
 
 
 ```
