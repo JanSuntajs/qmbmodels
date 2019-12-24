@@ -47,6 +47,8 @@ lambda_: float
    Parameter controlling the supposed
    diffusive or subdiffusive behaviour of the
    system.
+W: float
+   Potential disorder
 """
 
 
@@ -59,7 +61,7 @@ from .disorder import get_disorder_dist
 from ._common_keys import comm_modpar_keys, comm_syspar_keys
 
 syspar_keys = ['L', 'nu'] + comm_syspar_keys
-modpar_keys = ['J', 'lambda', 'z_noise'] + comm_modpar_keys
+modpar_keys = ['J', 'lambda', 'W'] + comm_modpar_keys
 
 _modpar_keys = [key for key in modpar_keys if '_seed' not in key]
 _modpar_keys.append('seed')
@@ -100,15 +102,16 @@ def construct_hamiltonian(argsdict, parallel=False, mpirank=0, mpisize=0):
         zz = [['zz', [[J_fields[i], *inter]
                       for i, inter in enumerate(coup)]]]
 
-        rnd_noise = np.random.uniform(-argsdict['z_noise'],
-                                      argsdict['z_noise'], size=L)
+        rnd_noise = np.random.uniform(-argsdict['W'],
+                                      argsdict['W'], size=L)
         z_loc = ['z', [[rnd_noise[i], i] for i in range(L)]]
         static_list = [*pm, *mp, *zz, z_loc]
 
         hamiltonian = ham(L, static_list, [], Nu=int(nu), parallel=parallel,
                           mpirank=mpirank, mpisize=mpisize)
 
-        fields = {'Hamiltonian_J_random_disorder': J_fields}
+        fields = {'Hamiltonian_J_random_disorder': J_fields
+                  'Hamiltonian_W_random_disorder': rnd_noise}
 
         return hamiltonian, fields
 
