@@ -113,7 +113,7 @@ def _entro_ave(h5file, results_key, disorder_key='dW'):
 
 
 def _get_r(h5file, results_key,
-           disorder_key='dW'):
+           disorder_key='dW', full=False, target_percentage=None):
     """
     A function that extracts the
     r_values
@@ -135,6 +135,14 @@ def _get_r(h5file, results_key,
     disorder_key: string
                     Which key denotes the disorder
                     parameter in the attributes dict.
+
+    full: boolean
+          Whether the full or partial diagonalization
+          results are being extracted.
+
+    target_percentage: float, None
+          If full == True, which percentage of states
+          is to be selected.
 
     """
 
