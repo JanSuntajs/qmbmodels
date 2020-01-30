@@ -59,6 +59,7 @@ if __name__ == '__main__':
         'nu': [5], # number of up-spins
         'J': [1.], # maximum possible J
         'lambda': [1.], # parameter of the disorder distribution (see paper for more details)
+        'W': [0.001], # random potential disorder
         'pbc': [True], # periodic boundary conditions
         'ham_type': [ham_type], # see above
         'disorder': ['powerlaw'], # choose the disorder distribution -> only powerlaw is allowed for this model
