@@ -15,6 +15,28 @@ import collections
 
 from glob import glob
 
+footer_entro_post = """
+Each row is organised as follows:
+
+dW: disorder strength
+average_entropy S: average entropy for a given number of states and samples
+rescaled entropy S_re: |log(2) - 2**(2*LA - L - 1) / LA - S/LA|; L-> system,
+LA-> subsystem
+Delta S: standard deviation of S
+size L: system size
+nener: number of energies obtained using partial diagonalization
+nsamples: number of all the random samples
+nsamples_selected: number of the random disorder samples with an appropriate
+variance
+nsamples_selected: nsamples - nsamples_selected
+population_variance: the theoretical prediction for the variance of the
+disorder distribution
+epsilon: condition used to determine whether to select a given disorder
+distribution:
+|\sigma^2_sample - \sigma_^2_theory| < epsilon * pop_var / sqrt(size - 1)
+"""
+
+
 footer_entro = """
 Each row is organised as follows:
 
@@ -54,6 +76,70 @@ def _join(head, tail):
 def _check(head, tail):
 
     return os.path.isfile(_join(head, tail))
+
+
+def _entro_ave_postprocessed(h5file, results_key, disorder_key='dW',
+                             pop_var=1. / 3., epsilon=np.sqrt(1.5)):
+
+    disorder_string = 'Hamiltonian_random_disorder_partial'
+    try:
+        with h5py.File(h5file, 'r') as file:
+
+            key = results_key
+
+            if ((disorder_string in file.keys()) and (key in file.keys()
+                                                      )):
+
+                disorder = file[disorder_string][()]
+
+                nsamples = file[disorder_string].attrs['nsamples']
+                nener = file[key].attrs['nener']
+                size = file[disorder_string].attrs['L']
+                dW = np.float(file[key].attrs[disorder_key])
+
+                # ------------------------------------------------
+                #
+                #  Calculation of variances of the disorder distribution
+                #
+                # ------------------------------------------------
+                # get the variances of disorder and then reject the
+                # inappropriate samples
+                # variances of the disordered distribution
+                # samples
+                variances = np.var(disorder, axis=1, ddof=1)
+                pop_var *= dW**2
+                # the selection/rejection criterion
+                epsilon *= pop_var / np.sqrt(size - 1)
+
+                condition = np.abs(variances - pop_var) < epsilon
+                nsamples_selected = np.sum(condition)
+
+                entropy = file[key][()]
+                entropy = entropy[condition]
+                sub = size / 2.
+                ave_entro = np.mean(entropy)
+                entro_rescaled = np.abs(
+                    np.log(2) - (2**(2 * sub - size - 1)) / sub -
+                    ave_entro / sub)
+                std_entro = np.std(entropy)
+
+                nsamples_rejected = nsamples - nsamples_selected
+
+            else:
+
+                dW = nsamples, nener, ave_entro = std_entro \
+                    = size = entro_rescaled = nsamples_rejected \
+                    = nsamples_selected = None
+                print('Key {} or {} not present in the HDF5 file!'.format(
+                    key, disorder_string))
+    except IOError:
+        print('File {} not present!'.format(h5file))
+        dW = nsamples, nener, ave_entro = std_entro \
+            = size = entro_rescaled = nsamples_rejected \
+            = nsamples_selected = None
+
+    return (dW, ave_entro, entro_rescaled, std_entro, size, nener, nsamples,
+            nsamples_selected, nsamples_rejected, pop_var, epsilon)
 
 
 def _entro_ave(h5file, results_key, disorder_key='dW'):
@@ -181,6 +267,8 @@ def _get_r(h5file, results_key,
 # desired data and what
 # is the shape of the return of the associated function.
 _routines_dict = {
+    'get_entro_ave_post': [_entro_ave_postprocessed, 'Entropy', 11,
+                           footer_entro_post],
     'get_entro_ave': [_entro_ave, 'Entropy', 7, footer_entro],
     'get_r': [_get_r, 'r_data', 6, footer_r]
 
@@ -299,6 +387,9 @@ def _crawl_folder_tree(topdir, results_key,
 def extract_data(topdir, savepath, routine='get_entro_ave',
                  partial=True, disorder_key='dW',
                  savename='entro_sweep'):
+    """
+
+    """
 
     routine = _routines_dict[routine]
     get_fun = routine[0]
