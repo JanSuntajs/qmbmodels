@@ -131,7 +131,7 @@ def _entro_ave_postprocessed(h5file, results_key, disorder_key='dW',
 
     disorder_string = 'Hamiltonian_random_disorder_partial'
 
-    dW = nsamples, nener, ave_entro = std_entro \
+    dW = nsamples = nener = ave_entro = std_entro \
         = size = entro_rescaled = nsamples_rejected \
         = nsamples_selected = None
 
