@@ -152,6 +152,7 @@ def _entro_ave_postprocessed(h5file, results_key, disorder_key='dW',
                 check_shapes = (nsamples == disorder.shape[0])
                 print(disorder.shape[0])
                 print('Check_shapes: {}'.format(check_shapes))
+                print(h5file)
                 if check_shapes:
 
                     nener = file[key].attrs['nener']
