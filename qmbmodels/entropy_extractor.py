@@ -79,7 +79,8 @@ def _check(head, tail):
 
 
 def _entro_ave_postprocessed(h5file, results_key, disorder_key='dW',
-                             pop_var=1. / 3., epsilon=np.sqrt(1.5)):
+                             pop_var=1. / 3., limit_disorder=2.,
+                             mu=np.sqrt(1.5)):
 
     disorder_string = 'Hamiltonian_random_disorder_partial'
     try:
@@ -107,10 +108,10 @@ def _entro_ave_postprocessed(h5file, results_key, disorder_key='dW',
                 # variances of the disordered distribution
                 # samples
                 variances = np.var(disorder, axis=1, ddof=1)
-                pop_var *= dW**2
+                pop_var *= limit_disorder**2
                 # the selection/rejection criterion
-                epsilon *= pop_var / np.sqrt(size - 1)
-
+                mu *= pop_var / np.sqrt(size - 1)
+                epsilon = mu
                 condition = np.abs(variances - pop_var) < epsilon
                 nsamples_selected = np.sum(condition)
 
