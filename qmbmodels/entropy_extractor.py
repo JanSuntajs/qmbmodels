@@ -446,7 +446,7 @@ def _crawl_folder_tree(topdir, results_key,
 
 def extract_data(topdir, savepath, routine='get_entro_ave',
                  partial=True, disorder_key='dW',
-                 savename='entro_sweep'):
+                 savename='entro_sweep', *args, **kwargs):
     """
 
     """
@@ -484,7 +484,7 @@ def extract_data(topdir, savepath, routine='get_entro_ave',
                 for i, value in enumerate(vals):
 
                     data[i] = get_fun(value[1], results_key,
-                                      disorder_key)
+                                      disorder_key, *args, **kwargs)
 
                 # sort according to disorder
                 data = data[data[:, 0].argsort()]
