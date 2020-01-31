@@ -130,6 +130,11 @@ def _entro_ave_postprocessed(h5file, results_key, disorder_key='dW',
     """
 
     disorder_string = 'Hamiltonian_random_disorder_partial'
+
+    dW = nsamples, nener, ave_entro = std_entro \
+        = size = entro_rescaled = nsamples_rejected \
+        = nsamples_selected = None
+
     try:
         with h5py.File(h5file, 'r') as file:
 
@@ -145,48 +150,52 @@ def _entro_ave_postprocessed(h5file, results_key, disorder_key='dW',
                 size = file[disorder_string].attrs['L']
                 dW = np.float(file[key].attrs[disorder_key])
 
-                # ------------------------------------------------
-                #
-                #  Calculation of variances of the disorder distribution
-                #
-                # ------------------------------------------------
-                # get the variances of disorder and then reject the
-                # inappropriate samples
-                # variances of the disordered distribution
-                # samples
-                variances = np.var(disorder, axis=1, ddof=1)
-                population_variance = dW**2 * var_factor
+                # check if there is the same number of disorder samples
+                # as there are spectra
+                check_shapes = (nsamples == disorder.shape[0])
 
-                # the selection/rejection criterion
-                epsilon = np.sqrt(mu) * var_factor * \
-                    limit_disorder**2 / np.sqrt(size - 1)
+                if not check_shapes:
 
-                condition = np.abs(variances - population_variance) < epsilon
-                nsamples_selected = np.sum(condition)
+                    # ------------------------------------------------
+                    #
+                    #  Calculation of variances of the disorder distribution
+                    #
+                    # ------------------------------------------------
+                    # get the variances of disorder and then reject the
+                    # inappropriate samples
+                    # variances of the disordered distribution
+                    # samples
+                    variances = np.var(disorder, axis=1, ddof=1)
+                    population_variance = dW**2 * var_factor
 
-                entropy = file[key][()]
-                entropy = entropy[condition]
-                sub = size / 2.
-                ave_entro = np.mean(entropy)
-                entro_rescaled = np.abs(
-                    np.log(2) - (2**(2 * sub - size - 1)) / sub -
-                    ave_entro / sub)
-                std_entro = np.std(entropy)
+                    # the selection/rejection criterion
+                    epsilon = np.sqrt(mu) * var_factor * \
+                        limit_disorder**2 / np.sqrt(size - 1)
 
-                nsamples_rejected = nsamples - nsamples_selected
+                    condition = np.abs(
+                        variances - population_variance) < epsilon
+                    nsamples_selected = np.sum(condition)
+
+                    entropy = file[key][()]
+                    entropy = entropy[condition]
+                    sub = size / 2.
+                    ave_entro = np.mean(entropy)
+                    entro_rescaled = np.abs(
+                        np.log(2) - (2**(2 * sub - size - 1)) / sub -
+                        ave_entro / sub)
+                    std_entro = np.std(entropy)
+
+                    nsamples_rejected = nsamples - nsamples_selected
+                else:
+
+                    print('Shape mismatch!')
 
             else:
 
-                dW = nsamples, nener, ave_entro = std_entro \
-                    = size = entro_rescaled = nsamples_rejected \
-                    = nsamples_selected = None
                 print('Key {} or {} not present in the HDF5 file!'.format(
                     key, disorder_string))
     except IOError:
         print('File {} not present!'.format(h5file))
-        dW = nsamples, nener, ave_entro = std_entro \
-            = size = entro_rescaled = nsamples_rejected \
-            = nsamples_selected = None
 
     return (dW, ave_entro, entro_rescaled, std_entro, size, nener, nsamples,
             nsamples_selected, nsamples_rejected, population_variance, epsilon)
