@@ -79,8 +79,55 @@ def _check(head, tail):
 
 
 def _entro_ave_postprocessed(h5file, results_key, disorder_key='dW',
-                             pop_var=1. / 3., limit_disorder=2.,
-                             mu=np.sqrt(1.5)):
+                             var_factor=1. / 3., limit_disorder=2.,
+                             mu=1.5):
+    """
+    Since we are dealing with finite-size samples away from the
+    thermodynamic limit, we need to account for that in our
+    postprocessing routines. Our Hamiltonians are typically
+    prepared using random potentials where the potential values
+    are drawn from some probability distribution with a given
+    set of parameters (e.g. mean, variance, etc.). Due to the
+    finite size of our samples, the sample means and variances
+    might differ from those of the whole population. In fact, as
+    it is known from the probability and statistics, the sample
+    means and variances are distributed according to appropriate
+    probability distributions. Since we only wish to analyze results
+    corresponding to samples whose variances do not deviate too much
+    from the desired population variance, we devise a routine based on
+    which we select or reject calculation results to be included
+    in our subsequent analysis.
+
+    The selection criterion is as follows:
+
+    |\sigma^2_sample - \sigma^2_pop | <  \epsilon
+
+    Where we calculate epsilon according to the following rule:
+
+    \epsilon = \frac{1}{\sqrt{L - 1}} * \sqrt(mu) * limit_disorder^2 * \
+    var_factor
+
+    Here, \sigma^2_sample is the samples variance in the unbiased form,
+    \sigma^2_pop is the population variance of the selected probability dist.
+
+    L is the length of the 1-dimensional quantum chain.
+
+    \mu is a numerical prefactor which we set to the value of 1.5 for the
+    box distribution and equals 2 for the uniform distribution. Note that
+    the value for the box distribution was deduced experimentally and not
+    in any way rigorously.
+
+    limit_disorder sets the value of disorder agains which we wish to
+    compare/test our results.
+
+    var_factor is a multiplicative factor used to obtain the population
+    variance from the disorder parameter value. In general:
+    \sigma^2_pop = var_factor * disorder^2
+    For box distribution, var_factor = 1./3.
+
+
+
+    """
 
     disorder_string = 'Hamiltonian_random_disorder_partial'
     try:
@@ -108,11 +155,13 @@ def _entro_ave_postprocessed(h5file, results_key, disorder_key='dW',
                 # variances of the disordered distribution
                 # samples
                 variances = np.var(disorder, axis=1, ddof=1)
-                pop_var *= limit_disorder**2
+                population_variance = dW**2 * var_factor
+
                 # the selection/rejection criterion
-                mu *= pop_var / np.sqrt(size - 1)
-                epsilon = mu
-                condition = np.abs(variances - pop_var) < epsilon
+                epsilon = np.sqrt(mu) * var_factor * \
+                    limit_disorder**2 / np.sqrt(size - 1)
+
+                condition = np.abs(variances - population_variance) < epsilon
                 nsamples_selected = np.sum(condition)
 
                 entropy = file[key][()]
@@ -140,7 +189,7 @@ def _entro_ave_postprocessed(h5file, results_key, disorder_key='dW',
             = nsamples_selected = None
 
     return (dW, ave_entro, entro_rescaled, std_entro, size, nener, nsamples,
-            nsamples_selected, nsamples_rejected, pop_var, epsilon)
+            nsamples_selected, nsamples_rejected, population_variance, epsilon)
 
 
 def _entro_ave(h5file, results_key, disorder_key='dW'):
