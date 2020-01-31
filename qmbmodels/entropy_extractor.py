@@ -133,7 +133,7 @@ def _entro_ave_postprocessed(h5file, results_key, disorder_key='dW',
 
     dW = nsamples = nener = ave_entro = std_entro \
         = size = entro_rescaled = nsamples_rejected \
-        = nsamples_selected = None
+        = nsamples_selected = epsilon = population_variance = None
 
     try:
         with h5py.File(h5file, 'r') as file:
