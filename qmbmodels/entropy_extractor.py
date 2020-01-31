@@ -154,7 +154,7 @@ def _entro_ave_postprocessed(h5file, results_key, disorder_key='dW',
                 # as there are spectra
                 check_shapes = (nsamples == disorder.shape[0])
 
-                if not check_shapes:
+                if check_shapes:
 
                     # ------------------------------------------------
                     #
@@ -188,7 +188,7 @@ def _entro_ave_postprocessed(h5file, results_key, disorder_key='dW',
                     nsamples_rejected = nsamples - nsamples_selected
                 else:
 
-                    print('Shape mismatch!')
+                    print('Shape mismatch! Check the file: {}'.format(h5file))
 
             else:
 
