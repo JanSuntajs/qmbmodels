@@ -145,14 +145,12 @@ def _entro_ave_postprocessed(h5file, results_key, disorder_key='dW',
 
                 disorder = file[disorder_string][()]
 
-                nsamples = file[disorder_string].attrs['nsamples']
+                nsamples = file[key].attrs['nsamples']
 
                 # check if there is the same number of disorder samples
                 # as there are spectra
                 check_shapes = (nsamples == disorder.shape[0])
-                print(disorder.shape[0])
-                print('Check_shapes: {}'.format(check_shapes))
-                print(h5file)
+
                 if check_shapes:
 
                     nener = file[key].attrs['nener']
