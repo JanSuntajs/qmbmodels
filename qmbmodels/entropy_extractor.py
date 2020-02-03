@@ -111,9 +111,13 @@ def _reduce_variance(disorder_samples, observable, mode, size, pop_variance,
         indices = []
         while var_variances * rescale_factor >= epsilon:
 
-            max_arg = np.argmax(variances_, axis=1)
+            max_arg = np.argmax(variances_)
             indices.append(max_arg)
-            variances_ = np.delete(variances_, max_arg, 0)
+            # take the sample with the largest variance out
+            disorder_samples = np.delete(disorder_samples, max_arg, 0)
+            # recalculate the variance
+            variances = np.var(disorder_samples, axis=1, ddof=1)
+            variances_ = np.abs(variances - pop_variance)
             var_variances = np.var(variances_)
 
         nsamples_selected = variances_.shape[0]
