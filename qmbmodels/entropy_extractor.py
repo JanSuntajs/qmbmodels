@@ -90,7 +90,7 @@ def _reduce_variance(disorder_samples, observable, mode, size, pop_variance,
     """
     # variances of each sample in the disorder distribution
     variances = np.var(disorder_samples, axis=1, ddof=1)
-    variance_before = np.mean(np.var(observable, axis=1, ddof=1))
+    variance_before = np.var(np.var(observable, axis=1, ddof=1))
     if mode == 1:
 
         # the condition based on which we select/reject samples
@@ -123,7 +123,7 @@ def _reduce_variance(disorder_samples, observable, mode, size, pop_variance,
         nsamples_selected = variances_.shape[0]
         observable = np.delete(observable, indices, 0)
 
-    variance_after = np.mean(np.var(observable, axis=1, ddof=1))
+    variance_after = np.var(np.var(observable, axis=1, ddof=1))
 
     return observable, nsamples_selected, variance_before, variance_after
 
