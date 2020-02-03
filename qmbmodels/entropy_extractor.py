@@ -118,7 +118,7 @@ def _reduce_variance(disorder_samples, observable, mode, size, pop_variance,
             # recalculate the variance
             variances = np.var(disorder_samples, axis=1, ddof=1)
             variances_ = np.abs(variances - pop_variance)
-            var_variances = np.var(variances_)
+            var_variances = np.var(variances)
 
         nsamples_selected = variances_.shape[0]
         observable = np.delete(observable, indices, 0)
