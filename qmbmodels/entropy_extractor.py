@@ -224,7 +224,7 @@ def _entro_ave_postprocessed(h5file, results_key, disorder_key='dW',
                     epsilon = np.sqrt(mu) * var_factor * \
                         limit_disorder**2 / np.sqrt(size - 1)
 
-                    rescale_factor = np.sqrt(mu) / np.sqrt(size - 1)
+                    rescale_factor = 1. / np.sqrt(size - 1)
                     entropy = file[key][()]
 
                     (entropy, nsamples_selected, variance_before,
