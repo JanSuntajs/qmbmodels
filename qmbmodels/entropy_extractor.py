@@ -34,6 +34,8 @@ disorder distribution
 epsilon: condition used to determine whether to select a given disorder
 distribution:
 |\sigma^2_sample - \sigma_^2_theory| < epsilon * pop_var / sqrt(size - 1)
+variance_before: variance of variances of the disorder distributions before post.
+variance_after: variance of variances of the disorder distributions after post.
 """
 
 
@@ -247,7 +249,8 @@ def _entro_ave_postprocessed(h5file, results_key, disorder_key='dW',
         print('File {} not present!'.format(h5file))
 
     return (dW, ave_entro, entro_rescaled, std_entro, size, nener, nsamples,
-            nsamples_selected, nsamples_rejected, population_variance, epsilon)
+            nsamples_selected, nsamples_rejected, population_variance, epsilon,
+            variance_before, variance_after)
 
 
 def _entro_ave(h5file, results_key, disorder_key='dW'):
@@ -375,7 +378,7 @@ def _get_r(h5file, results_key,
 # desired data and what
 # is the shape of the return of the associated function.
 _routines_dict = {
-    'get_entro_ave_post': [_entro_ave_postprocessed, 'Entropy', 11,
+    'get_entro_ave_post': [_entro_ave_postprocessed, 'Entropy', 13,
                            footer_entro_post],
     'get_entro_ave': [_entro_ave, 'Entropy', 7, footer_entro],
     'get_r': [_get_r, 'r_data', 6, footer_r]
