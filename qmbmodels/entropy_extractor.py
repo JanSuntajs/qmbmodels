@@ -78,9 +78,53 @@ def _check(head, tail):
     return os.path.isfile(_join(head, tail))
 
 
+def _reduce_variance(disorder_samples, observable, mode, size, pop_variance,
+                     epsilon, rescale_factor=1):
+    """
+    A procedure for reducing the standard deviation of the observables
+    of the selected samples
+
+
+    """
+    # variances of each sample in the disorder distribution
+    variances = np.var(disorder_samples, axis=1, ddof=1)
+    variance_before = np.mean(np.var(observable, axis=1, ddof=1))
+    if mode == 1:
+
+        # the condition based on which we select/reject samples
+        condition = np.abs(variances - pop_variance) < epsilon
+        nsamples_selected = np.sum(condition)
+
+        observable = observable[condition]
+        # variance of the observable after the selection
+
+    elif mode == 2:
+
+        # renorm. variances
+        variances_ = np.abs(variances - pop_variance)
+
+        # variation of variances
+        var_variances = np.var(variances)
+
+        indices = []
+        while var_variances * rescale_factor >= epsilon:
+
+            max_arg = np.argmax(variances_, axis=1)
+            indices.append(max_arg)
+            variances_ = np.delete(variances_, max_arg, 0)
+            var_variances = np.var(variances_)
+
+        nsamples_selected = variances_.shape[0]
+        observable = np.delete(observable, indices, 0)
+
+    variance_after = np.mean(np.var(observable, axis=1, ddof=1))
+
+    return observable, nsamples_selected, variance_before, variance_after
+
+
 def _entro_ave_postprocessed(h5file, results_key, disorder_key='dW',
                              var_factor=1. / 3., limit_disorder=2.,
-                             mu=1.5):
+                             mu=1.5, mode=1):
     """
     Since we are dealing with finite-size samples away from the
     thermodynamic limit, we need to account for that in our
@@ -166,19 +210,23 @@ def _entro_ave_postprocessed(h5file, results_key, disorder_key='dW',
                     # inappropriate samples
                     # variances of the disordered distribution
                     # samples
-                    variances = np.var(disorder, axis=1, ddof=1)
+
                     population_variance = dW**2 * var_factor
 
                     # the selection/rejection criterion
                     epsilon = np.sqrt(mu) * var_factor * \
                         limit_disorder**2 / np.sqrt(size - 1)
 
-                    condition = np.abs(
-                        variances - population_variance) < epsilon
-                    nsamples_selected = np.sum(condition)
-
+                    rescale_factor = np.sqrt(mu) / np.sqrt(size - 1)
                     entropy = file[key][()]
-                    entropy = entropy[condition]
+
+                    (entropy, nsamples_selected, variance_before,
+                     variance_after) = _reduce_variance(disorder, entropy,
+                                                        mode, size,
+                                                        population_variance,
+                                                        epsilon,
+                                                        rescale_factor)
+
                     sub = size / 2.
                     ave_entro = np.mean(entropy)
                     entro_rescaled = np.abs(
