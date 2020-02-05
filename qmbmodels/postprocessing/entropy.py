@@ -160,7 +160,7 @@ def entro_ave(h5file, results_key='Entropy',
 
     dW = nsamples = nener = ave_entro = std_entro \
         = size = entro_rescaled = nsamples_rejected \
-        = nsamples_selected = epsilon \
+        = nsamples_selected \
         = std_before = std_after = None
 
     try:
@@ -174,6 +174,7 @@ def entro_ave(h5file, results_key='Entropy',
                 disorder = file[disorder_string][()]
                 entropy = file[key][()]
                 nsamples = file[key].attrs['nsamples']
+                nener = file[key].attrs['nener']
                 size = file[key].attrs['L']
                 dW = np.float(file[key].attrs[disorder_key])
 
@@ -187,6 +188,7 @@ def entro_ave(h5file, results_key='Entropy',
                                                                      size)
                         target_variance = np.mean(variances)
                 else:
+                    epsilon = None
                     target_variance = 0
 
                 # reduce variance
