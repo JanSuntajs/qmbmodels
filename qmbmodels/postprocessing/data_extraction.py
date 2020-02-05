@@ -214,10 +214,12 @@ def extract_data(topdir, savepath, routine='get_entro_ave',
     # module_parameters bar the disorder part,
     # then the system parameters
     if reverse_order:
-        savedict_flipped = defaultdict(dict)
+        savedict_flipped = _makehash()
+        # key: desc, val: dict with all else
         for key, val in savedict.items():
-            savedict_flipped[key] = val
+                # subkey1: syspar, subval1: dict with all else
             for subkey1, subval1 in val.items():
+                # subkey2:
                 for subkey2, subval2 in subval1.items():
 
                     savedict_flipped[key][subkey2][subkey1] = subval2
@@ -231,34 +233,33 @@ def extract_data(topdir, savepath, routine='get_entro_ave',
 
         descdir = os.path.join(savepath, desc)
 
-        if not reverse_order:
-            for syspar in savedict[desc].keys():
+        for syspar in savedict[desc].keys():
 
-                sysdir = os.path.join(descdir, syspar)
+            sysdir = _join(descdir, syspar)
 
-                for savefolder in savedict[desc][syspar].keys():
+            for savefolder in savedict[desc][syspar].keys():
 
-                    savefolder_ = os.path.join(sysdir, savefolder)
+                savefolder_ = _join(sysdir, savefolder)
 
-                    if not os.path.isdir(savefolder_):
+                if not os.path.isdir(savefolder_):
 
-                        os.makedirs(savefolder_)
+                    os.makedirs(savefolder_)
 
-                    vals = savedict[desc][syspar][savefolder]
-                    print(vals)
-                    data = np.zeros((len(vals), arr_shape), dtype=np.float64)
+                vals = savedict[desc][syspar][savefolder]
+                print(vals)
+                data = np.zeros((len(vals), arr_shape), dtype=np.float64)
 
-                    for i, value in enumerate(vals):
+                for i, value in enumerate(vals):
 
-                        data[i] = get_fun(value[1], results_key,
-                                          disorder_key, *args, **kwargs)
+                    data[i] = get_fun(value[1], results_key,
+                                      disorder_key, *args, **kwargs)
 
-                    # sort according to disorder
-                    data = data[data[:, 0].argsort()]
-                    savename_ = '{}_{}_{}'.format(savename, syspar, savefolder)
-                    print(_join(savefolder_, savename_))
-                    np.savetxt(_join(savefolder_, savename_),
-                               data, footer=footer)
+                # sort according to disorder
+                data = data[data[:, 0].argsort()]
+                savename_ = '{}_{}_{}'.format(savename, syspar, savefolder)
+                print(_join(savefolder_, savename_))
+                np.savetxt(_join(savefolder_, savename_),
+                           data, footer=footer)
 
 
 def extract_single_model(topdir, descriptor, syspar, modpar):
