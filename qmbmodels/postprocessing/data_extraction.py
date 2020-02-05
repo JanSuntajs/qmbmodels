@@ -128,7 +128,9 @@ def _crawl_folder_tree(topdir, results_key,
 def extract_data(topdir, savepath, routine='get_entro_ave',
                  partial=True, disorder_key='dW',
                  savename='entro_sweep',
-                 reverse_order=False, *args, **kwargs):
+                 reverse_order=False,
+                 exclude_keys=[],
+                 *args, **kwargs):
     """
 
     """
@@ -142,6 +144,9 @@ def extract_data(topdir, savepath, routine='get_entro_ave',
     arr_shape = routine[2]
     savedict = _crawl_folder_tree(
         topdir, results_key, disorder_key=disorder_key)
+
+    # in case we wish to exclude some keys from the dictionary
+    ut.delete_keys_from_dict(savedict, exclude_keys)
 
     # if we have the reversed saving order -> first the
     # module_parameters bar the disorder part,
@@ -189,9 +194,11 @@ def extract_data(topdir, savepath, routine='get_entro_ave',
 
                 # sort according to disorder
                 data = data[data[:, 0].argsort()]
-                savename_ = '{}_{}_{}'.format(savename, syspar, savefolder)
+
+                names = (syspar, savefolder)
+                if reverse_order:
+                    names = names[::-1]
+                savename_ = '{}_{}_{}'.format(savename, *names)
                 print(_join(savefolder_, savename_))
                 np.savetxt(_join(savefolder_, savename_),
                            data, footer=footer)
-
-

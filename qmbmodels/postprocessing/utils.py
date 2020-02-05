@@ -1,6 +1,9 @@
 import numpy as np
 import os
 
+from collections import MutableMapping
+from contextlib import suppress
+
 
 def _extract_disorder(string, disorder_key):
     """
@@ -97,3 +100,12 @@ def extract_single_model(topdir, descriptor, syspar, modpar):
         file = None
 
     return file
+
+
+def delete_keys_from_dict(dictionary, keys):
+    for key in keys:
+        with suppress(KeyError):
+            del dictionary[key]
+    for value in dictionary.values():
+        if isinstance(value, MutableMapping):
+            delete_keys_from_dict(value, keys)

@@ -27,9 +27,10 @@ required in the mode=0 case where postprocessing is not performed.
 epsilon: condition used to determine whether to select a given disorder
 distribution.
 If mode=1:
-
 If mode=2:
 
+dW_min: value of the disorder strength parameter for which the epsilon
+was evaluated.
 
 variance_before: variance of variances of the disorder distributions before
 post.
@@ -54,7 +55,9 @@ the population variance was used in order calculate the target variance.
 def entro_ave(h5file, results_key='Entropy',
               disorder_key='dW',
               target_variance=1. / 3.,
-              epsilon=0., population_variance=True,
+              epsilon=0.,
+              dW_min=0.,
+              population_variance=True,
               mode=0,
               disorder_string='Hamiltonian_random_disorder_partial',
               ):
@@ -81,6 +84,10 @@ def entro_ave(h5file, results_key='Entropy',
     Stopping criterion for the postprocessing variance reduction routines
     if mode=1 or mode=2. In the absence of postprocessing, epsilon is set
     to None.
+
+    dW_min: {float, None}
+    the disorder strength parameter value for which the epsilon
+    was evaluated. Set to None in the absence of postprocessing.
 
     population_variance: boolean
     If True, target variance is the population variance of the
@@ -189,6 +196,7 @@ def entro_ave(h5file, results_key='Entropy',
                         target_variance = np.mean(variances)
                 else:
                     epsilon = None
+                    dW_min = None
                     target_variance = 0
 
                 # reduce variance
@@ -224,6 +232,6 @@ def entro_ave(h5file, results_key='Entropy',
         print('File {} not present!'.format(h5file))
 
     return (dW, ave_entro, entro_rescaled, std_entro, size, nener,
-            target_variance, epsilon, std_before,
+            target_variance, epsilon, dW_min, std_before,
             std_after, nsamples, nsamples_selected, nsamples_rejected,
             mode, bool(population_variance))
