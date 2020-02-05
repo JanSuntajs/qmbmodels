@@ -1,7 +1,7 @@
 import numpy as np
 import h5py
 
-from .data_extraction import extract_single_model, _extract_disorder
+from .utils import extract_single_model, _extract_disorder
 
 
 def disorder_analysis(samples, system_size):
