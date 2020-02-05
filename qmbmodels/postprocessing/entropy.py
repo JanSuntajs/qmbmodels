@@ -178,7 +178,7 @@ def entro_ave(h5file, results_key='Entropy',
                 size = file[key].attrs['L']
                 dW = np.float(file[key].attrs[disorder_key])
 
-                if not bool(mode):
+                if bool(mode):
                     if population_variance:
 
                         target_variance *= dW**2
