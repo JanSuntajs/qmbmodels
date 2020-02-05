@@ -1,7 +1,7 @@
 import numpy as np
 import h5py
 
-from . import disorder as dis
+from .disorder import reduce_variance
 
 
 footer_entro = """
@@ -165,10 +165,10 @@ def entro_ave(h5file, target_variance, population_variance,
 
                 # reduce variance
                 (condition, nsamples_dis, nsamples_selected,
-                 std_before, std_after) = dis.reduce_variance(disorder, mode,
-                                                              size,
-                                                              target_variance,
-                                                              epsilon)
+                 std_before, std_after) = reduce_variance(disorder, mode,
+                                                          size,
+                                                          target_variance,
+                                                          epsilon)
 
                 check_shapes = (nsamples == nsamples_dis)
 
