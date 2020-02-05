@@ -80,6 +80,118 @@ def _check(head, tail):
     return os.path.isfile(_join(head, tail))
 
 
+def _extract_disorder(string, disorder_key):
+    """
+    An internal routine for returning the
+    disorder key and the rest of the input
+    string
+    """
+
+    # append '_' at the beginning of the
+    # string to make splitting w.r.t. the
+    # disorder_key easier
+    string = '_' + string
+
+    # make sure there are no trailing or preceeding
+    # multiple underscore by removing them
+    disorder_key = disorder_key.lstrip('_').rstrip('_')
+    # now make sure there is exactly one trailing
+    # and one preceeding underscore
+    disorder_key = '_{}_'.format(disorder_key)
+    # split w.r.t. the disorder_key. The first
+    # part does not contain the disorder parameter
+    # value, while the second one does
+    rest1, dis_string = string.split(disorder_key)
+    # find the first occurence of '_' in the
+    # dis_string, which indicates the length of
+    # the disorder parameter value
+    splitter = dis_string.find('_')
+    if splitter < 0:
+        disorder = dis_string
+        rest2 = ''
+    else:
+        disorder, rest2 = dis_string[:splitter], dis_string[splitter:]
+
+    disorder = np.float(disorder)
+
+    # the part without the disorder value
+    rest = rest1.lstrip('_') + rest2
+    return rest, disorder
+
+
+def _crawl_folder_tree(topdir, results_key,
+                       disorder_key='dW'):
+    """
+    Crawls the subdirectories of the top results folder
+    and provides a list of files to be visited and
+    opened for the postprocessing operation to be performed.
+
+    Parameters:
+    -----------
+
+    topdir: string,path
+                    Should be the path towards the '*/results/'
+                    directory where the results for a specific
+                    project are stored.
+
+    disorder_key: string
+
+
+
+    """
+    # filelist = []
+    savedict = _makehash()
+    # strip any possible underscores
+    disorder_key = disorder_key.rstrip('_').lstrip('_')
+    if os.path.isdir(topdir):
+        # system descriptors, a lisf of
+        # subfolders such as
+        # 'pbc_True_disorder_uniform_ham_type_spin1d'
+        descriptors = os.listdir(topdir)
+        descriptors = [desc for desc in descriptors
+                       if not _check(topdir, desc)]
+
+        for descriptor in descriptors:
+
+            syspath = os.path.join(topdir, descriptor)
+            syspars = os.listdir(syspath)
+            syspars = [sysp for sysp in syspars
+                       if not _check(syspath, sysp)]
+
+            for syspar in syspars:
+
+                modpath = os.path.join(syspath, syspar)
+                modpars = os.listdir(modpath)
+                modpars = [modp for modp in modpars
+                           if not _check(modpath, modp)]
+
+                for modpar in modpars:
+                    savefolder, tmp = _extract_disorder(modpar, disorder_key)
+                    print(savefolder)
+                    savedict[descriptor][syspar][savefolder] = []
+
+                for modpar in modpars:
+                    savefolder, disorder = _extract_disorder(
+                        modpar, disorder_key)
+                    filepath = os.path.join(modpath, modpar)
+                    print('filepath')
+                    print(filepath)
+                    try:
+                        file = glob('{}/*.hdf5'.format(filepath))[0]
+
+                        savedict[descriptor][syspar][savefolder].append(
+                            [disorder, file])
+
+                    except IndexError:
+                        print('file in folder {} not present!'.format(
+                            filepath))
+
+    return savedict
+
+
+
+
+
 def _reduce_variance(disorder_samples, observable, mode, size, pop_variance,
                      epsilon, rescale_factor=1):
     """
@@ -389,115 +501,6 @@ _routines_dict = {
     'get_r': [_get_r, 'r_data', 6, footer_r]
 
 }
-
-
-def _extract_disorder(string, disorder_key):
-    """
-    An internal routine for returning the
-    disorder key and the rest of the input
-    string
-    """
-
-    # append '_' at the beginning of the
-    # string to make splitting w.r.t. the
-    # disorder_key easier
-    string = '_' + string
-
-    # make sure there are no trailing or preceeding
-    # multiple underscore by removing them
-    disorder_key = disorder_key.lstrip('_').rstrip('_')
-    # now make sure there is exactly one trailing
-    # and one preceeding underscore
-    disorder_key = '_{}_'.format(disorder_key)
-    # split w.r.t. the disorder_key. The first
-    # part does not contain the disorder parameter
-    # value, while the second one does
-    rest1, dis_string = string.split(disorder_key)
-    # find the first occurence of '_' in the
-    # dis_string, which indicates the length of
-    # the disorder parameter value
-    splitter = dis_string.find('_')
-    if splitter < 0:
-        disorder = dis_string
-        rest2 = ''
-    else:
-        disorder, rest2 = dis_string[:splitter], dis_string[splitter:]
-
-    disorder = np.float(disorder)
-
-    # the part without the disorder value
-    rest = rest1.lstrip('_') + rest2
-    return rest, disorder
-
-
-def _crawl_folder_tree(topdir, results_key,
-                       disorder_key='dW'):
-    """
-    Crawls the subdirectories of the top results folder
-    and provides a list of files to be visited and
-    opened for the postprocessing operation to be performed.
-
-    Parameters:
-    -----------
-
-    topdir: string,path
-                    Should be the path towards the '*/results/'
-                    directory where the results for a specific
-                    project are stored.
-
-    disorder_key: string
-
-
-
-    """
-    # filelist = []
-    savedict = _makehash()
-    # strip any possible underscores
-    disorder_key = disorder_key.rstrip('_').lstrip('_')
-    if os.path.isdir(topdir):
-        # system descriptors, a lisf of
-        # subfolders such as
-        # 'pbc_True_disorder_uniform_ham_type_spin1d'
-        descriptors = os.listdir(topdir)
-        descriptors = [desc for desc in descriptors
-                       if not _check(topdir, desc)]
-
-        for descriptor in descriptors:
-
-            syspath = os.path.join(topdir, descriptor)
-            syspars = os.listdir(syspath)
-            syspars = [sysp for sysp in syspars
-                       if not _check(syspath, sysp)]
-
-            for syspar in syspars:
-
-                modpath = os.path.join(syspath, syspar)
-                modpars = os.listdir(modpath)
-                modpars = [modp for modp in modpars
-                           if not _check(modpath, modp)]
-
-                for modpar in modpars:
-                    savefolder, tmp = _extract_disorder(modpar, disorder_key)
-                    print(savefolder)
-                    savedict[descriptor][syspar][savefolder] = []
-
-                for modpar in modpars:
-                    savefolder, disorder = _extract_disorder(
-                        modpar, disorder_key)
-                    filepath = os.path.join(modpath, modpar)
-                    print('filepath')
-                    print(filepath)
-                    try:
-                        file = glob('{}/*.hdf5'.format(filepath))[0]
-
-                        savedict[descriptor][syspar][savefolder].append(
-                            [disorder, file])
-
-                    except IndexError:
-                        print('file in folder {} not present!'.format(
-                            filepath))
-
-    return savedict
 
 
 def extract_data(topdir, savepath, routine='get_entro_ave',
