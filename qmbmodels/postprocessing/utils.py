@@ -85,7 +85,7 @@ def extract_single_model(topdir, descriptor, syspar, modpar):
 
         try:
 
-            file = glob('{}/*.hdf5'.format(filepath)[0])
+            file = glob('{}/*.hdf5'.format(filepath))[0]
 
         except IndexError:
             print('file in folder {} not present!'.format(filepath))
