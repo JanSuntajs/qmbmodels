@@ -1,7 +1,6 @@
 import numpy as np
 import h5py
 
-from . import data_extraction as dae
 from . import disorder as dis
 
 
