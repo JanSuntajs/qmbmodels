@@ -217,14 +217,15 @@ def reduce_variance(disorder_samples, mode, size, target_variance, epsilon):
     std_after = std_before
     # implement the zeroth mode (nothing happens)
     nsamples = disorder_samples.shape[0]
-
+    condition = np.arange(nsamples)
+    
     if mode == 0:
 
         nsamples_selected = nsamples
 
     # implement the first mode
 
-    if mode == 1:
+    elif mode == 1:
 
         condition = np.abs(sample_vars_sub) * np.sqrt(size - 1) < epsilon
         # how many samples were selected
@@ -234,7 +235,6 @@ def reduce_variance(disorder_samples, mode, size, target_variance, epsilon):
 
     elif mode == 2:
 
-        condition = np.arange(nsamples)
         indices = []
 
         while std_after * np.sqrt(size - 1) >= epsilon:
