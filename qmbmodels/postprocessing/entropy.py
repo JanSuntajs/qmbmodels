@@ -1,7 +1,7 @@
 import numpy as np
 import h5py
 
-from .disorder import reduce_variance
+from .disorder import reduce_variance, disorder_analysis
 
 
 footer_entro = """
@@ -18,9 +18,6 @@ Delta S: standard deviation of S
 size L: system size
 
 nener: number of energies obtained using partial diagonalization
-
-population_variance: the theoretical prediction for the variance of the
-disorder distribution
 
 target_variance: Variance of the disordered samples
 with which to compare the numerical results in the postprocessing
@@ -47,14 +44,20 @@ variance
 nsamples_rejected: nsamples - nsamples_selected
 
 mode: which postprocessing mode was selected
+
+population_variance: integer specifying whether theoretical prediction for
+the population variance was used in order calculate the target variance.
+1 if that is the case, 0 if not.
 """
 
 
-def entro_ave(h5file, target_variance, population_variance,
-              epsilon,
-              results_key='Entropy', disorder_key='dW',
+def entro_ave(h5file, results_key='Entropy',
+              disorder_key='dW',
+              target_variance=1. / 3.,
+              epsilon=0., population_variance=True,
               mode=0,
-              disorder_string='Hamiltonian_random_disorder_partial'):
+              disorder_string='Hamiltonian_random_disorder_partial',
+              ):
     """
     A routine for performing statistical analysis of the entanglement
     entropy results which also allows for performing the variance
@@ -72,14 +75,20 @@ def entro_ave(h5file, target_variance, population_variance,
     with which to compare the numerical results in the postprocessing
     steps if mode equals 1 or 2. Defaults to None as the argument is not
     required in the mode=0 case where postprocessing is not performed.
-
-    population_variance: {float}
-    Population variance of the selected disorder distribution.
+    See also the explanation for the population_variance parameter.
 
     epsilon: {float, None}
     Stopping criterion for the postprocessing variance reduction routines
     if mode=1 or mode=2. In the absence of postprocessing, epsilon is set
     to None.
+
+    population_variance: boolean
+    If True, target variance is the population variance of the
+    disorder distribution. In that case, the value of the target_variance
+    argument should be a numerical prefactor to the square of the
+    disorder parameter's strength: target_variance = dW**2 * target_variance
+    If False, target_variance is calculated as the mean of the distribution
+    of the sample variances.
 
     results_key: string, optional
     String specifying which results to load from the .hdf5 file. The argument
@@ -129,7 +138,7 @@ def entro_ave(h5file, target_variance, population_variance,
     size, nener: int
     System size and number of energies in the spectra, respectively.
 
-    population_variance, target_variance, epsilon: see above
+    target_variance, epsilon: see above
     in the Parameters section.
 
     std_before, std_after: float
@@ -143,6 +152,10 @@ def entro_ave(h5file, target_variance, population_variance,
 
     mode: int
     Which postprocessing mode was selected.
+
+    population_variance: int
+    Whether theoretical population variance was used to
+    estimate the target variance or not.
     """
 
     dW = nsamples = nener = ave_entro = std_entro \
@@ -162,6 +175,19 @@ def entro_ave(h5file, target_variance, population_variance,
                 entropy = file[key][()]
                 nsamples = file[key].attrs['nsamples']
                 size = file[key].attrs['L']
+                dW = np.float(file[key].attrs[disorder_key])
+
+                if not bool(mode):
+                    if population_variance:
+
+                        target_variance *= dW**2
+                    else:
+
+                        means_, variances, *rest = disorder_analysis(disorder,
+                                                                     size)
+                        target_variance = np.mean(variances)
+                else:
+                    target_variance = 0
 
                 # reduce variance
                 (condition, nsamples_dis, nsamples_selected,
@@ -196,6 +222,6 @@ def entro_ave(h5file, target_variance, population_variance,
         print('File {} not present!'.format(h5file))
 
     return (dW, ave_entro, entro_rescaled, std_entro, size, nener,
-            population_variance, target_variance, epsilon, std_before,
+            target_variance, epsilon, std_before,
             std_after, nsamples, nsamples_selected, nsamples_rejected,
-            mode)
+            mode, bool(population_variance))

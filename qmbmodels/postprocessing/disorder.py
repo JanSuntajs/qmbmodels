@@ -48,11 +48,11 @@ def disorder_analysis(samples, system_size):
     # realizations
     variances = np.var(samples, axis=1, ddof=1)
     # now get the variance of the variances
-    var_variances = np.var(variances)
+    std_variances = np.std(variances)
 
-    rescale_factor = 1. / np.sqrt(system_size - 1)
+    rescale_factor = np.sqrt(system_size - 1)
 
-    return means, variances, var_variances, rescale_factor
+    return means, variances, std_variances, rescale_factor
 
 
 def get_min_variance(topdir, descriptor, syspar, modpar, disorder_key,
@@ -105,10 +105,10 @@ def get_min_variance(topdir, descriptor, syspar, modpar, disorder_key,
 
         size = file[disorder_string].attrs['L']
 
-        means, variances, var_variances, rescale_factor = disorder_analysis(
+        means, variances, std_variances, rescale_factor = disorder_analysis(
             disorder, size)
 
-    return dW, means, variances, var_variances, rescale_factor
+    return dW, means, variances, std_variances, rescale_factor
 
 
 def reduce_variance(disorder_samples, mode, size, target_variance, epsilon):
