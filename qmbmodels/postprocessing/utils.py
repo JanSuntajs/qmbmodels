@@ -3,6 +3,7 @@ import os
 
 from collections import MutableMapping
 from contextlib import suppress
+from glob import glob
 
 
 def _extract_disorder(string, disorder_key):

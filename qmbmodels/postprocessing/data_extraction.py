@@ -129,6 +129,7 @@ def extract_data(topdir, savepath, routine='get_entro_ave',
                  partial=True, disorder_key='dW',
                  savename='entro_sweep',
                  reverse_order=False,
+                 collapse=False,
                  exclude_keys=[],
                  *args, **kwargs):
     """
@@ -177,7 +178,10 @@ def extract_data(topdir, savepath, routine='get_entro_ave',
 
             for savefolder in savedict[desc][syspar].keys():
 
-                savefolder_ = _join(sysdir, savefolder)
+                if (reverse_order and collapse):
+                    savefolder_ = sysdir
+                else:
+                    savefolder_ = _join(sysdir, savefolder)
 
                 if not os.path.isdir(savefolder_):
 

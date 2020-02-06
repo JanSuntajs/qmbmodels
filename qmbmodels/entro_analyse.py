@@ -2,7 +2,7 @@ from postprocessing import disorder as dis
 from postprocessing import data_extraction as dae
 
 
-topdir = ('/scratch/jan/qmbmobels/results/'
+topdir = ('/scratch/jan/qmbmodels/results/'
           'spin1d_xxz_get_entropy_si_target_ave_ener')
 savepath = ('/home/jan/'
             'Heisenberg_model_test_analysis/')
@@ -34,7 +34,7 @@ if __name__ == '__main__':
 
     for mode in [0, 1, 2]:
         kwargs_dict = {
-            'target_variance': 1. / 3.,
+            'target_variance': var_prefactor,
             'epsilon': epsilon_theor,
             'population_variance': True,
             'mode': mode,
@@ -45,4 +45,5 @@ if __name__ == '__main__':
                          partial=True, disorder_key='dW',
                          savename='entro_sweep_post', reverse_order=True,
                          exclude_keys=exclude_keys,
+                         collapse=True,
                          **kwargs_dict)
