@@ -7,46 +7,50 @@ from .disorder import reduce_variance, disorder_analysis
 footer_entro = """
 Each row is organised as follows:
 
-dW: disorder strength
+0) dW: disorder strength
 
-average_entropy S: average entropy for a given number of states and samples
-rescaled entropy S_re: |log(2) - 2**(2*LA - L - 1) / LA - S/LA|; L-> system,
+1) average_entropy S: average entropy for a given number of states and samples
+
+2) rescaled entropy S_re: |log(2) - 2**(2*LA - L - 1) / LA - S/LA|; L-> system,
 LA-> subsystem
 
-Delta S: standard deviation of S
+3) Delta S: standard deviation of S
 
-size L: system size
+4) Delta S_re: standard deviation of S_re
 
-nener: number of energies obtained using partial diagonalization
+5) size L: system size
 
-target_variance: Variance of the disordered samples
+6) nener: number of energies obtained using partial diagonalization
+
+7) target_variance: Variance of the disordered samples
 with which to compare the numerical results in the postprocessing
 steps if mode equals 1 or 2. Defaults to None as the argument is not
 required in the mode=0 case where postprocessing is not performed.
 
-epsilon: condition used to determine whether to select a given disorder
+8) epsilon: condition used to determine whether to select a given disorder
 distribution.
 If mode=1:
 If mode=2:
 
-dW_min: value of the disorder strength parameter for which the epsilon
+9) dW_min: value of the disorder strength parameter for which the epsilon
 was evaluated.
 
-variance_before: variance of variances of the disorder distributions before
+10) variance_before: variance of variances of the disorder distributions before
 post.
 
-variance_after: variance of variances of the disorder distributions after post.
+11) variance_after: variance of variances of the disorder distributions after
+post.
 
-nsamples: number of all the random samples
+12) nsamples: number of all the random samples
 
-nsamples_selected: number of the random disorder samples with an appropriate
-variance
+13) nsamples_selected: number of the random disorder samples with an
+appropriate variance.
 
-nsamples_rejected: nsamples - nsamples_selected
+14) nsamples_rejected: nsamples - nsamples_selected
 
-mode: which postprocessing mode was selected
+15) mode: which postprocessing mode was selected
 
-population_variance: integer specifying whether theoretical prediction for
+16) population_variance: integer specifying whether theoretical prediction for
 the population variance was used in order calculate the target variance.
 1 if that is the case, 0 if not.
 """
@@ -142,6 +146,9 @@ def entro_ave(h5file, results_key='Entropy',
     std_entro: float
     Standard deviation of the calculated entropies.
 
+    std_entro_rescaled: float
+    Standard deviation of the rescaled entropies.
+
     size, nener: int
     System size and number of energies in the spectra, respectively.
 
@@ -166,7 +173,8 @@ def entro_ave(h5file, results_key='Entropy',
     """
 
     dW = nsamples = nener = ave_entro = std_entro \
-        = size = entro_rescaled = nsamples_rejected \
+        = size = entro_rescaled = std_entro_rescaled \
+        = nsamples_rejected \
         = nsamples_selected \
         = std_before = std_after = None
 
@@ -216,6 +224,7 @@ def entro_ave(h5file, results_key='Entropy',
                         np.log(2) - (2**(2 * sub - size - 1)) / sub -
                         ave_entro / sub)
                     std_entro = np.std(entropy)
+                    std_entro_rescaled = np.std(entro_rescaled)
 
                     nsamples_rejected = nsamples - nsamples_selected
                 else:
@@ -231,7 +240,8 @@ def entro_ave(h5file, results_key='Entropy',
 
         print('File {} not present!'.format(h5file))
 
-    return (dW, ave_entro, entro_rescaled, std_entro, size, nener,
+    return (dW, ave_entro, entro_rescaled, std_entro, std_entro_rescaled,
+            size, nener,
             target_variance, epsilon, dW_min, std_before,
             std_after, nsamples, nsamples_selected, nsamples_rejected,
             mode, bool(population_variance))
