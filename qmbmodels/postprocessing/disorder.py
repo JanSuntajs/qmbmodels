@@ -218,7 +218,7 @@ def reduce_variance(disorder_samples, mode, size, target_variance, epsilon):
     # implement the zeroth mode (nothing happens)
     nsamples = disorder_samples.shape[0]
     condition = np.arange(nsamples)
-    
+
     if mode == 0:
 
         nsamples_selected = nsamples
@@ -237,17 +237,21 @@ def reduce_variance(disorder_samples, mode, size, target_variance, epsilon):
 
         indices = []
 
+        # indices of the largest deviations
+        argsortlist = np.argsort(np.abs(sample_vars_sub))[::-1]
+        i = 0
         while std_after * np.sqrt(size - 1) >= epsilon:
 
             # find the maximum deviation from the target
-            max_arg = np.argmax(np.abs(sample_vars_sub))
-            indices.append(max_arg)
+            indices.append(argsortlist[i])
 
             # remove the largest sample from the array
             disorder_samples = np.delete(disorder_samples, max_arg, 0)
 
             sample_vars, sample_vars_sub, std_after = _get_vars(
                 disorder_samples)
+
+            i += 1
 
         condition = np.delete(condition, indices)
         nsamples_selected = len(condition)
