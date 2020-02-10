@@ -331,7 +331,7 @@ def entro_post_analysis(h5file, results_key='Entropy',
 
                 variances_sub = np.abs(variances - target_variance)
                 # sort the variances
-                argsortlist = np.argsort(variances_sub)
+                argsortlist = np.argsort(variances_sub)[::-1]
 
                 check_shapes = (nsamples == nsamples_dis)
 
