@@ -53,5 +53,5 @@ if __name__ == '__main__':
                              partial=True, disorder_key='dW',
                              savename='entro_n_dependnce', reverse_order=True,
                              exclude_keys=model.exclude_keys,
-                             collapse=True,
+                             collapse=True, merge=False
                              **kwargs_dict)
