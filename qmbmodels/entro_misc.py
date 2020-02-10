@@ -1,7 +1,7 @@
 from postprocessing import disorder as dis
 from postprocessing import data_extraction as dae
 
-from .entro_analyse import PathSetter
+from entro_analyse import PathSetter
 
 topdir = ('/scratch/jan/qmbmodels/results/'
           'spin1d_xxz_get_entropy_si_target_ave_ener')
@@ -47,11 +47,11 @@ if __name__ == '__main__':
                 'target_variance': model.var_prefactor,
                 'population_variance': True,
             }
-            savepath_ = model.savepath
-            savepath = savepath_.format(epsilon_theor, mode)
+            savepath = model.savepath
+            
             dae.extract_data(topdir, savepath, routine='entro_analyse',
                              partial=True, disorder_key='dW',
                              savename='entro_n_dependnce', reverse_order=True,
                              exclude_keys=model.exclude_keys,
-                             collapse=True,
+                             collapse=True, merge=False,
                              **kwargs_dict)
