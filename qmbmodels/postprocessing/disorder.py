@@ -158,8 +158,8 @@ def reduce_variance(disorder_samples, mode, size, target_variance, epsilon):
     for different disorder realizations
 
     mode: int
-    Which way of variance reduction to choose, currently only 0, 1 and 2 are
-    supported.
+    Which way of variance reduction to choose, currently modes 0, 1, 2 and 3
+    are supported.
 
     size: int
     System size.

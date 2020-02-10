@@ -131,6 +131,7 @@ def extract_data(topdir, savepath, routine='get_entro_ave',
                  reverse_order=False,
                  collapse=False,
                  exclude_keys=[],
+                 merge=True,
                  *args, **kwargs):
     """
     A routine for extracting numerical
@@ -252,6 +253,12 @@ def extract_data(topdir, savepath, routine='get_entro_ave',
     (sub)folders within the topdir are to be excluded
     from the analysis.
 
+    merge: boolean
+    Whether to merge the results for different values of
+    the sweeping parameter in one file. If False, the
+    results for different values of sweeping parameters
+    are stored into different files.
+
     *args, **kwargs: arguments to be passed to the actual
     postprocessing routine.
 
@@ -314,20 +321,36 @@ def extract_data(topdir, savepath, routine='get_entro_ave',
 
                 vals = savedict[desc][syspar][savefolder]
                 print(vals)
-                data = np.zeros((len(vals), arr_shape), dtype=np.float64)
-
-                for i, value in enumerate(vals):
-
-                    data[i] = get_fun(value[1], results_key,
-                                      disorder_key, *args, **kwargs)
-
-                # sort according to disorder
-                data = data[data[:, 0].argsort()]
 
                 names = (syspar, savefolder)
                 if reverse_order:
                     names = names[::-1]
                 savename_ = '{}_{}_{}'.format(savename, *names)
-                print(_join(savefolder_, savename_))
-                np.savetxt(_join(savefolder_, savename_),
-                           data, footer=footer)
+                if merge:
+                    data = np.zeros((len(vals), arr_shape), dtype=np.float64)
+
+                    for i, value in enumerate(vals):
+
+                        data[i] = get_fun(value[1], results_key,
+                                          disorder_key, *args, **kwargs)
+
+                    # sort according to disorder
+                    data = data[data[:, 0].argsort()]
+
+                    print(_join(savefolder_, savename_))
+                    np.savetxt(_join(savefolder_, savename_),
+                               data, footer=footer)
+                else:
+
+                    data = []
+
+                    for i, value in enumerate(vals):
+
+                        result = get_fun(value[1], results_key,
+                                         disorder_key, *args, **kwargs)
+
+                        savename_ += '_{}_{:.3f}'.format(
+                            disorder_key, value[0])
+                        print(_join(savefolder_, savename_))
+                        np.savetxt(_join(savefolder_, savename_),
+                                   result, footer=footer)
