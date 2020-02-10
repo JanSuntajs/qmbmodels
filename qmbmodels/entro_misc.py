@@ -42,15 +42,14 @@ if __name__ == '__main__':
 
     for model in [pathsErgod, pathsIso]:
 
-        for mode in [0, 1, 2]:
-            kwargs_dict = {
-                'target_variance': model.var_prefactor,
-                'population_variance': True,
-            }
-            savepath = model.savepath
-            dae.extract_data(topdir, savepath, routine='entro_analyse',
-                             partial=True, disorder_key='dW',
-                             savename='entro_n_dependnce', reverse_order=True,
-                             exclude_keys=model.exclude_keys,
-                             collapse=True, merge=False,
-                             **kwargs_dict)
+        kwargs_dict = {
+            'target_variance': model.var_prefactor,
+            'population_variance': True,
+        }
+        savepath = model.savepath
+        dae.extract_data(topdir, savepath, routine='entro_analyse',
+                         partial=True, disorder_key='dW',
+                         savename='entro_n_dependnce', reverse_order=True,
+                         exclude_keys=model.exclude_keys,
+                         collapse=True, merge=False,
+                         **kwargs_dict)
