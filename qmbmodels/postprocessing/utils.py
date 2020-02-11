@@ -110,19 +110,3 @@ def delete_keys_from_dict(dictionary, keys):
     for value in dictionary.values():
         if isinstance(value, MutableMapping):
             delete_keys_from_dict(value, keys)
-
-
-def _preparation(file, results_key, disorder_key,
-                 disorder_string):
-
-    key = results_key
-
-    if ((disorder_string in file.keys()) and (key in file.keys())):
-
-        disorder = file[disorder_string][()]
-        result = file[key][()]
-        nsamples = file[key].attrs['nsamples']
-        nener = file[key].attrs['nener']
-        size = file[key].attrs['L']
-        dW = np.float(file[key].attrs[disorder_key])
-        
