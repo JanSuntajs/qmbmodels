@@ -230,289 +230,290 @@ def entro_ave(h5file, results_key='Entropy',
                         mode, epsilon, dW_min,
                         _entro_ave)
 
-    # def entro_ave(h5file, results_key='Entropy',
-    #               disorder_key='dW',
-    #               target_variance=1. / 3.,
-    #               epsilon=0.,
-    #               dW_min=0.,
-    #               population_variance=True,
-    #               mode=0,
-    #               disorder_string='Hamiltonian_random_disorder_partial',
-    #               ):
-    #     """
-    #     A routine for performing statistical analysis of the entanglement
-    #     entropy results which also allows for performing the variance
-    #     reduction postprocessing steps.
-
-    #     Parameters:
-    #     -----------
-
-    #     h5file: string
-    #     Filename of the .hdf5 file containing the numerical data to be
-    #     analysed.
-
-    #     target_variance: {float, None}
-    #     Variance of the disordered samples
-    #     with which to compare the numerical results in the postprocessing
-    #     steps if mode equals 1 or 2. Defaults to None as the argument is not
-    #     required in the mode=0 case where postprocessing is not performed.
-    #     See also the explanation for the population_variance parameter.
-
-    #     epsilon: {float, None}
-    #     Stopping criterion for the postprocessing variance reduction routines
-    #     if mode=1 or mode=2. In the absence of postprocessing, epsilon is set
-    #     to None.
-
-    #     dW_min: {float, None}
-    #     the disorder strength parameter value for which the epsilon
-    #     was evaluated. Set to None in the absence of postprocessing.
-
-    #     population_variance: boolean
-    #     If True, target variance is the population variance of the
-    #     disorder distribution. In that case, the value of the target_variance
-    #     argument should be a numerical prefactor to the square of the
-    #     disorder parameter's strength: target_variance = dW**2 * target_variance
-    #     If False, target_variance is calculated as the mean of the distribution
-    #     of the sample variances.
-
-    #     results_key: string, optional
-    #     String specifying which results to load from the .hdf5 file. The argument
-    #     is provided for compatibility of future versions of this code package
-    #     in case the key under which the entropy results are stored in the .hdf5
-    #     files might change in some manner.
-
-    #     disorder_key: string, optional
-    #     String specifying which parameter descriptor describes disorder.
-
-    #     mode: int, optional
-    #     Which of the postprocessing modes to use:
-    #             0: no postprocessing
-    #             1: first variance reduction scheme
-    #             2: second variance reduction scheme
-    #     See the documentation of the disorder.reduce_variance(...) function
-    #     for further details.
-
-    #     disorder_string: string, optional
-    #     String specifying the key under which the disordered spectra are
-    #     stored in thethe .hdf5 file. The argument
-    #     is provided for compatibility of future versions of this code package
-    #     in case the key under which the disorder samples are stored in the .hdf5
-    #     files might change in some manner.
-
-    #     Returns:
-    #     --------
-
-    #     dW: float
-    #     Value of the disorder strength parameter
-
-    #     ave_entro: float
-    #     Average entropy of the eigenstates in all the available
-    #     disorder realizations. Note that currently we only implement
-    #     the calculation for a symmetric bipartition (sub = size / 2).
-
-    #     entro_rescaled: float
-    #     Rescaled value of the entanglement entropy, where the rescaling
-    #     is as follows:
-    #     entro_rescaled = |log(2) - 2**(2 * sub - size - 1) / sub -
-    #                                   ave_entro / sub|
-    #     here, sub is the subsystem size.
-
-    #     std_entro: float
-    #     Standard deviation of the calculated entropies.
-
-    #     std_entro_rescaled: float
-    #     Standard deviation of the rescaled entropies.
-
-    #     size, nener: int
-    #     System size and number of energies in the spectra, respectively.
-
-    #     target_variance, epsilon: see above
-    #     in the Parameters section.
-
-    #     std_before, std_after: float
-    #     Standard deviation of variances of the disordered samples before
-    #     and after the postprocessing procedure.
-
-    #     nsamples, nsamples_selected, nsamples_rejected: int
-    #     Number of all the available samples (disorder realizations),
-    #     as well as the number of the rejected and selected ones in the
-    #     case of a postprocessing step.
+# def entro_ave(h5file, results_key='Entropy',
+#               disorder_key='dW',
+#               target_variance=1. / 3.,
+#               epsilon=0.,
+#               dW_min=0.,
+#               population_variance=True,
+#               mode=0,
+#               disorder_string='Hamiltonian_random_disorder_partial',
+#               ):
+#     """
+#     A routine for performing statistical analysis of the entanglement
+#     entropy results which also allows for performing the variance
+#     reduction postprocessing steps.
+
+#     Parameters:
+#     -----------
+
+#     h5file: string
+#     Filename of the .hdf5 file containing the numerical data to be
+#     analysed.
+
+#     target_variance: {float, None}
+#     Variance of the disordered samples
+#     with which to compare the numerical results in the postprocessing
+#     steps if mode equals 1 or 2. Defaults to None as the argument is not
+#     required in the mode=0 case where postprocessing is not performed.
+#     See also the explanation for the population_variance parameter.
+
+#     epsilon: {float, None}
+#     Stopping criterion for the postprocessing variance reduction routines
+#     if mode=1 or mode=2. In the absence of postprocessing, epsilon is set
+#     to None.
+
+#     dW_min: {float, None}
+#     the disorder strength parameter value for which the epsilon
+#     was evaluated. Set to None in the absence of postprocessing.
+
+#     population_variance: boolean
+#     If True, target variance is the population variance of the
+#     disorder distribution. In that case, the value of the target_variance
+#     argument should be a numerical prefactor to the square of the
+#     disorder parameter's strength: target_variance = dW**2 * target_variance
+#     If False, target_variance is calculated as the mean of the distribution
+#     of the sample variances.
+
+#     results_key: string, optional
+#     String specifying which results to load from the .hdf5 file. The argument
+#     is provided for compatibility of future versions of this code package
+#     in case the key under which the entropy results are stored in the .hdf5
+#     files might change in some manner.
+
+#     disorder_key: string, optional
+#     String specifying which parameter descriptor describes disorder.
+
+#     mode: int, optional
+#     Which of the postprocessing modes to use:
+#             0: no postprocessing
+#             1: first variance reduction scheme
+#             2: second variance reduction scheme
+#     See the documentation of the disorder.reduce_variance(...) function
+#     for further details.
+
+#     disorder_string: string, optional
+#     String specifying the key under which the disordered spectra are
+#     stored in thethe .hdf5 file. The argument
+#     is provided for compatibility of future versions of this code package
+#     in case the key under which the disorder samples are stored in the .hdf5
+#     files might change in some manner.
+
+#     Returns:
+#     --------
+
+#     dW: float
+#     Value of the disorder strength parameter
+
+#     ave_entro: float
+#     Average entropy of the eigenstates in all the available
+#     disorder realizations. Note that currently we only implement
+#     the calculation for a symmetric bipartition (sub = size / 2).
+
+#     entro_rescaled: float
+#     Rescaled value of the entanglement entropy, where the rescaling
+#     is as follows:
+#     entro_rescaled = |log(2) - 2**(2 * sub - size - 1) / sub -
+#                                   ave_entro / sub|
+#     here, sub is the subsystem size.
+
+#     std_entro: float
+#     Standard deviation of the calculated entropies.
+
+#     std_entro_rescaled: float
+#     Standard deviation of the rescaled entropies.
+
+#     size, nener: int
+#     System size and number of energies in the spectra, respectively.
+
+#     target_variance, epsilon: see above
+#     in the Parameters section.
+
+#     std_before, std_after: float
+#     Standard deviation of variances of the disordered samples before
+#     and after the postprocessing procedure.
 
-    #     mode: int
-    #     Which postprocessing mode was selected.
+#     nsamples, nsamples_selected, nsamples_rejected: int
+#     Number of all the available samples (disorder realizations),
+#     as well as the number of the rejected and selected ones in the
+#     case of a postprocessing step.
 
-    #     population_variance: int
-    #     Whether theoretical population variance was used to
-    #     estimate the target variance or not.
-    #     """
+#     mode: int
+#     Which postprocessing mode was selected.
 
-    #     dW = nsamples = nener = ave_entro = std_entro \
-    #         = size = entro_rescaled = std_entro_rescaled \
-    #         = nsamples_rejected \
-    #         = nsamples_selected \
-    #         = std_before = std_after = None
+#     population_variance: int
+#     Whether theoretical population variance was used to
+#     estimate the target variance or not.
+#     """
 
-    #     try:
+#     dW = nsamples = nener = ave_entro = std_entro \
+#         = size = entro_rescaled = std_entro_rescaled \
+#         = nsamples_rejected \
+#         = nsamples_selected \
+#         = std_before = std_after = None
 
-    #         with h5py.File(h5file, 'r') as file:
+#     try:
 
-    #             key = results_key
+#         with h5py.File(h5file, 'r') as file:
 
-    #             if ((disorder_string in file.keys()) and (key in file.keys())):
+#             key = results_key
 
-    #                 disorder = file[disorder_string][()]
-    #                 entropy = file[key][()]
-    #                 nsamples = file[key].attrs['nsamples']
-    #                 nener = file[key].attrs['nener']
-    #                 size = file[key].attrs['L']
-    #                 dW = np.float(file[key].attrs[disorder_key])
+#             if ((disorder_string in file.keys()) and (key in file.keys())):
 
-    #                 if bool(mode):
-    #                     if population_variance:
+#                 disorder = file[disorder_string][()]
+#                 entropy = file[key][()]
+#                 nsamples = file[key].attrs['nsamples']
+#                 nener = file[key].attrs['nener']
+#                 size = file[key].attrs['L']
+#                 dW = np.float(file[key].attrs[disorder_key])
 
-    #                         target_variance *= dW**2
-    #                     else:
+#                 if bool(mode):
+#                     if population_variance:
 
-    #                         means_, variances, *rest = disorder_analysis(disorder,
-    #                                                                      size)
-    #                         target_variance = np.mean(variances)
-    #                 else:
-    #                     epsilon = None
-    #                     dW_min = None
-    #                     target_variance = 0
+#                         target_variance *= dW**2
+#                     else:
 
-    #                 # reduce variance
-    #                 (condition, nsamples_dis, nsamples_selected,
-    #                  std_before, std_after) = reduce_variance(disorder, mode,
-    #                                                           size,
-    #                                                           target_variance,
-    #                                                           epsilon)
+#                         means_, variances, *rest = disorder_analysis(disorder,
+#                                                                      size)
+#                         target_variance = np.mean(variances)
+#                 else:
+#                     epsilon = None
+#                     dW_min = None
+#                     target_variance = 0
 
-    #                 check_shapes = (nsamples == nsamples_dis)
+#                 # reduce variance
+#                 (condition, nsamples_dis, nsamples_selected,
+#                  std_before, std_after) = reduce_variance(disorder, mode,
+#                                                           size,
+#                                                           target_variance,
+#                                                           epsilon)
 
-    #                 if check_shapes:
-    #                     sub = size / 2.
-    #                     entropy = entropy[condition]
-    #                     ave_entro = np.mean(entropy)
-    #                     entro_rescaled = np.abs(
-    #                         np.log(2) - (2**(2 * sub - size - 1)) / sub -
-    #                         ave_entro / sub)
-    #                     std_entro = np.std(entropy)
-    #                     std_entro_rescaled = np.std(entro_rescaled)
+#                 check_shapes = (nsamples == nsamples_dis)
 
-    #                     nsamples_rejected = nsamples - nsamples_selected
-    #                 else:
+#                 if check_shapes:
+#                     sub = size / 2.
+#                     entropy = entropy[condition]
+#                     ave_entro = np.mean(entropy)
+#                     entro_rescaled = np.abs(
+#                         np.log(2) - (2**(2 * sub - size - 1)) / sub -
+#                         ave_entro / sub)
+#                     std_entro = np.std(entropy)
+#                     std_entro_rescaled = np.std(entro_rescaled)
 
-    #                     print('Shape mismatch! Check the file: {}'.format(h5file))
+#                     nsamples_rejected = nsamples - nsamples_selected
+#                 else:
 
-    #             else:
+#                     print('Shape mismatch! Check the file: {}'.format(h5file))
 
-    #                 print('Key {} or {} not present in the HDF5 file!'.format(
-    #                     key, disorder_string))
+#             else:
 
-    #     except IOError:
+#                 print('Key {} or {} not present in the HDF5 file!'.format(
+#                     key, disorder_string))
 
-    #         print('File {} not present!'.format(h5file))
+#     except IOError:
 
-    #     return (dW, ave_entro, entro_rescaled, std_entro, std_entro_rescaled,
-    #             size, nener,
-    #             target_variance, epsilon, dW_min, std_before,
-    #             std_after, nsamples, nsamples_selected, nsamples_rejected,
-    #             mode, bool(population_variance))
+#         print('File {} not present!'.format(h5file))
 
-    def entro_post_analysis(h5file, results_key='Entropy',
-                            disorder_key='dW',
-                            target_variance=1. / 3.,
-                            population_variance=True,
-                            disorder_string='Hamiltonian_random_disorder_partial',
-                            ):
-        """
+#     return (dW, ave_entro, entro_rescaled, std_entro, std_entro_rescaled,
+#             size, nener,
+#             target_variance, epsilon, dW_min, std_before,
+#             std_after, nsamples, nsamples_selected, nsamples_rejected,
+#             mode, bool(population_variance))
 
-        """
-        output = []
 
-        try:
+def entro_post_analysis(h5file, results_key='Entropy',
+                        disorder_key='dW',
+                        target_variance=1. / 3.,
+                        population_variance=True,
+                        disorder_string='Hamiltonian_random_disorder_partial',
+                        ):
+    """
 
-            with h5py.File(h5file, 'r') as file:
+    """
+    output = []
 
-                key = results_key
+    try:
 
-                if ((disorder_string in file.keys()) and (key in file.keys())):
+        with h5py.File(h5file, 'r') as file:
 
-                    disorder = file[disorder_string][()]
-                    entropy = file[key][()]
-                    nsamples = file[key].attrs['nsamples']
-                    nsamples_dis = file[disorder_string].attrs['nsamples']
-                    nener = file[key].attrs['nener']
-                    size = file[key].attrs['L']
-                    dW = np.float(file[key].attrs[disorder_key])
+            key = results_key
 
-                    if population_variance:
+            if ((disorder_string in file.keys()) and (key in file.keys())):
 
-                        target_variance *= dW**2
-                    else:
+                disorder = file[disorder_string][()]
+                entropy = file[key][()]
+                nsamples = file[key].attrs['nsamples']
+                nsamples_dis = file[disorder_string].attrs['nsamples']
+                nener = file[key].attrs['nener']
+                size = file[key].attrs['L']
+                dW = np.float(file[key].attrs[disorder_key])
 
-                        means_, variances, *rest = disorder_analysis(disorder,
-                                                                     size)
-                        target_variance = np.mean(variances)
+                if population_variance:
 
-                    # the analysis part
-                    condition = np.arange(nsamples)
-                    indices = []
-                    output = []
+                    target_variance *= dW**2
+                else:
 
-                    (means, variances, std_variances,
-                     rescale_factor) = disorder_analysis(disorder, size)
+                    means_, variances, *rest = disorder_analysis(disorder,
+                                                                 size)
+                    target_variance = np.mean(variances)
 
-                    variances_sub = np.abs(variances - target_variance)
-                    # sort the variances
-                    argsortlist = np.argsort(variances_sub)[::-1]
+                # the analysis part
+                condition = np.arange(nsamples)
+                indices = []
+                output = []
 
-                    check_shapes = (nsamples == nsamples_dis)
+                (means, variances, std_variances,
+                 rescale_factor) = disorder_analysis(disorder, size)
 
-                    if check_shapes:
+                variances_sub = np.abs(variances - target_variance)
+                # sort the variances
+                argsortlist = np.argsort(variances_sub)[::-1]
 
-                        sub = size / 2.
-                        for i in range(nsamples):
+                check_shapes = (nsamples == nsamples_dis)
 
-                            indices.append(argsortlist[i])
-                            condition_ = np.delete(condition, indices)
+                if check_shapes:
 
-                            disorder_ = disorder[condition_]
+                    sub = size / 2.
+                    for i in range(nsamples):
 
-                            (*rest, std_variances_,
-                             rescale_factor_) = disorder_analysis(
-                                disorder_, size)
+                        indices.append(argsortlist[i])
+                        condition_ = np.delete(condition, indices)
 
-                            entropy_ = entropy[condition_]
+                        disorder_ = disorder[condition_]
 
-                            ave_entro = np.mean(entropy_)
-                            entro_rescaled = np.abs(
-                                np.log(2) - (2**(2 * sub - size - 1)) / sub -
-                                ave_entro / sub)
-                            std_entro = np.std(entropy_)
+                        (*rest, std_variances_,
+                         rescale_factor_) = disorder_analysis(
+                            disorder_, size)
 
-                            nsamples_selected = nsamples - (i + 1)
-                            output.append([i + 1, nsamples_selected,
-                                           std_variances_,
-                                           std_variances_ * rescale_factor_,
-                                           ave_entro,
-                                           entro_rescaled, std_entro,
-                                           target_variance,
-                                           bool(population_variance),
-                                           dW])
+                        entropy_ = entropy[condition_]
 
-                    else:
+                        ave_entro = np.mean(entropy_)
+                        entro_rescaled = np.abs(
+                            np.log(2) - (2**(2 * sub - size - 1)) / sub -
+                            ave_entro / sub)
+                        std_entro = np.std(entropy_)
 
-                        print('Shape mismatch! Check the file: {}'.format(h5file))
+                        nsamples_selected = nsamples - (i + 1)
+                        output.append([i + 1, nsamples_selected,
+                                       std_variances_,
+                                       std_variances_ * rescale_factor_,
+                                       ave_entro,
+                                       entro_rescaled, std_entro,
+                                       target_variance,
+                                       bool(population_variance),
+                                       dW])
 
                 else:
 
-                    print('Key {} or {} not present in the HDF5 file!'.format(
-                        key, disorder_string))
+                    print('Shape mismatch! Check the file: {}'.format(h5file))
 
-        except IOError:
+            else:
 
-            print('File {} not present!'.format(h5file))
+                print('Key {} or {} not present in the HDF5 file!'.format(
+                    key, disorder_string))
 
-        return np.array(output)
+    except IOError:
+
+        print('File {} not present!'.format(h5file))
+
+    return np.array(output)
