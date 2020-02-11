@@ -263,3 +263,82 @@ def reduce_variance(disorder_samples, mode, size, target_variance, epsilon):
                'mode {} not yet implemented!').format(mode))
 
     return condition, nsamples, nsamples_selected, std_before, std_after
+
+
+def _preparation(h5file, results_key, disorder_key,
+                 disorder_string, target_variance,
+                 population_variance, mode,
+                 epsilon, dW_min, analysis_fun,
+                 **kwargs):
+
+
+    # initialize the known output to None
+    dW = nsamples = nener = size \
+        = nsamples_selected \
+        = nsamples_rejected = std_before \
+        = std_after = None
+
+    # initalize the output of the analysis_fun
+    results = []
+    try:
+
+        with h5py.File(h5file, 'r') as file:
+
+            key = results_key
+
+            if ((disorder_string in file.keys()) and (key in file.keys())):
+
+                disorder = file[disorder_string][()]
+                result = file[key][()]
+                nsamples = file[key].attrs['nsamples']
+                nener = file[key].attrs['nener']
+                size = file[key].attrs['L']
+                dW = np.float(file[key].attrs[disorder_key])
+
+                if bool(mode):
+
+                    if population_variance:
+
+                        target_variance *= dW**2
+
+                    else:
+
+                        means, variances, *rest = disorder_analysis(disorder,
+                                                                    size)
+
+                        target_variance = np.mean(variances)
+
+                else:
+                    epsilon = None
+                    dW_min = None
+                    target_variance = 0
+
+                (condition, nsamples_dis, nsamples_selected,
+                 std_before, std_after) = reduce_variance(disorder, mode,
+                                                          size,
+                                                          target_variance,
+                                                          epsilon)
+
+                nsamples_rejected = nsamples - nsamples_selected
+                check_shapes = (nsamples == nsamples_dis)
+
+                if check_shapes:
+
+                    results = analysis_fun(result, condition, size)
+
+                else:
+
+                    print('Shape mismatch! Check the file {}'.format(h5file))
+
+            else:
+
+                print('Key {} or {} not present in the HDF5 file!'.format(
+                    key, disorder_string))
+
+    except IOError:
+
+        print('File {} not present!'.format(h5file))
+
+    return (dW, *results, size, nener, target_variance, epsilon, dW_min,
+            std_before, std_after, nsamples, nsamples_selected,
+            nsamples_rejected, mode, bool(population_variance))
