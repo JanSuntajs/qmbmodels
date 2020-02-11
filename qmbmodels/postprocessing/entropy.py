@@ -228,7 +228,7 @@ def entro_ave(h5file, results_key='Entropy',
                         disorder_string,
                         target_variance, population_variance,
                         mode, epsilon, dW_min,
-                        _entro_ave)
+                        _entro_ave, 4)
 
 # def entro_ave(h5file, results_key='Entropy',
 #               disorder_key='dW',

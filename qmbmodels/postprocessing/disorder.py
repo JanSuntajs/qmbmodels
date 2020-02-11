@@ -269,8 +269,8 @@ def _preparation(h5file, results_key, disorder_key,
                  disorder_string, target_variance,
                  population_variance, mode,
                  epsilon, dW_min, analysis_fun,
+                 analysis_fun_shape,
                  **kwargs):
-
 
     # initialize the known output to None
     dW = nsamples = nener = size \
@@ -279,7 +279,7 @@ def _preparation(h5file, results_key, disorder_key,
         = std_after = None
 
     # initalize the output of the analysis_fun
-    results = []
+    results = [None for i in range(analysis_fun_shape)]
     try:
 
         with h5py.File(h5file, 'r') as file:
