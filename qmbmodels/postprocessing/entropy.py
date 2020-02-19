@@ -275,6 +275,10 @@ def entro_ave(h5file, results_key='Entropy',
         results = np.array(results, dtype=object)
         size, nener, nsamples = results[[-12, -11, -5]]
 
+        if nsamples is None:
+
+            nsamples = 1
+
         dW, entro_calc = results[0], np.array(
             [results[i] for i in range(1, 5)]).T
 
