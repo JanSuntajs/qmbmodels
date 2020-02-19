@@ -20,12 +20,12 @@ class PathSetter(object):
 
 
 topdir = ('/scratch/jan/qmbmodels/results/'
-          'spin1d_xxz_get_entropy_si_target_ave_ener_nev_500')
+          'spin1d_xxz_get_entropy_si_target_ave_ener')
 
 paramsIso = (
     topdir,
     ('/home/jan/'
-     'XXZ_isotropic_entro_post_nev_500_epsilon_{:.3f}/mode_{}'),
+     'XXZ_isotropic_entro_post_nev_100_epsilon_{:.3f}/mode_{}'),
     'pbc_True_disorder_uniform_ham_type_spin1d',
     'L_12_nu_6',
     1.0,
@@ -39,7 +39,7 @@ paramsIso = (
 paramsErgod = (
     topdir,
     ('/home/jan/'
-     'XXZ_J1_J2_ergodic_post_nev_500_epsilon_{:.3f}/mode_{}'),
+     'XXZ_J1_J2_ergodic_post_nev_100_epsilon_{:.3f}/mode_{}'),
     'pbc_True_disorder_uniform_ham_type_spin1d',
     'L_12_nu_6',
     2.0,
@@ -56,7 +56,7 @@ pathsErgod = PathSetter(*paramsErgod)
 
 if __name__ == '__main__':
 
-    for model in [pathsErgod]:
+    for model in [pathsErgod, pathsIso]:
 
         (dW_min, means, variances,
          std_variances,
@@ -71,7 +71,7 @@ if __name__ == '__main__':
         # for the minimum std of the variances, which is, for a
         # box distribution, approximately equal to dW_min**2/3
         # this is \Sigma_0(W_min) from our notes
-        epsilon_theor = dW_min**2 * model.var_prefactor
+        epsilon_theor = dW_min**2 * model.var_prefactor - 0.1
         # epsilon_theor = 0.8
         # epsilon_theor = 0.2
         for mode in [0, 1, 2]:
@@ -84,9 +84,9 @@ if __name__ == '__main__':
             }
             savepath_ = model.savepath
             savepath = savepath_.format(epsilon_theor, mode)
-            dae.extract_data(topdir, savepath, routine='get_entro_ave',
+            dae.extract_data(topdir, savepath, routine='get_r',
                              partial=True, disorder_key='dW',
-                             savename='entro_sweep_post', reverse_order=True,
+                             savename='r_sweep_post', reverse_order=True,
                              exclude_keys=model.exclude_keys,
                              collapse=True,
                              **kwargs_dict)
