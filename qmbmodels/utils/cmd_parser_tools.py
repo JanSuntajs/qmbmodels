@@ -1,8 +1,45 @@
+"""
+Contains routines for parsing
+the command-line arguments.
+
+"""
 
 import argparse
 
 
 def str2bool(v):
+    """
+    Converts a string to a
+    boolean.
+
+    Parameters:
+    -----------
+
+    v: {boolean, string}
+       A string to be converted to a
+       boolean. If v is already
+       boolean, no conversion occurs.
+       If v is a string, the following
+       values are converted to True:
+       ('yes', 'true', 't', 'y', '1')
+       The following values are converted
+       to False:
+       ('no', 'false', 'f', 'n', '0')
+       Though the lists above are written
+       in lower-case, the input is
+       case-insensitive.
+
+    Returns:
+    --------
+    boolean
+
+    Raises:
+    -------
+
+    argparse.ArgumentTypeError:
+        If v is not boolean or in one of the
+        lists specified above.
+    """
     if isinstance(v, bool):
         return v
     if v.lower() in ('yes', 'true', 't', 'y', '1'):
@@ -15,23 +52,61 @@ def str2bool(v):
 
 def mode_parser():
     """
-    Parse the --queue optional argument
-    given to the main script.
+    Parse which programs should be invoked
+    once the main script is called.
 
-    To run the code on the cluster, use
-    the main script in the following way:
+    The function allows the user to specify whether
+    the code should be executed on a SLURM-based cluster
+    or on the head node/home machine. It also allows the
+    user to specify which tasks to execute (for instance,
+    diagonalization followed by calculation of some spectral
+    observables.)
 
-    ./slurmrunner.py --queue
+    The function makes sure that the following command-line
+    arguments are parsed:
 
-    Leave the --queue optional argument if
-    the code is not meant to be run on the
-    cluster.
+    Positional arguments:
+    mode: list
+          Contains a list of strings which specify which
+          tasks to perform. Entries of the list can be:
+          'diag', 'sinvert', 'sinvert_short', 'gaps', 'gaps_partial',
+          'hdf5', 'folder'.
+          If mode is not specified, the default value ['diag']
+          is assumed which would invoke a diagonalization
+          procedure.
+
+    Optional arguments:
+    "-q" or "--queue" (short and long form, respectively):
+        Add this argument to your main script if the latter
+        is to be performed on a SLURM-based cluster. Ommit
+        othervise. Ordering the program to run jobs on a
+        cluster is thus achieved as follows:
+        python <mainscript.py> --queue ...(some other commands)
+        where <mainscript.py> is our main script.
+
+    "--eigvecs": whether the diagonalization job should also
+                 calculate the eigenvectors. NOTE: for now,
+                 this functionality has not yet been made
+                 functional so adding the "--eigvecs" command-line
+                 argument really has no effect whatsoever.
+
+    Returns
+    -------
+
+    args.queue: boolean
+                Whether the job is to be performed on a cluster (if True)
+                or not.
+    args.mode: list
+               A list of strings that corresponds to the mode command-line
+               argument.
     """
 
+    # provide a description
     parser = argparse.ArgumentParser(prog='Run code on a slurm-based cluster '
                                      'or on the head node/home machine and '
                                      'specify which task to execute.')
 
+    # if -q or --queue cmd-arg is present, store its value as true
     parser.add_argument("-q", "--queue",
                         help="Whether the job is ran in the slurm "
                         "queue or not.", action="store_true")

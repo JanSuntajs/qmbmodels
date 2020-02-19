@@ -1,9 +1,32 @@
 """
-This module defines
-some syspar and modpar
-keys that are used commonly
-in all models (imbrie, heisenberg
-etc.)
+Specifies which system and module
+parameter keys are used in all the
+physical models.
+
+Attributes:
+-----------
+
+comm_syspar_keys: list
+    Which system parameter descriptor keys are common
+    across all the models used.
+
+    All the models make use of the information
+    about the validity of the periodic boundary
+    conditions ('pbc'), type of the disorder ('disorder')
+    and type of the hamiltonian used ('ham_type', can
+    be 'spin1d', 'ferm1d', 'free1d').
+
+comm_modpar_keys: list
+    Which module parameter keys are common across all
+    the models used.
+
+    The contents of this list refer to the seeds used
+    in the generation of random potentials used in the
+    Hamiltonians.
+
+minmax_seed_default: dict
+    Provides default values for the values
+    corresponding to the comm_modpar_keys.
 
 """
 

@@ -1,6 +1,7 @@
 """
-This model provides functions for creating
-the most commonly used disorder distributions.
+Provides functions for creating the most commonly
+used disorder distributions.
+
 In general, apart from the system size L and
 disorder type, each disorder distribution
 should have two key parameters:
@@ -12,22 +13,21 @@ For disorder distributions centered at the
 origin, the dependence of the variance on
 the dW parameter should be the following:
 
-uniform:
+Uniform:
 
     rho^2 = dW^2 / 3
 
-binary:
+Binary:
 
     rho^2 = dW^2
 
-gaussian:
+Gaussian:
 
     rho^2 = dW^2
 
-cosuniform (cosine of a random number:
+Cosuniform (cosine of a random number:
 
     rho^2 = dW^2 / 2
-
 
 
 """
@@ -35,9 +35,10 @@ import numpy as np
 
 _available_disorders = ['none', 'uniform', 'binary', 'gaussian',
                         'incomm', 'cosuniform', 'powerlaw']
+"""array_like: specifies which types of disorder are currently implemented."""
 
 
-def get_disorder_dist(L, disorder_type='none', *params):
+def get_disorder_dist(L, disorder_type='none', *args):
     """
     A function that returns some of the most commonly
     used disorder types used in our calculations. The
@@ -45,7 +46,12 @@ def get_disorder_dist(L, disorder_type='none', *params):
     random potential disorder and/or random exchange
     couplings.
 
-    parameters:
+    Parameters:
+    -----------
+    L: int
+            Integer specifying the system size, or, more
+            specifically, the number of the random coupling
+            constants.
 
     disorder_type: string, optional
                 String specifying from which distribution the
@@ -54,26 +60,27 @@ def get_disorder_dist(L, disorder_type='none', *params):
                 'uniform', 'binary', 'gaussian', 'incommensurate',
                 'cosuniform' (cosine of a uniform variable)
                 'none'
-        L: int
-                Integer specifying the system size, or, more
-                specifically, the number of the random coupling
-                constants.
 
-        params: tuple
-                Specifying disorder-specific parameters.
-                Some common structure should be considered:
+    *args: tuple
+            Specifying disorder-specific parameters.
+            Some common structure should be considered:
 
-                params[0] -> W is usually the center of the
-                disorder distribution
-                params[1] -> dW is usually the width of the
-                disorder distribution
-                params[-1] -> seed. The random seed integer
-                should always come last.
+            args[0] -> W is usually the center of the
+            disorder distribution
+            args[1] -> dW is usually the width of the
+            disorder distribution
+            args[-1] -> seed. The random seed integer
+            should always come last.
 
-        returns:
+    Returns:
+    --------
+    disorder: ndarray
+            Array with the random field values.
 
-        disorder: ndarray
-                Array with the random field values.
+    Raises:
+    -------
+    ValueError
+        If disorder_type is not recognized.
 
     """
 
@@ -83,14 +90,18 @@ def get_disorder_dist(L, disorder_type='none', *params):
                        '{}').format(disorder_type, _available_disorders)
         raise ValueError(err_message)
 
+    # this try/except block handles the cases
+    # in which all the args are not specified
+    # because they may not be needed to initialize
+    # that particular disorder type
     try:
-        W = params[0]
-        dW = params[1]
-        seed = params[-1]
+        W = args[0]
+        dW = args[1]
+        seed = args[-1]
+        np.random.seed(seed=seed)
     except IndexError:
         pass
 
-    np.random.seed(seed=seed)
     if disorder_type == 'none':
 
         disorder = np.zeros(L, dtype=np.float64)

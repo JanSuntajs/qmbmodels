@@ -92,16 +92,22 @@ Each column is organised as follows:
 """
 
 
-def _entro_ave(entropy, condition, size):
+def _entro_ave(entropy, condition, size, sample_averaging=False):
 
     sub = size / 2.
     entropy = entropy[condition]
-    ave_entro = np.mean(entropy)
+
+    if sample_averaging:
+        axis = 1
+    else:
+        axis = None
+
+    ave_entro = np.mean(entropy, axis=axis)
     entro_rescaled = np.abs(
         np.log(2) - (2**(2 * sub - size - 1)) / sub -
         ave_entro / sub)
-    std_entro = np.std(entropy)
-    std_entro_rescaled = np.std(entro_rescaled)
+    std_entro = np.std(entropy, axis=axis)
+    std_entro_rescaled = np.std(entro_rescaled, axis=axis)
 
     return (ave_entro, entro_rescaled, std_entro, std_entro_rescaled)
 
@@ -114,6 +120,7 @@ def entro_ave(h5file, results_key='Entropy',
               population_variance=True,
               mode=0,
               disorder_string='Hamiltonian_random_disorder_partial',
+              sample_averaging=False
               ):
     """
     A routine for performing statistical analysis of the entanglement
@@ -228,7 +235,8 @@ def entro_ave(h5file, results_key='Entropy',
                         disorder_string,
                         target_variance, population_variance,
                         mode, epsilon, dW_min,
-                        _entro_ave, 4)
+                        _entro_ave, 4,
+                        sample_averaging=sample_averaging)
 
 
 def entro_post_analysis(h5file, results_key='Entropy',

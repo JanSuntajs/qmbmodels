@@ -324,7 +324,7 @@ def _preparation(h5file, results_key, disorder_key,
 
                 if check_shapes:
 
-                    results = analysis_fun(result, condition, size)
+                    results = analysis_fun(result, condition, size, **kwargs)
 
                 else:
 

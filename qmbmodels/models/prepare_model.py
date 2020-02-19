@@ -19,7 +19,13 @@ def _importer(model, mode='select'):
     Parameters:
     -----------
 
-    model: dict
+    model: {string, dict}
+           Depending on the input of the 'mode'
+           argument, the 'model' argument can be
+           either a string, if mode == 'select'
+           or a dict containing the information
+           about the selected module if
+           mode == 'import'
 
     mode: string
           either 'select' or 'import',
@@ -54,7 +60,7 @@ def select_model():
     to determine which hamiltonian should be used
     base on the provided command-line arguments.
 
-    returns
+    Returns
     -------
 
     mod: python module with a Hamiltonian model definition
@@ -79,6 +85,20 @@ def import_model(model):
     it imports an appropriate hamiltonian
     model so that the appropriate modpar
     and syspar keys can be used.
+
+    Parameters:
+    -----------
+
+    model: string
+           Specifies which hamiltonian module
+           to import.
+
+    Returns:
+    --------
+
+    mod: python module containing the definitions
+         of the used hamiltonian (for instance,
+         imbrie.py or heisenberg.py)
 
     """
 
