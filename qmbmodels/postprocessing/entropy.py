@@ -286,7 +286,7 @@ def entro_ave(h5file, results_key='Entropy',
 
         for i in range(4):
 
-            results[:, i + 1] = entro_calc[i]
+            results[:, i + 1] = entro_calc[:,i]
 
         return results
 
