@@ -277,6 +277,7 @@ def entro_ave(h5file, results_key='Entropy',
         if any([elt is None for elt in entro_calc]):
             entro_calc = np.zeros((nsamples, 4))
             entro_calc[:, :] = None
+            print('entro_ave info: Setting to None!')
 
         results = np.zeros((nsamples, 8))
         results[:, 0] = dW
