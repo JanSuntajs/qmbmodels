@@ -131,7 +131,10 @@ def _entro_ave(entropy, condition, size, sample_averaging=True):
         np.log(2) - (2**(2 * sub - size - 1)) / sub -
         ave_entro / sub)
     std_entro = np.std(entropy, axis=axis)
-    std_entro_rescaled = 1.
+    if sample_averaging:
+        std_entro_rescaled = 1.
+    else:
+        std_entro_rescaled = np.ones_like(std_entro)
 
     output = (ave_entro, entro_rescaled, std_entro, std_entro_rescaled)
     if sample_averaging:
