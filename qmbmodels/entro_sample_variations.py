@@ -61,11 +61,13 @@ if __name__ == '__main__':
         kwargs_dict = {
             'target_variance': model.var_prefactor,
             'population_variance': True,
+            'sample_averaging': False,
         }
         savepath = model.savepath
-        dae.extract_data(topdir, savepath, routine='entro_analyse',
+        dae.extract_data(topdir, savepath, routine='get_entro_ave_samples',
                          partial=True, disorder_key='dW',
-                         savename='entro_n_dependnce', reverse_order=True,
+                         savename='entro_no_sample_averages',
+                         reverse_order=True,
                          exclude_keys=model.exclude_keys,
                          collapse=True, merge=False,
                          **kwargs_dict)
