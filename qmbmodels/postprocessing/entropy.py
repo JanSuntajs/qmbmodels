@@ -123,7 +123,7 @@ def _entro_ave(entropy, condition, size, sample_averaging=True):
     if sample_averaging:
         axis = None
     else:
-        axis = False
+        axis = 1
 
     ave_entro = np.mean(entropy, axis=axis)
     entro_rescaled = np.abs(
