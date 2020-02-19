@@ -25,7 +25,7 @@ topdir = ('/scratch/jan/qmbmodels/results/'
 paramsIso = (
     topdir,
     ('/home/jan/'
-     'XXZ_isotropic_entro_post_nev_100_n_dependence'),
+     'XXZ_isotropic_entro_post_sample_variations'),
     'pbc_True_disorder_uniform_ham_type_spin1d',
     'L_12_nu_6',
     1.0,
@@ -39,7 +39,7 @@ paramsIso = (
 paramsErgod = (
     topdir,
     ('/home/jan/'
-     'XXZ_J1_J2_ergodic_post_nev_100_n_dependence'),
+     'XXZ_J1_J2_ergodic_post_sample_variations'),
     'pbc_True_disorder_uniform_ham_type_spin1d',
     'L_12_nu_6',
     2.0,

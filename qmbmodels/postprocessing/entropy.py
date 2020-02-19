@@ -131,7 +131,7 @@ def _entro_ave(entropy, condition, size, sample_averaging=True):
         np.log(2) - (2**(2 * sub - size - 1)) / sub -
         ave_entro / sub)
     std_entro = np.std(entropy, axis=axis)
-    std_entro_rescaled = np.std(entro_rescaled, axis=axis)
+    std_entro_rescaled = 1.
 
     output = (ave_entro, entro_rescaled, std_entro, std_entro_rescaled)
     if sample_averaging:
@@ -287,7 +287,7 @@ def entro_ave(h5file, results_key='Entropy',
 
         for i in range(4):
 
-            results[:, i + 1] = entro_calc[:,i]
+            results[:, i + 1] = entro_calc[:, i]
 
         return results
 
