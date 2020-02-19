@@ -20,12 +20,12 @@ from postprocessing import data_extraction as dae
 from entro_analyse import PathSetter
 
 topdir = ('/scratch/jan/qmbmodels/results/'
-          'spin1d_xxz_get_entropy_si_L_12_n_dependence')
+          'spin1d_xxz_get_entropy_si_target_ave_ener')
 
 paramsIso = (
     topdir,
     ('/home/jan/'
-     'XXZ_isotropic_L_12_n_dependence'),
+     'XXZ_isotropic_entro_post_nev_100_n_dependence'),
     'pbc_True_disorder_uniform_ham_type_spin1d',
     'L_12_nu_6',
     1.0,
@@ -39,7 +39,7 @@ paramsIso = (
 paramsErgod = (
     topdir,
     ('/home/jan/'
-     'XXZ_J1_J2_ergodic_L_12_n_dependence'),
+     'XXZ_J1_J2_ergodic_post_nev_100_n_dependence'),
     'pbc_True_disorder_uniform_ham_type_spin1d',
     'L_12_nu_6',
     2.0,
@@ -56,16 +56,18 @@ pathsErgod = PathSetter(*paramsErgod)
 
 if __name__ == '__main__':
 
-    for model in [pathsErgod]:
+    for model in [pathsErgod, pathsIso]:
 
         kwargs_dict = {
             'target_variance': model.var_prefactor,
             'population_variance': True,
+            'sample_averaging': False,
         }
         savepath = model.savepath
-        dae.extract_data(topdir, savepath, routine='entro_analyse',
+        dae.extract_data(topdir, savepath, routine='get_entro_ave_samples',
                          partial=True, disorder_key='dW',
-                         savename='entro_n_dependnce', reverse_order=True,
+                         savename='entro_no_sample_averages',
+                         reverse_order=True,
                          exclude_keys=model.exclude_keys,
                          collapse=True, merge=False,
                          **kwargs_dict)

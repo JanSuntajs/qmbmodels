@@ -87,21 +87,50 @@ Each column is organised as follows:
 
 9) dW -> the value of the disorder strength parameter
 
+"""
 
+footer_entro_no_sample_averaging = """
+
+Each column is organised as follows:
+
+0) dW -> value of the disorder parameter
+
+1) S: average entropy of each sample (averaged over different eigenstates)
+
+2) Rescaled entropy S_re of the S quantity under 1). The rescaling is performed
+   according to the equation:
+    |log(2) - 2**(2*LA - L - 1) / LA - S/LA|; L-> system,
+    LA-> subsystem
+
+3) Standard deviation of the entropy S for each sample
+
+4) Standard deviation of the rescaled entropy under 2) for each sample.
+
+5) System size.
+
+6) Number of energies in the spectrum.
+
+7) Number of samples.
 
 """
 
 
-def _entro_ave(entropy, condition, size):
+def _entro_ave(entropy, condition, size, sample_averaging=True):
 
     sub = size / 2.
     entropy = entropy[condition]
-    ave_entro = np.mean(entropy)
+
+    if sample_averaging:
+        axis = None
+    else:
+        axis = False
+
+    ave_entro = np.mean(entropy, axis=axis)
     entro_rescaled = np.abs(
         np.log(2) - (2**(2 * sub - size - 1)) / sub -
         ave_entro / sub)
-    std_entro = np.std(entropy)
-    std_entro_rescaled = np.std(entro_rescaled)
+    std_entro = np.std(entropy, axis=axis)
+    std_entro_rescaled = np.std(entro_rescaled, axis=axis)
 
     return (ave_entro, entro_rescaled, std_entro, std_entro_rescaled)
 
@@ -114,7 +143,7 @@ def entro_ave(h5file, results_key='Entropy',
               population_variance=True,
               mode=0,
               disorder_string='Hamiltonian_random_disorder_partial',
-              ):
+              sample_averaging=True):
     """
     A routine for performing statistical analysis of the entanglement
     entropy results which also allows for performing the variance
@@ -224,11 +253,28 @@ def entro_ave(h5file, results_key='Entropy',
     estimate the target variance or not.
     """
 
-    return _preparation(h5file, results_key, disorder_key,
-                        disorder_string,
-                        target_variance, population_variance,
-                        mode, epsilon, dW_min,
-                        _entro_ave, 4)
+    results = _preparation(h5file, results_key, disorder_key,
+                           disorder_string,
+                           target_variance, population_variance,
+                           mode, epsilon, dW_min,
+                           _entro_ave, 4,
+                           sample_averaging=sample_averaging)
+    if sample_averaging:
+        return results
+    else:
+        results = np.array(results, dtype=object)
+        dW, entro_calc = results[0], results[1:5]
+        size, nener, nsamples = results[[6, 7, 13]]
+
+        results = np.zeros((nsamples, 8))
+        results[0, :] = dW
+        results[-3, :] = size
+        results[-2, :] = nener
+        results[-1, :] = nsamples
+
+        results[1:5] = entro_cals
+
+        return results
 
 
 def entro_post_analysis(h5file, results_key='Entropy',
