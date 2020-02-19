@@ -263,6 +263,8 @@ def entro_ave(h5file, results_key='Entropy',
                            mode, epsilon, dW_min,
                            _entro_ave, 4,
                            sample_averaging=sample_averaging)
+    print(results)
+
     if sample_averaging:
         return results
     else:
