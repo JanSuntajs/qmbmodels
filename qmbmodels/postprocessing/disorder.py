@@ -540,4 +540,4 @@ def _preparation(h5file, results_key, disorder_key,
 
         output[:, i] = vals[i]
 
-    return vals
+    return output

@@ -269,8 +269,6 @@ def entro_ave(h5file, results_key='Entropy',
                            sample_averaging=sample_averaging,
                            *args,
                            **kwargs)
-    print(results)
-
     return results
 
 
