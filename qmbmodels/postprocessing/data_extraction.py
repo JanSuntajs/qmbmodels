@@ -352,5 +352,6 @@ def extract_data(topdir, savepath, routine='get_entro_ave',
                         savename_temp = savename_ + '_{}_{}'.format(
                             disorder_key, value[0])
                         print(_join(savefolder_, savename_))
+                        print(result)
                         np.savetxt(_join(savefolder_, savename_temp),
                                    result, footer=footer)

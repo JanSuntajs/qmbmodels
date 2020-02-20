@@ -21,13 +21,13 @@ from spectral_stats.spectra import Spectra
 from utils import set_mkl_lib
 from utils.cmd_parser_tools import arg_parser, arg_parser_general
 
-_sff_keys = ['sff_min_tau', 'sff_max_tau', 'sff_n_tau',
-             'sff_eta', 'sff_unfolding_n', 'sff_filter']
+_sff_keys = ['lvl_min_tau', 'lvl_max_tau', 'lvl_n_tau',
+             'lvl_unfolding_n', ]
 
 _sff_parse_dict = {'lvl_min_tau': [float, -5],
                    'lvl_max_tau': [float, 2],
                    'lvl_n_tau': [int, 1000],
-                   'lvl_unfolding_n': [int, 3],}
+                   'lvl_unfolding_n': [int, 3], }
 
 # which attributes of the Spectra class instance to exclude
 # from the final hdf5 file
@@ -151,7 +151,6 @@ if __name__ == '__main__':
 
             attrs.update({'nener': spc.nener, 'nsamples': spc.nsamples,
                           'nener0': spc._nener, 'nsamples0': spc._nsamples})
-
 
             # add the actual sff values
             if 'SFF_spectra' not in f.keys():
