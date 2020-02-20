@@ -270,7 +270,191 @@ def _preparation(h5file, results_key, disorder_key,
                  population_variance, mode,
                  epsilon, dW_min, analysis_fun,
                  analysis_fun_shape,
+                 sample_averaging=True,
+                 *args,
                  **kwargs):
+    """
+    A function used for preparation and pre-processing
+    of the numerical results used in our subsequent
+    analysis. In actual usage, this function is meant
+    to be wrapped by some other (wrapper) function.
+
+    Parameters:
+    -----------
+
+    Parameters:
+    -----------
+
+    h5file: string
+    Filename of the .hdf5 file containing the numerical data to be
+    analysed.
+
+    results_key: string, optional
+    String specifying which results to load from the .hdf5 file.
+    The argument
+    is provided for compatibility of future versions of this code package
+    in case the key under which the entropy results are stored in the .hdf5
+    files might change in some manner.
+
+    disorder_key: string, optional
+    String specifying which parameter descriptor describes disorder.
+    target_variance: {float, None}
+    Variance of the disordered samples
+    with which to compare the numerical results in the postprocessing
+    steps if mode equals 1 or 2. Defaults to None as the argument is not
+    required in the mode=0 case where postprocessing is not performed.
+    See also the explanation for the population_variance parameter.
+
+    disorder_string: string, optional
+    String specifying the key under which the disordered spectra are
+    stored in thethe .hdf5 file. The argument
+    is provided for compatibility of future versions of this code package
+    in case the key under which the disorder samples are stored in the
+    .hdf5 files might change in some manner.
+
+    target_variance: {float, None}
+    Variance of the disordered samples
+    with which to compare the numerical results in the postprocessing
+    steps if mode equals 1 or 2. Defaults to None as the argument is not
+    required in the mode=0 case where postprocessing is not performed.
+    See also the explanation for the population_variance parameter.
+
+    population_variance: boolean
+    If True, target variance is the population variance of the
+    disorder distribution. In that case, the value of the target_variance
+    argument should be a numerical prefactor to the square of the
+    disorder parameter's strength: target_variance =
+    dW**2 * target_variance
+    If False, target_variance is calculated as the mean of the distribution
+    of the sample variances.
+
+    mode: int, optional
+    Which of the postprocessing modes to use:
+            0: no postprocessing
+            1: first variance reduction scheme
+            2: second variance reduction scheme
+    See the documentation of the disorder.reduce_variance(...) function
+    for further details.
+
+    epsilon: {float, None}
+    Stopping criterion for the postprocessing variance reduction routines
+    if mode=1 or mode=2. In the absence of postprocessing, epsilon is set
+    to None.
+
+    dW_min: {float, None}
+    the disorder strength parameter value for which the epsilon
+    was evaluated. Set to None in the absence of postprocessing.
+
+    analysis_fun: function
+    A function from the available_routines._routines_dict which
+    is used to process the numerical results. The function should
+    have the following interface:
+    analysis_fun(result, condition, size, **kwargs)
+    Where:
+        result: 2D ndarray
+        condition: array-like, used to slice the result array
+        size: int
+
+    analysis_fun_shape: int
+    Length of the analysis_fun output tuple -> the number
+    of objects returned by the analysis_fun function.
+
+    sample_averaging: boolean, optional
+    Defaults to True, hence the return of the function is
+    a tuple of scalar values -> spectral observables are
+    calculated for each sample independently and the
+    average (or some other moment) of the sample observables
+    is then taken.
+    If False, no sample averaging is performed and the return
+    is a tuple of array-like objects. This is particulary
+    suited for analysis functions in which we are interested
+    in the dependence of results on particular disorder
+    samples/realizations.
+    Examples of such an analysis would be:
+        - storing spectral observables for each disorder
+          realization independently without performing
+          the sample averaging
+        - Calculating spectral observables as a function
+          of the disorder samples included
+        - etc.
+
+    Returns:
+    --------
+
+    dW: float
+    Value of the disorder strength parameter
+
+    ave_entro: float
+    Average entropy of the eigenstates in all the available
+    disorder realizations. Note that currently we only implement
+    the calculation for a symmetric bipartition (sub = size / 2).
+
+    entro_rescaled: float
+    Rescaled value of the entanglement entropy, where the rescaling
+    is as follows:
+    entro_rescaled = |log(2) - 2**(2 * sub - size - 1) / sub -
+                                  ave_entro / sub|
+    here, sub is the subsystem size.
+
+    std_entro: float
+    Standard deviation of the calculated entropies.
+
+    std_entro_rescaled: float
+    Standard deviation of the rescaled entropies.
+
+    size, nener: int
+    System size and number of energies in the spectra, respectively.
+
+    target_variance, epsilon: see above
+    in the Parameters section.
+
+    std_before, std_after: float
+    Standard deviation of variances of the disordered samples before
+    and after the postprocessing procedure.
+
+    nsamples, nsamples_selected, nsamples_rejected: int
+    Number of all the available samples (disorder realizations),
+    as well as the number of the rejected and selected ones in the
+    case of a postprocessing step.
+
+    mode: int
+    Which postprocessing mode was selected.
+
+    population_variance: int
+    Whether theoretical population variance was used to
+    estimate the target variance or not.
+
+    Returns:
+    --------
+
+    dW: float
+    Value of the disorder strength parameter
+
+    *results: the output of the analysis_fun function.
+
+    size, nener: int
+    System size and number of energies in the spectra, respectively.
+
+    target_variance, epsilon: see above
+    in the Parameters section.
+
+    std_before, std_after: float
+    Standard deviation of variances of the disordered samples before
+    and after the postprocessing procedure.
+
+    nsamples, nsamples_selected, nsamples_rejected: int
+    Number of all the available samples (disorder realizations),
+    as well as the number of the rejected and selected ones in the
+    case of a postprocessing step.
+
+    mode: int
+    Which postprocessing mode was selected.
+
+    population_variance: int
+    Whether theoretical population variance was used to
+    estimate the target variance or not.
+
+    """
 
     # initialize the known output to None
     dW = nsamples = nener = size \
@@ -280,6 +464,7 @@ def _preparation(h5file, results_key, disorder_key,
 
     # initalize the output of the analysis_fun
     results = [None for i in range(analysis_fun_shape)]
+    nrows = 1
     try:
 
         with h5py.File(h5file, 'r') as file:
@@ -324,7 +509,11 @@ def _preparation(h5file, results_key, disorder_key,
 
                 if check_shapes:
 
-                    results = analysis_fun(result, condition, size, **kwargs)
+                    results = analysis_fun(result, condition, size,
+                                           sample_averaging=sample_averaging,
+                                           *args,
+                                           **kwargs)
+                    nrows = len(results[0])
 
                 else:
 
@@ -339,6 +528,16 @@ def _preparation(h5file, results_key, disorder_key,
 
         print('File {} not present!'.format(h5file))
 
-    return (dW, *results, size, nener, target_variance, epsilon, dW_min,
+    nres = len(results)
+    ncols = nres + 13
+    output = np.zeros((nrows, ncols))
+
+    vals = (dW, *results, size, nener, target_variance, epsilon, dW_min,
             std_before, std_after, nsamples, nsamples_selected,
             nsamples_rejected, mode, bool(population_variance))
+
+    for i in range(ncols):
+
+        output[:, i] = vals[i]
+
+    return vals

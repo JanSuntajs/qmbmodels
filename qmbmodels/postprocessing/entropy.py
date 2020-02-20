@@ -115,12 +115,10 @@ Each column is organised as follows:
 """
 
 
-def _entro_ave(entropy, condition, size, sample_averaging=True):
+def _entro_ave(entropy, condition, size, sample_averaging=True, *args, **kwargs):
 
     sub = size / 2.
     entropy = entropy[condition]
-    print('_entro_ave info: entropy: {}'.format(entropy))
-    print(entropy.shape)
     if sample_averaging:
         axis = None
     else:
@@ -151,7 +149,9 @@ def entro_ave(h5file, results_key='Entropy',
               population_variance=True,
               mode=0,
               disorder_string='Hamiltonian_random_disorder_partial',
-              sample_averaging=True):
+              sample_averaging=True,
+              *args,
+              **kwargs):
     """
     A routine for performing statistical analysis of the entanglement
     entropy results which also allows for performing the variance
@@ -269,35 +269,7 @@ def entro_ave(h5file, results_key='Entropy',
                            sample_averaging=sample_averaging)
     print(results)
 
-    if sample_averaging:
-        return results
-    else:
-        results = np.array(results, dtype=object)
-        size, nener, nsamples = results[[-12, -11, -5]]
-
-        if nsamples is None:
-
-            nsamples = 1
-
-        dW, entro_calc = results[0], np.array(
-            [results[i] for i in range(1, 5)]).T
-
-        if any([elt is None for elt in entro_calc]):
-            entro_calc = np.zeros((nsamples, 4))
-            entro_calc[:, :] = None
-            print('entro_ave info: Setting to None!')
-
-        results = np.zeros((nsamples, 8))
-        results[:, 0] = dW
-        results[:, -3] = size
-        results[:, -2] = nener
-        results[:, -1] = nsamples
-
-        for i in range(4):
-
-            results[:, i + 1] = entro_calc[:, i]
-
-        return results
+    return results
 
 
 def entro_post_analysis(h5file, results_key='Entropy',

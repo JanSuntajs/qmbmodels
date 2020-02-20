@@ -68,6 +68,8 @@ def r_ave(h5file, results_key='r_data',
           population_variance=True,
           mode=0,
           disorder_string='Hamiltonian_random_disorder_partial',
+          *args,
+          **kwargs
           ):
     """
     A routine for performing statistical analysis of the entanglement
