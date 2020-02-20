@@ -52,7 +52,7 @@ the population variance was used in order calculate the target variance.
 """
 
 
-def _r_ave(rvals, condition, size):
+def _r_ave(rvals, condition, size, *args, **kwargs):
 
     r_val = rvals[0][1]
     r_err = rvals[0][2]
@@ -173,4 +173,4 @@ def r_ave(h5file, results_key='r_data',
                         disorder_string,
                         target_variance, population_variance,
                         mode, epsilon, dW_min,
-                        _r_ave, 2)
+                        _r_ave, 2, *args, **kwargs)

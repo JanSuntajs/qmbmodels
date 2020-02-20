@@ -266,7 +266,9 @@ def entro_ave(h5file, results_key='Entropy',
                            target_variance, population_variance,
                            mode, epsilon, dW_min,
                            _entro_ave, 4,
-                           sample_averaging=sample_averaging)
+                           sample_averaging=sample_averaging,
+                           *args,
+                           **kwargs)
     print(results)
 
     return results
