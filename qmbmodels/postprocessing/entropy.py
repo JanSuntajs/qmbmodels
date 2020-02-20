@@ -135,10 +135,10 @@ def _entro_ave(entropy, condition, size, sample_averaging=True, *args, **kwargs)
         std_entro_rescaled = np.ones_like(std_entro)
 
     output = (ave_entro, entro_rescaled, std_entro, std_entro_rescaled)
-    if sample_averaging:
-        return output
-    else:
-        return np.vstack(output)
+
+    output = tuple(map(np.atleast_1d, output))
+    return output
+
 
 
 def entro_ave(h5file, results_key='Entropy',

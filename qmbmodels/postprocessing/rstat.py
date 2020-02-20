@@ -1,3 +1,4 @@
+import numpy as np
 
 from .disorder import _preparation
 
@@ -57,7 +58,7 @@ def _r_ave(rvals, condition, size, *args, **kwargs):
     r_val = rvals[0][1]
     r_err = rvals[0][2]
 
-    return r_val, r_err
+    return np.atleast_1d(r_val), np.atleast_1d(r_err)
 
 
 def r_ave(h5file, results_key='r_data',
