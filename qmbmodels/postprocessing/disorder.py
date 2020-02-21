@@ -629,7 +629,7 @@ def _preparation_analysis(h5file, results_key, disorder_key,
                         output_ = analysis_fun(result_, None, size,
                                                sample_averaging=True)
 
-                        output_ = output_.flatten()
+                        output_ = np.concatenate(output_)
                         nsamples_selected = nsamples - (i + 1)
 
                         output.append([i + 1, nsamples_selected,
