@@ -1,7 +1,7 @@
 import numpy as np
 import h5py
 
-from .disorder import reduce_variance, disorder_analysis, _preparation
+from .disorder import _preparation, _preparation_analysis
 
 
 footer_entro = """
@@ -115,7 +115,8 @@ Each column is organised as follows:
 """
 
 
-def _entro_ave(entropy, condition, size, sample_averaging=True, *args, **kwargs):
+def _entro_ave(entropy, condition, size, sample_averaging=True,
+               *args, **kwargs):
 
     sub = size / 2.
     entropy = entropy[condition]
@@ -138,7 +139,6 @@ def _entro_ave(entropy, condition, size, sample_averaging=True, *args, **kwargs)
 
     output = tuple(map(np.atleast_1d, output))
     return output
-
 
 
 def entro_ave(h5file, results_key='Entropy',
@@ -281,90 +281,7 @@ def entro_post_analysis(h5file, results_key='Entropy',
     """
 
     """
-    output = []
 
-    try:
-
-        with h5py.File(h5file, 'r') as file:
-
-            key = results_key
-
-            if ((disorder_string in file.keys()) and (key in file.keys())):
-
-                disorder = file[disorder_string][()]
-                entropy = file[key][()]
-                nsamples = file[key].attrs['nsamples']
-                nsamples_dis = file[disorder_string].attrs['nsamples']
-                nener = file[key].attrs['nener']
-                size = file[key].attrs['L']
-                dW = np.float(file[key].attrs[disorder_key])
-
-                if population_variance:
-
-                    target_variance *= dW**2
-                else:
-
-                    means_, variances, *rest = disorder_analysis(disorder,
-                                                                 size)
-                    target_variance = np.mean(variances)
-
-                # the analysis part
-                condition = np.arange(nsamples)
-                indices = []
-                output = []
-
-                (means, variances, std_variances,
-                 rescale_factor) = disorder_analysis(disorder, size)
-
-                variances_sub = np.abs(variances - target_variance)
-                # sort the variances
-                argsortlist = np.argsort(variances_sub)[::-1]
-
-                check_shapes = (nsamples == nsamples_dis)
-
-                if check_shapes:
-
-                    sub = size / 2.
-                    for i in range(nsamples):
-
-                        indices.append(argsortlist[i])
-                        condition_ = np.delete(condition, indices)
-
-                        disorder_ = disorder[condition_]
-
-                        (*rest, std_variances_,
-                         rescale_factor_) = disorder_analysis(
-                            disorder_, size)
-
-                        entropy_ = entropy[condition_]
-
-                        ave_entro = np.mean(entropy_)
-                        entro_rescaled = np.abs(
-                            np.log(2) - (2**(2 * sub - size - 1)) / sub -
-                            ave_entro / sub)
-                        std_entro = np.std(entropy_)
-
-                        nsamples_selected = nsamples - (i + 1)
-                        output.append([i + 1, nsamples_selected,
-                                       std_variances_,
-                                       std_variances_ * rescale_factor_,
-                                       ave_entro,
-                                       entro_rescaled, std_entro,
-                                       target_variance,
-                                       bool(population_variance),
-                                       dW])
-
-                else:
-
-                    print('Shape mismatch! Check the file: {}'.format(h5file))
-
-            else:
-
-                print('Key {} or {} not present in the HDF5 file!'.format(
-                    key, disorder_string))
-
-    except IOError:
-
-        print('File {} not present!'.format(h5file))
-
-    return np.array(output)
+    return _preparation_analysis(h5file, results_key, disorder_key,
+                                 disorder_string, target_variance,
+                                 population_variance, _entro_ave)

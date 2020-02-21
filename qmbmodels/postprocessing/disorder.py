@@ -541,3 +541,112 @@ def _preparation(h5file, results_key, disorder_key,
         output[:, i] = vals[i]
 
     return output
+
+
+def _preparation_analysis(h5file, results_key, disorder_key,
+                          disorder_string, target_variance,
+                          population_variance, analysis_fun,
+                          *args,
+                          **kwargs):
+    """
+    A function used for numerical analysis
+    of the calculation results w.r.t. to
+    the number of different disorder
+    samples included.
+
+    This private function is meant to be used
+    wrapped by some external functions. The results
+    are calculated iteratively by first sorting
+    the samples according to the deviation of their
+    disorder variance w.r.t. the theoretical variance.
+    On each step, samples with the largest discrepancy
+    are discarded and the observables of interest
+    are recalculated.
+
+    """
+
+    output = []
+
+    try:
+
+        with h5py.File(h5file, 'r') as file:
+
+            key = results_key
+
+            if ((disorder_string in file.keys()) and (key in file.keys())):
+
+                disorder = file[disorder_string][()]
+                result = file[key][()]
+                # this needs to be present in case
+                # number of the result files and
+                # the number of disorder samples
+                # differ, due to, say, some error
+                # encountered during the saving process.
+                # In case the values differ, stop
+                # the analysis
+                nsamples = file[key].attrs['nsamples']
+                nsamples_dis = file[disorder_string].attrs['nsamples']
+                nener = file[key].attrs['nener']
+                size = file[key].attrs['L']
+                dW = np.float(file[key].attrs[disorder_key])
+
+                if population_variance:
+
+                    target_variance *= dW**2
+                else:
+                    means_, variances, *rest = disorder_analysis(disorder,
+                                                                 size)
+
+                    target_variance = np.mean(variances)
+
+                # the analysis part:
+                condition = np.arange(nsamples)
+                indices = []
+                output = []
+
+                (means, variances, std_variances,
+                    rescale_factor) = disorder_analysis(disorder, size)
+
+                variances_sub = np.abs(variances - target_variance)
+                argsortlist = np.argsort(variances_sub)[::-1]
+
+                check_shapes = (nsamples == nsamples_dis)
+
+                if check_shapes:
+
+                    for i in range(nsamples):
+
+                        indices.append(argsortlist[i])
+                        condition_ = np.delete(condition, indices)
+
+                        disorder_ = disorder[condition_]
+
+                        (*rest, std_variances_,
+                            rescale_factor_) = disorder_analysis(
+                            disorder_, size)
+
+                        result_ = result[condition_]
+
+                        output_ = analysis_fun(result_, condition_, size,
+                                               sample_averaging=True)
+
+                        output_ = np.flatten(output_)
+                        nsamples_selected = nsamples - (i + 1)
+
+                        output.append([i + 1, nsamples_selected,
+                                       *output_, target_variance,
+                                       bool(population_variance), dW])
+                else:
+
+                    print('Shape mismatch! Check the file: {}'.format(h5file))
+
+            else:
+
+                print('Key {} or {} not present in the HDF5 file!'.format(
+                    key, disorder_string))
+
+    except IOError:
+
+        print('File {} not present!'.format(h5file))
+
+    return np.array(output)
