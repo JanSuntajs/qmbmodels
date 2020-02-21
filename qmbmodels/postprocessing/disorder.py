@@ -1,3 +1,15 @@
+"""
+This module contains routines for analysing the statistical properties
+of the disorder ansambles used in our calculations.
+
+Functions disorder_analysis(...) and get_min_variance(...)
+are intented for the analysis of the actual disorder samples.
+The reduce variance routine is a preprocessing function which
+allows one an attempt at reducing the variance of the
+observables under consideration.
+
+"""
+
 import numpy as np
 import h5py
 
@@ -562,7 +574,9 @@ def _preparation_analysis(h5file, results_key, disorder_key,
     On each step, samples with the largest discrepancy
     are discarded and the observables of interest
     are recalculated.
-
+    
+    Parameters:
+    ----------
     """
 
     output = []
@@ -627,7 +641,9 @@ def _preparation_analysis(h5file, results_key, disorder_key,
 
                         result_ = result[condition_]
                         output_ = analysis_fun(result_, None, size,
-                                               sample_averaging=True)
+                                               sample_averaging=True,
+                                               *args,
+                                               **kwargs)
 
                         output_ = np.concatenate(output_)
                         nsamples_selected = nsamples - (i + 1)

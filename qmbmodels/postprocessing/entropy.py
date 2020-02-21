@@ -1,5 +1,11 @@
+"""
+This module implements routines for analysing the
+entanglement entropy results.
+
+"""
+
+
 import numpy as np
-import h5py
 
 from .disorder import _preparation, _preparation_analysis
 

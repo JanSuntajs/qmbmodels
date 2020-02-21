@@ -1,3 +1,18 @@
+"""
+This module implements a routine for extraction of
+the relevant data from a selected folder.
+
+Given the main folder with the calculation results
+and the requested type of the results, the
+extract_data(...) routine allows one to first find
+all the results stored in the main folder's subfolders,
+then load the requested data to disk, perform some
+post-processing analysis and then store the results
+to the appropriate folder.
+
+"""
+
+
 import os
 import numpy as np
 from glob import glob
