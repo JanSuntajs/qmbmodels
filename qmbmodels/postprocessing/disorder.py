@@ -615,7 +615,7 @@ def _preparation_analysis(h5file, results_key, disorder_key,
                 if check_shapes:
 
                     for i in range(nsamples):
-                        print('nsamples_analysis info: step {}'.format(i))
+
                         indices.append(argsortlist[i])
                         condition_ = np.delete(condition, indices)
 
@@ -626,7 +626,8 @@ def _preparation_analysis(h5file, results_key, disorder_key,
                             disorder_, size)
 
                         result_ = result[condition_]
-
+                        print('result_shape: {}'.format(result.shape))
+                        print('condition shape: {}'.format(condition.shape))
                         output_ = analysis_fun(result_, condition_, size,
                                                sample_averaging=True)
 
