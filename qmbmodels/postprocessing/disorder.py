@@ -615,7 +615,7 @@ def _preparation_analysis(h5file, results_key, disorder_key,
                 if check_shapes:
 
                     for i in range(nsamples):
-
+                        print('nsamples_analysis info: step {}'.format(i))
                         indices.append(argsortlist[i])
                         condition_ = np.delete(condition, indices)
 
