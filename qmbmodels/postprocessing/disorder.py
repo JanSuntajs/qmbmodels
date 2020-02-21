@@ -626,9 +626,7 @@ def _preparation_analysis(h5file, results_key, disorder_key,
                             disorder_, size)
 
                         result_ = result[condition_]
-                        print('result_shape: {}'.format(result.shape))
-                        print('condition shape: {}'.format(condition.shape))
-                        output_ = analysis_fun(result_, condition_, size,
+                        output_ = analysis_fun(result_, None, size,
                                                sample_averaging=True)
 
                         output_ = np.flatten(output_)
