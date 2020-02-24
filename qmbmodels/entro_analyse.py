@@ -81,7 +81,7 @@ topdir = ('/scratch/jan/qmbmodels/results/'
 paramsIso = (
     topdir,
     ('/home/jan/'
-     'XXZ_isotropic_entro_post_nev_100_epsilon_{:.3f}/mode_{}'),
+     'XXZ_isotropic_entro_post_nev_100_paper/mode_{}'),
     'pbc_True_disorder_uniform_ham_type_spin1d',
     'L_12_nu_6',
     1.0,
@@ -95,7 +95,7 @@ paramsIso = (
 paramsErgod = (
     topdir,
     ('/home/jan/'
-     'XXZ_J1_J2_ergodic_post_nev_100_epsilon_{:.3f}/mode_{}'),
+     'XXZ_J1_J2_ergodic_post_nev_100_paper/mode_{}'),
     'pbc_True_disorder_uniform_ham_type_spin1d',
     'L_12_nu_6',
     2.0,
@@ -130,7 +130,11 @@ if __name__ == '__main__':
         epsilon_theor = dW_min**2 * model.var_prefactor - 0.1
         # epsilon_theor = 0.8
         # epsilon_theor = 0.2
-        for mode in [0, 1, 2]:
+
+        methods = [['get_r', 'r_sweep_post'],
+                   ['get_entro_ave', 'entro_sweep_post']]
+
+        for mode in [0]:
             kwargs_dict = {
                 'target_variance': model.var_prefactor,
                 'epsilon': epsilon_theor,
@@ -139,10 +143,12 @@ if __name__ == '__main__':
                 'dW_min': model.min_dis,
             }
             savepath_ = model.savepath
-            savepath = savepath_.format(epsilon_theor, mode)
-            dae.extract_data(topdir, savepath, routine='get_r',
-                             partial=True, disorder_key='dW',
-                             savename='r_sweep_post', reverse_order=True,
-                             exclude_keys=model.exclude_keys,
-                             collapse=True,
-                             **kwargs_dict)
+            savepath = savepath_.format(mode)
+
+            for method in methods:
+                dae.extract_data(topdir, savepath, routine=method[0],
+                                 partial=True, disorder_key='dW',
+                                 savename=method[1], reverse_order=True,
+                                 exclude_keys=model.exclude_keys,
+                                 collapse=True,
+                                 **kwargs_dict)
