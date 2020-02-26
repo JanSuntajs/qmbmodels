@@ -29,36 +29,40 @@ LA-> subsystem
 6) nener: number of energies obtained using partial diagonalization
 
 7) target_variance: Variance of the disordered samples
-with which to compare the numerical results in the postprocessing
-steps if mode equals 1 or 2. Defaults to None as the argument is not
-required in the mode=0 case where postprocessing is not performed.
+    with which to compare the numerical results in the postprocessing
+    steps if mode equals 1 or 2.
+    If mode=0: nan, this argument is not needed if preprocessing is not
+    performed.
 
 8) epsilon: condition used to determine whether to select a given disorder
-distribution.
-If mode=1:
-If mode=2:
+   distribution.
+   If mode=0: nan
 
 9) dW_min: value of the disorder strength parameter for which the epsilon
-was evaluated.
+   was evaluated.
+   If mode=0: nan
 
 10) variance_before: variance of variances of the disorder distributions before
-post.
+    post.
 
 11) variance_after: variance of variances of the disorder distributions after
-post.
+    post.
 
 12) nsamples: number of all the random samples
 
 13) nsamples_selected: number of the random disorder samples with an
-appropriate variance.
+    appropriate variance.
+    NOTE: if mode (entry 15) ) equals 0, nsamples equals nsamples.
 
 14) nsamples_rejected: nsamples - nsamples_selected
+    NOTE: if mode (entry 15) ) equals 0, this should be equal to 0.
 
 15) mode: which postprocessing mode was selected
+    NOTE: 0 indicates no postprocessing!
 
 16) population_variance: integer specifying whether theoretical prediction for
-the population variance was used in order calculate the target variance.
-1 if that is the case, 0 if not.
+    the population variance was used in order calculate the target variance.
+    1 if that is the case, 0 if not.
 """
 
 
