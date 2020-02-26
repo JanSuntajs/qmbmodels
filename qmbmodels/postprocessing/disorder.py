@@ -483,7 +483,9 @@ def _preparation(h5file, results_key, disorder_key,
 
             key = results_key
 
-            if ((disorder_string in file.keys()) and (key in file.keys())):
+            if (((disorder_string in file.keys()) or
+                 (mode == 0)
+                 ) and (key in file.keys())):
 
                 disorder = file[disorder_string][()]
                 result = file[key][()]
@@ -519,6 +521,11 @@ def _preparation(h5file, results_key, disorder_key,
                 nsamples_rejected = nsamples - nsamples_selected
                 check_shapes = (nsamples == nsamples_dis)
 
+                if ((mode == 0) and (not check_shapes)):
+                    condition = np.arange(nsamples)
+                    std_before = np.NaN
+                    std_after = np.NaN
+                    check_shapes = True
                 if check_shapes:
 
                     results = analysis_fun(result, condition, size,
@@ -574,7 +581,7 @@ def _preparation_analysis(h5file, results_key, disorder_key,
     On each step, samples with the largest discrepancy
     are discarded and the observables of interest
     are recalculated.
-    
+
     Parameters:
     ----------
     """
