@@ -210,6 +210,8 @@ if __name__ == '__main__':
                                       for name in metalist]
     except IndexError:
         print('Metadata files not present! Exiting')
+        print('Removing the empty folder!')
+        os.rmdir(f'{loadpath}')
         sys.exit(0)
 
     files = [metafile, sysfile, modfile]
@@ -379,8 +381,3 @@ if __name__ == '__main__':
 
     else:
         print('No .npz files present in the folder!')
-
-    if ((not glob.glob(f'{loadpath}/*.hdf5')) and
-            (not glob.glob(f'{loadpath}/*.npz'))):
-        print(f'Removing the folder {loadpath}!')
-        os.rmdir(f'{loadpath}')
