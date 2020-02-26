@@ -177,7 +177,10 @@ class SubmittedScript(object):
 
         self._modes = modes.copy()
         print(self._modes)
-        modes.insert(0, 'folder')
+        # do not create new folders if we are not dealing
+        # with a diagonalization job!
+        if any([mode in rsc.diag_modes for mode in modes]):
+            modes.insert(0, 'folder')
         for mode in modes:
 
             try:
