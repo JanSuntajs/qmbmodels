@@ -379,3 +379,8 @@ if __name__ == '__main__':
 
     else:
         print('No .npz files present in the folder!')
+
+    if ((not glob.glob(f'{loadpath}/*.hdf5')) and
+            (not glob.glob(f'{loadpath}/*.npz'))):
+
+        os.rmdir(f'{loadpath}')
