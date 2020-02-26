@@ -211,6 +211,7 @@ if __name__ == '__main__':
     except IndexError:
         print('Metadata files not present! Exiting')
         print('Removing the empty folder!')
+        os.rmdir(f'{metapath}')
         os.rmdir(f'{savepath}')
         sys.exit(0)
 
