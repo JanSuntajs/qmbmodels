@@ -515,7 +515,7 @@ def _preparation(h5file, results_key, disorder_key,
                 else:
                     epsilon = None
                     dW_min = None
-                    target_variance = 0
+                    target_variance = None
 
                 (condition, nsamples_dis, nsamples_selected,
                  std_before, std_after) = reduce_variance(disorder, mode,
