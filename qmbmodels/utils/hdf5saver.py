@@ -382,5 +382,5 @@ if __name__ == '__main__':
 
     if ((not glob.glob(f'{loadpath}/*.hdf5')) and
             (not glob.glob(f'{loadpath}/*.npz'))):
-
+        print(f'Removing the folder {loadpath}!')
         os.rmdir(f'{loadpath}')
