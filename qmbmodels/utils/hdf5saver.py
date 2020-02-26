@@ -225,143 +225,151 @@ if __name__ == '__main__':
 
     filenames_ = glob.glob(f"{loadpath}/*.npz")
 
-    filenames, filename, partial = format_filenames(filenames_)
+    if filenames_:
 
-    # eigenkey, fnamekey = full_partial(partial)
-    datasets, shapes_dict, key_specifiers = prepare_files(filenames_)
-    print(shapes_dict)
-    print(key_specifiers)
+        filenames, filename, partial = format_filenames(filenames_)
 
-    enerkey = [key for key in key_specifiers['reskeys']
-               if (key == 'Eigenvalues' or key == 'Eigenvalues_partial')][0]
-    # disorder_key = key_specifiers['fields'][0]
-    fnamekey = key_specifiers['fnamekeys'][0]
-    nsamples, nener = shapes_dict[enerkey]
+        # eigenkey, fnamekey = full_partial(partial)
+        datasets, shapes_dict, key_specifiers = prepare_files(filenames_)
+        print(shapes_dict)
+        print(key_specifiers)
 
-    # datasets = {eigenkey: files,
-    #             fnamekey: filenames}
+        enerkey = [key for key in key_specifiers['reskeys']
+                   if (key == 'Eigenvalues' or
+                       key == 'Eigenvalues_partial')][0]
+        # disorder_key = key_specifiers['fields'][0]
+        fnamekey = key_specifiers['fnamekeys'][0]
+        nsamples, nener = shapes_dict[enerkey]
 
-    # information about the creator of the data
-    creator = {
+        # datasets = {eigenkey: files,
+        #             fnamekey: filenames}
 
-        'OS': os.name,
-        'User': 'Jan Suntajs',
-        'email': 'Jan.Suntajs@ijs.si',
-        'institute': 'IJS F1',
-        'Date': time.time(),
-        'dict_format': 'json',
-        'loadpath': loadpath,
-        'filename': filename,
-        **metadata
+        # information about the creator of the data
+        creator = {
 
-    }
+            'OS': os.name,
+            'User': 'Jan Suntajs',
+            'email': 'Jan.Suntajs@ijs.si',
+            'institute': 'IJS F1',
+            'Date': time.time(),
+            'dict_format': 'json',
+            'loadpath': loadpath,
+            'filename': filename,
+            **metadata
 
-    attrs = {'nener': nener,
-             'nsamples': nsamples,
-             'syspar': syspar,
-             'modpar': modpar,
-             **sysdict,
-             **moddict
-             }
-    # --------------------------------------------------------------------
-    #
-    #
-    #                        HDF5 SAVING
-    #
-    #
-    # --------------------------------------------------------------------
+        }
 
-    filename = os.path.join(savepath, filename + '.hdf5')
+        attrs = {'nener': nener,
+                 'nsamples': nsamples,
+                 'syspar': syspar,
+                 'modpar': modpar,
+                 **sysdict,
+                 **moddict
+                 }
+        # --------------------------------------------------------------------
+        #
+        #
+        #                        HDF5 SAVING
+        #
+        #
+        # --------------------------------------------------------------------
 
-    # save a hdf5 file
-    with h5py.File(filename, 'a') as f:
+        filename = os.path.join(savepath, filename + '.hdf5')
 
-        # attributes of the whole file
-        for key, value in creator.items():
+        # save a hdf5 file
+        with h5py.File(filename, 'a') as f:
 
-            f.attrs[key] = value
+            # attributes of the whole file
+            for key, value in creator.items():
 
-        # if 'misc', 'metadata' and 'system_info' were
-        # not yet created -> the file was not opened before
-        if all([(key not in f.keys()) for key in datasets.keys()]):
-            print('Creating the dataset!')
+                f.attrs[key] = value
 
-            # now add the values for the first time
-            for key, value in datasets.items():
-                maxshape = (None,)
-                # eigenvalues are stored as a numpy array
-                if key in key_specifiers['reskeys']:
-                    if not partial:
-                        maxshape = (None, shapes_dict[key][1])
-                    else:
-                        maxshape = (None, None)
+            # if 'misc', 'metadata' and 'system_info' were
+            # not yet created -> the file was not opened before
+            if all([(key not in f.keys()) for key in datasets.keys()]):
+                print('Creating the dataset!')
 
-                    eigset = f.create_dataset(
-                        key, data=value, maxshape=maxshape)
+                # now add the values for the first time
+                for key, value in datasets.items():
+                    maxshape = (None,)
+                    # eigenvalues are stored as a numpy array
+                    if key in key_specifiers['reskeys']:
+                        if not partial:
+                            maxshape = (None, shapes_dict[key][1])
+                        else:
+                            maxshape = (None, None)
 
-                # this is numpy array of the object datatype
-                elif key in key_specifiers['fnamekeys']:
-                    string_dt = h5py.special_dtype(vlen=str)
+                        eigset = f.create_dataset(
+                            key, data=value, maxshape=maxshape)
 
-                    f.create_dataset(
-                        key, data=value, maxshape=maxshape, dtype=string_dt)
+                    # this is numpy array of the object datatype
+                    elif key in key_specifiers['fnamekeys']:
+                        string_dt = h5py.special_dtype(vlen=str)
 
-            for reskey in key_specifiers['reskeys']:
-                for key, value in attrs.items():
+                        f.create_dataset(
+                            key, data=value, maxshape=maxshape,
+                            dtype=string_dt)
 
-                    f[reskey].attrs[key] = value
-
-            print('created actual values')
-
-        # append to the existing datasets if the datasets already exist
-        else:
-            print('Appending spectra to the existing values!')
-
-            filenames_strip = [_strip(filename)
-                               for filename in f[fnamekey][()]]
-            indices = np.array([i for i, name in enumerate(filenames)
-                                if _strip(name) not in
-                                filenames_strip], dtype=np.int8)
-            datasets[fnamekey] = filenames[indices]
-
-            for reskey in key_specifiers['reskeys']:
-                if reskey not in f.keys():
-                    pass
-                else:
-                    nsamples = indices.shape[0]
-                    nsamples0 = f[reskey].shape[0]
-
-                    datasets[reskey] = datasets[reskey][indices, :]
-
-                    nsamples += nsamples0
-                    attrs['nsamples'] = nsamples
-                    orig_shape = f[reskey].shape[1]
-                    shape_resize = orig_shape
-                    if partial:
-                        if shapes_dict[reskey][1] < orig_shape:
-                            shape_resize = shapes_dict[reskey][1]
-                        elif shapes_dict[reskey][1] > orig_shape:
-                            datasets[reskey] = datasets[reskey][:, :orig_shape]
-                    f[reskey].resize((nsamples, shape_resize))
-
-                    f[reskey][nsamples0:, :] = datasets[reskey]
-
-                    # if attributes have also changed
+                for reskey in key_specifiers['reskeys']:
                     for key, value in attrs.items():
 
                         f[reskey].attrs[key] = value
 
-            f[fnamekey].resize((nsamples,))
+                print('created actual values')
 
-            f[fnamekey][nsamples0:] =  \
-                datasets[fnamekey]
-    # -------------------------------------------------
-    #
-    #
-    #           REMOVAL OF THE ORIG. NPZ OR NPY FILES
-    #
-    #
-    # -------------------------------------------------
-    for filename in filenames_:
+            # append to the existing datasets if the datasets already exist
+            else:
+                print('Appending spectra to the existing values!')
 
-        os.remove(filename)
+                filenames_strip = [_strip(filename)
+                                   for filename in f[fnamekey][()]]
+                indices = np.array([i for i, name in enumerate(filenames)
+                                    if _strip(name) not in
+                                    filenames_strip], dtype=np.int8)
+                datasets[fnamekey] = filenames[indices]
+
+                for reskey in key_specifiers['reskeys']:
+                    if reskey not in f.keys():
+                        pass
+                    else:
+                        nsamples = indices.shape[0]
+                        nsamples0 = f[reskey].shape[0]
+
+                        datasets[reskey] = datasets[reskey][indices, :]
+
+                        nsamples += nsamples0
+                        attrs['nsamples'] = nsamples
+                        orig_shape = f[reskey].shape[1]
+                        shape_resize = orig_shape
+                        if partial:
+                            if shapes_dict[reskey][1] < orig_shape:
+                                shape_resize = shapes_dict[reskey][1]
+                            elif shapes_dict[reskey][1] > orig_shape:
+                                datasets[reskey] = datasets[reskey][:,
+                                                                    :orig_shape]
+                        f[reskey].resize((nsamples, shape_resize))
+
+                        f[reskey][nsamples0:, :] = datasets[reskey]
+
+                        # if attributes have also changed
+                        for key, value in attrs.items():
+
+                            f[reskey].attrs[key] = value
+
+                f[fnamekey].resize((nsamples,))
+
+                f[fnamekey][nsamples0:] =  \
+                    datasets[fnamekey]
+        # -------------------------------------------------
+        #
+        #
+        #           REMOVAL OF THE ORIG. NPZ OR NPY FILES
+        #
+        #
+        # -------------------------------------------------
+        for filename in filenames_:
+
+            os.remove(filename)
+
+    else:
+        print('No .npz files present in the folder!')
