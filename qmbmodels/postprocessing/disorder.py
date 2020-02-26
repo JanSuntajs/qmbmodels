@@ -10,6 +10,7 @@ observables under consideration.
 
 """
 
+import sys
 import numpy as np
 import h5py
 
@@ -211,6 +212,9 @@ def reduce_variance(disorder_samples, mode, size, target_variance, epsilon):
     The standard deviation of the distribution of variances before and
     after postprocessing, respectively.
     """
+
+    if target_variance is None:
+        target_variance = 0.
 
     def _get_vars(disorder_samples):
         # calculate the unbiased estimators of the sample variances first
@@ -483,9 +487,7 @@ def _preparation(h5file, results_key, disorder_key,
 
             key = results_key
 
-            if (((disorder_string in file.keys()) or
-                 (mode == 0)
-                 ) and (key in file.keys())):
+            if key in file.keys():
 
                 result = file[key][()]
                 nsamples = file[key].attrs['nsamples']
@@ -497,7 +499,13 @@ def _preparation(h5file, results_key, disorder_key,
                     disorder = file[disorder_string][()]
                 except KeyError:
                     print(f'Key {disorder_string} does not exist!')
-                    disorder = np.zeros((nsamples, size), dtype=np.float)
+                    if mode == 0:
+                        disorder = np.zeros((nsamples, size), dtype=np.float)
+                        print(f'Mode 0: setting disorder to zero artificially!')
+                    else:
+                        print(f'Mode {mode} not possible with mode not equal to 0!'
+                               'Exiting!')
+                        sys.exit(0)
 
                 if bool(mode):
 
