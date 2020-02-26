@@ -487,12 +487,17 @@ def _preparation(h5file, results_key, disorder_key,
                  (mode == 0)
                  ) and (key in file.keys())):
 
-                disorder = file[disorder_string][()]
                 result = file[key][()]
                 nsamples = file[key].attrs['nsamples']
                 nener = file[key].attrs['nener']
                 size = file[key].attrs['L']
                 dW = np.float(file[key].attrs[disorder_key])
+
+                try:
+                    disorder = file[disorder_string][()]
+                except KeyError:
+                    print(f'Key {disorder_string} does not exist!')
+                    disorder = np.zeros((nsamples, size), dtype=np.float)
 
                 if bool(mode):
 
