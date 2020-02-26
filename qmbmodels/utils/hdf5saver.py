@@ -7,6 +7,7 @@ after the batch calculation routines have finished.
 """
 
 import os
+import sys
 import numpy as np
 import glob
 import time
@@ -203,8 +204,13 @@ if __name__ == '__main__':
     # --------------------------------------------------------------------
 
     metapath = os.path.join(savepath, 'metadata')
-    metafile, sysfile, modfile = [glob.glob(f"{metapath}/{name}*.json")[0]
-                                  for name in metalist]
+
+    try:
+        metafile, sysfile, modfile = [glob.glob(f"{metapath}/{name}*.json")[0]
+                                      for name in metalist]
+    except IndexError:
+        print('Metadata files not present! Exiting')
+        sys.exit(0)
 
     files = [metafile, sysfile, modfile]
 
