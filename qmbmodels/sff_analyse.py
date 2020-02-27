@@ -109,8 +109,9 @@ if __name__ == '__main__':
 
 
             dae.extract_data(topdir, savepath, routine=method,
-                             partial=True, disorder_key='dW',
-                             savename=method[1], reverse_order=True,
+                             partial=False, disorder_key='dW',
+                             savename='sff', reverse_order=True,
                              exclude_keys=model.exclude_keys,
                              collapse=True,
+			     merge=False,
                              **kwargs_dict)
