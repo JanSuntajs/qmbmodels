@@ -24,6 +24,6 @@ _routines_dict = {
     'entro_analyse': [entro_post_analysis, 'Entropy',
                       None, footer_entro_analyse],
     'get_r': [r_ave, 'r_data', 15, footer_r_ave],
-    'get_sff' [get_sff, 'SFF_spectrum', 5, footer_sff]
+    'get_sff': [get_sff, 'SFF_spectrum', 5, footer_sff]
 
 }
