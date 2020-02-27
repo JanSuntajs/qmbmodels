@@ -5,54 +5,104 @@ from .disorder import _preparation
 
 
 footer_sff = """
+Formulae for the calculation of the spectral form factor
+(SFF) K(tau):
+
+Spectral form factor with the included disconnected part:
+
+K(tau)_uncon = < | \sum_n g(E_n) exp(-1j E_n \tau) | ^2 >
+
+Here, < ... > is the disorder averaging, E_n are the eigenvalues
+and g(E_n) is a filter used to minimize the finite-size effects.
+
+To obtain the connected spetral form factor K(tau)_conn, we need
+to subtract the disconnected part, which is defined as follows:
+
+uncon(tau) = |< \sum g(E_n) exp(-1j E_n \tau) >|^2
+
+Below we explain the contents of this file.
+
 Each row is organised as follows:
 
 0) dW: disorder strength
 
-1) <r>: the mean ration of the adjacent level spacings where the
-   means < \tilde r> are first obtained for individual spectra
-   and are then averaged over different disorder realizations.
+1) taulist: values of the (unfolded, hence nonphysical) tau
+   parameter, rescaled in such a way that the plateau of
+   the sff dependence take place at tau=1.
 
-2) delta <r>: standard deviation of the distribution of r values
-   for different disorder realizations.
+2) K(tau)_uncon: SFF dependence with the disconnected part included,
+   rescaled so that K(tau -> infinity) equals 1. The rescaling
+   factor D' is calculated as follows:
+   D' = < \sum_n |g(E_n)|^2 >
+   Here, g(E_n) is the filter used in the SFF filtering and
+   E_n are the eigenvalues. We see that this normalization
+   parameter is simply the diagonal part of the K(tau)_uncon
+   dependence.
 
-3) size L: system size
+3) K(tau)_conn: SFF dependence without the disconnected part
+   and normalized so that the quantity should equal
+   K(tau=0) = 0.
+   Normalization is as follows:
+   (1/D') (K(tau)_uncon- (A/B) * uncon(tau))
+   Here, A and B are the values of K(0)_uncon and uncon(0), respectively.
+   Hence,
+   A = < | \sum_n g(E_n) |^2 >
+   B = |< \sum g(E_n) >|^2
 
-4) nener: number of energies obtained using partial diagonalization
+4) nener0: number of energies obtained using the diagonalization routine.
+   If some parts of the spectrum were discarded during the unfolding
+   procedure, the actual number of the energies used in the calculation
+   might be smaller.
 
-5) target_variance: Variance of the disordered samples
+5) gamma: width of the original spectrum for which we assume a Gaussian
+   shape.
+
+6) unfolding_n: degree of the unfolding polynomial used in the
+   unfolding procedure.
+
+7) discard_unfolding: number of energies that have been discarded due
+   to the unfolding procedure if slope needed to be corrected ->
+   unfolding can sometimes introduce unphysical effects near the spectral
+   edges with the slope (density of states) becoming negative -> we
+   need to cut those edges, thus discarding some values.
+
+8) size L: system size
+
+9) nener: number of energies obtained using partial diagonalization
+
+10) target_variance: Variance of the disordered samples
     with which to compare the numerical results in the postprocessing
     steps if mode equals 1 or 2.
     If mode=0: nan, this argument is not needed if preprocessing is not
     performed.
 
-6) epsilon: condition used to determine whether to select a given disorder
+11) epsilon: condition used to determine whether to select a given disorder
    distribution.
    If mode=0: nan
 
-7) dW_min: value of the disorder strength parameter for which the epsilon
+12) dW_min: value of the disorder strength parameter for which the epsilon
    was evaluated.
    If mode=0: nan
 
-8)  variance_before: variance of variances of the disorder distributions before
+13) variance_before: variance of variances of the disorder distributions before
     post.
 
-9)  variance_after: variance of variances of the disorder distributions after
+14) variance_after: variance of variances of the disorder distributions after
     post.
 
-10) nsamples: number of all the random samples
+15) nsamples: number of all the random samples
 
-11) nsamples_selected: number of the random disorder samples with an
+16) nsamples_selected: number of the random disorder samples with an
     appropriate variance.
     NOTE: if mode (entry 15) ) equals 0, nsamples equals nsamples.
 
-12) nsamples_rejected: nsamples - nsamples_selected
+17) nsamples_rejected: nsamples - nsamples_selected
     NOTE: if mode (entry 15) ) equals 0, this should be equal to 0.
 
-13) mode: which postprocessing mode was selected
+18) mode: which postprocessing mode was selected
     NOTE: 0 indicates no postprocessing!
 
-14) population_variance: integer specifying whether theoretical prediction for
+19) population_variance: integer specifying whether theoretical prediction for
     the population variance was used in order calculate the target variance.
     1 if that is the case, 0 if not.
 """
@@ -60,7 +110,11 @@ Each row is organised as follows:
 
 def _sff(spectrum, condition, size, eff_dims,
          normal_con, normal_uncon,
-         gamma0, nener0, *args, **kwargs):
+         gamma0, nener0,
+         unfolding_n,
+         discarded_unfolding,
+         filter_eta,
+         *args, **kwargs):
 
     # taulist rescaled by 2*np.pi so that the plateau
     # is reached at tau = 1 (this holds for the unfolded spectra)
@@ -76,9 +130,12 @@ def _sff(spectrum, condition, size, eff_dims,
 
     gamma = np.ones_like(sff_conn) * gamma0
     nener = np.ones_like(sff_conn) * nener0
+    unfolding_n = np.ones_like(sff_conn) * unfolding_n
+    discarded_unfolding = np.ones_like(sff_conn) * discarded_unfolding
+    filter_eta = np.ones_like(sff_conn) * filter_eta
     return (np.atleast_1d(taulist),
             np.atleast_1d(sff_disconn), np.atleast_1d(sff_conn),
-            nener, gamma)
+            nener, gamma, unfolding_n, discarded_unfolding, filter_eta)
 
 
 def get_sff(h5file, results_key='SFF_spectrum',
@@ -197,6 +254,9 @@ def get_sff(h5file, results_key='SFF_spectrum',
         normal_uncon = file[results_key].attrs['normal_uncon']
         gamma0 = file[results_key].attrs['gamma0']
         nener0 = file[results_key].attrs['nener0']
+        discarded_unfolding = file[results_key].attrs['discarded_unfolding']
+        unfolding_n = file[results_key].attrs['sff_unfolding_n']
+        filter_eta = file[results_key].attrs['eta']
 
     return _preparation(h5file, results_key, disorder_key,
                         disorder_string,
@@ -207,4 +267,7 @@ def get_sff(h5file, results_key='SFF_spectrum',
                         normal_uncon=normal_uncon,
                         gamma0=gamma0,
                         nener0=nener0,
+                        unfolding_n=unfolding_n,
+                        discarded_unfolding=discarded_unfolding,
+                        filter_eta=filter_eta,
                         *args, **kwargs)
