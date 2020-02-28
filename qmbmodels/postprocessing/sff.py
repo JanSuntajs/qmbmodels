@@ -1,7 +1,7 @@
 import numpy as np
 import h5py
 
-from spectral_stats.sff import sff_functions
+from spectral_stats.sff.sff_functions import SFF_checker
 
 from .disorder import _preparation
 
@@ -282,9 +282,18 @@ def _thouless_tau(spectrum, condition, size, eff_dims,
                                              filter_eta)
 
     taulist_ = taulist * 2 * np.pi
-    t_th, sff_th = sff_functions.ext_t_thouless(taulist_, sff_disconn,
-                                                epsilon_th, smoothing_th)
-    t_th *= 1 / (2 * np.pi)
+    misc_dict = {
+        'dims_eff': eff_dims,
+        'normal_con': normal_con,
+        'normal_uncon': normal_uncon
+    }
+    sff_object = SFF_checker(taulist_, sff_disconn, np.zeros_like(sff_disconn),
+                             misc_dict
+                             )
+
+    t_th, sff_th, *rest = sff_object.get_thouless_time(epsilon_th, False,
+                                                       smoothing_th)
+
     mn_lvl_spc = gamma[0] / (nener[0] * 0.3413)
     t_th_phys = t_th / mn_lvl_spc
 
