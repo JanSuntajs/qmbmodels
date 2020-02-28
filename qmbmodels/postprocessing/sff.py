@@ -287,10 +287,15 @@ def _thouless_tau(spectrum, condition, size, eff_dims,
     t_th *= 1 / (2 * np.pi)
     mn_lvl_spc = gamma[0] / (nener[0] * 0.3413)
     t_th_phys = t_th / mn_lvl_spc
-    return (t_th, sff_th, t_th_phys, mn_lvl_spc,
-            nener[0], gamma[0], unfolding_n[0],
-            discarded_unfolding[0], filter_eta[0],
-            epsilon_th, smoothing_th)
+
+    results = (t_th, sff_th, t_th_phys, mn_lvl_spc,
+               nener[0], gamma[0], unfolding_n[0],
+               discarded_unfolding[0], filter_eta[0],
+               epsilon_th, smoothing_th)
+
+    results = tuple(map(np.atleast_1d, results))
+
+    return results
 
 
 def get_sff(h5file, results_key='SFF_spectrum',
