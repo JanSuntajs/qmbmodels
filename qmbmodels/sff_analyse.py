@@ -98,8 +98,8 @@ if __name__ == '__main__':
 
     for model in [pathsIso]:
 
-        methods = [['get_sff', 'sff', False],
-                   ['get_tau_thouless', 'tau_th', True]]
+        methods = [['get_sff', 'sff', False, False],
+                   ['get_tau_thouless', 'tau_th', True, True]]
         for mode in [0]:
             kwargs_dict = {
                 'population_variance': True,
@@ -112,5 +112,5 @@ if __name__ == '__main__':
                                  savename=method[1], reverse_order=True,
                                  exclude_keys=model.exclude_keys,
                                  collapse=method[2],
-                                 merge=False,
+                                 merge=method[3],
                                  **kwargs_dict)
