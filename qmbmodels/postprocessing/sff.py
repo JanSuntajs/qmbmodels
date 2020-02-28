@@ -141,93 +141,84 @@ Each row is organised as follows:
    tau values have been rescaled such that the SFF(tau) plateau
    takes place at tau=1.
 
-2) t_th (or tau_th_phys): thouless time in physical units, obtained
+2) sff_th: value of the sff (rescaled, such that the plateau
+   value equals 1) at the tau_th.
+
+3) t_th (or tau_th_phys): thouless time in physical units, obtained
    from tau_th as:
    t_th = tau_th / mn_lvl_spc, where
    mn_lvl_spc is the mean level spacing, defined in the next entry.
 
-3) mn_lvl_spc: the mean level spacing, defined as:
+4) mn_lvl_spc: the mean level spacing, defined as:
    mn_lvl_spc = gamma / (0.3413 * D), where D is the
    Hilbert space dimension of the (full) Hilbert space. See
    also:
    https://arxiv.org/abs/1905.06345v2   
 
-4) K(t_th): value of the SFF curve at the thouless time.
-
-5) K(tau)_conn: SFF dependence without the disconnected part
-   and normalized so that the quantity should equal
-   K(tau=0) = 0.
-   Normalization is as follows:
-   (1/D') (K(tau)_uncon- (A/B) * uncon(tau))
-   Here, A and B are the values of K(0)_uncon and uncon(0), respectively.
-   Hence,
-   A = < | \sum_n g(E_n) |^2 >
-   B = |< \sum g(E_n) >|^2
-
-6) nener0: number of energies obtained using the diagonalization routine.
+5) nener0: number of energies obtained using the diagonalization routine.
    If some parts of the spectrum were discarded during the unfolding
    procedure, the actual number of the energies used in the calculation
    might be smaller.
 
-7) gamma: width of the original spectrum for which we assume a Gaussian
+6) gamma: width of the original spectrum for which we assume a Gaussian
    shape.
 
-8) unfolding_n: degree of the unfolding polynomial used in the
+7) unfolding_n: degree of the unfolding polynomial used in the
    unfolding procedure.
 
-9) discard_unfolding: number of energies that have been discarded due
+8) discard_unfolding: number of energies that have been discarded due
    to the unfolding procedure if slope needed to be corrected ->
    unfolding can sometimes introduce unphysical effects near the spectral
    edges with the slope (density of states) becoming negative -> we
    need to cut those edges, thus discarding some values.
 
-10) filter_eta: eta used in the gaussian filtering of the spectra
+9) filter_eta: eta used in the gaussian filtering of the spectra
    for the SFF calculation.
 
-11) epsilon_th: epsilon used in the thouless time determination as
+10) epsilon_th: epsilon used in the thouless time determination as
    the limit parameter to stop the thouless time extraction
    algorithm.
 
-12) smoothing_th: width of the running mean window used to smoothen
+11) smoothing_th: width of the running mean window used to smoothen
     the data before the thouless time extraction.
 
-13) size L: system size
+12) size L: system size
 
-14) nener: number of energies obtained using partial diagonalization
+13) nener: number of energies obtained using partial diagonalization
 
-15) target_variance: Variance of the disordered samples
+14) target_variance: Variance of the disordered samples
     with which to compare the numerical results in the postprocessing
     steps if mode equals 1 or 2.
     If mode=0: nan, this argument is not needed if preprocessing is not
     performed.
 
-16) epsilon: condition used to determine whether to select a given disorder
+15) epsilon: condition used to determine whether to select a given disorder
    distribution.
    If mode=0: nan
 
-17) dW_min: value of the disorder strength parameter for which the epsilon
+16) dW_min: value of the disorder strength parameter for which the epsilon
    was evaluated.
    If mode=0: nan
 
-18) variance_before: variance of variances of the disorder distributions before
+17) variance_before: variance of variances of the disorder distributions before
     post.
 
-19) variance_after: variance of variances of the disorder distributions after
+18) variance_after: variance of variances of the disorder distributions after
     post.
 
-20) nsamples: number of all the random samples
+19) nsamples: number of all the random samples
 
-21) nsamples_selected: number of the random disorder samples with an
+20) nsamples_selected: number of the random disorder samples with an
     appropriate variance.
     NOTE: if mode (entry 15) ) equals 0, nsamples equals nsamples.
 
-22) nsamples_rejected: nsamples - nsamples_selected
+21) nsamples_rejected: nsamples - nsamples_selected
     NOTE: if mode (entry 15) ) equals 0, this should be equal to 0.
 
-23) mode: which postprocessing mode was selected
+22) mode: which postprocessing mode was selected
     NOTE: 0 indicates no postprocessing!
 
-24) population_variance: integer specifying whether theoretical prediction for
+23) population_variance: integer specifying whether theoretical prediction for
     the population variance was used in order calculate the target variance.
     1 if that is the case, 0 if not.
 """
