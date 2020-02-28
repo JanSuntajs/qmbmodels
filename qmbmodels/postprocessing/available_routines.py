@@ -2,7 +2,7 @@ from .entropy import entro_ave, footer_entro, entro_post_analysis
 from .entropy import footer_entro_analyse, \
     footer_entro_no_sample_averaging
 from .rstat import footer_r_ave, r_ave
-from .sff import get_sff, footer_sff
+from .sff import get_sff, footer_sff, get_tau_thouless, footer_t_thouless
 
 
 # Routines available for calculations:
@@ -24,6 +24,8 @@ _routines_dict = {
     'entro_analyse': [entro_post_analysis, 'Entropy',
                       None, footer_entro_analyse],
     'get_r': [r_ave, 'r_data', 15, footer_r_ave],
-    'get_sff': [get_sff, 'SFF_spectrum', 7, footer_sff]
+    'get_sff': [get_sff, 'SFF_spectrum', 7, footer_sff],
+    'get_tau_thouless': [get_tau_thouless, 'SFF_spectrum', 11,
+                         footer_t_thouless]
 
 }

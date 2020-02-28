@@ -98,18 +98,19 @@ if __name__ == '__main__':
 
     for model in [pathsIso]:
 
-        method = 'get_sff'
+        methods = [['get_sff', 'sff', False],
+                   ['get_tau_thouless', 'tau_th', True]]
         for mode in [0]:
             kwargs_dict = {
                 'population_variance': True,
                 'mode': mode,
             }
             savepath = model.savepath
-
-            dae.extract_data(topdir, savepath, routine=method,
-                             partial=False, disorder_key='dW',
-                             savename='sff', reverse_order=True,
-                             exclude_keys=model.exclude_keys,
-                             collapse=True,
-                             merge=False,
-                             **kwargs_dict)
+            for method in methods:
+                dae.extract_data(topdir, savepath, routine=method[0],
+                                 partial=False, disorder_key='dW',
+                                 savename=method[1], reverse_order=True,
+                                 exclude_keys=model.exclude_keys,
+                                 collapse=method[2],
+                                 merge=False,
+                                 **kwargs_dict)

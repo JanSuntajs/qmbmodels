@@ -1,6 +1,8 @@
 import numpy as np
 import h5py
 
+from spectral_stats.sff import sff_functions
+
 from .disorder import _preparation
 
 
@@ -66,43 +68,166 @@ Each row is organised as follows:
    edges with the slope (density of states) becoming negative -> we
    need to cut those edges, thus discarding some values.
 
-8) size L: system size
 
-9) nener: number of energies obtained using partial diagonalization
+8) filter_eta: eta used in the gaussian filtering of the spectra
+   for the SFF calculation.
+  
+9) size L: system size
 
-10) target_variance: Variance of the disordered samples
+10) nener: number of energies obtained using partial diagonalization
+
+11) target_variance: Variance of the disordered samples
     with which to compare the numerical results in the postprocessing
     steps if mode equals 1 or 2.
     If mode=0: nan, this argument is not needed if preprocessing is not
     performed.
 
-11) epsilon: condition used to determine whether to select a given disorder
+12) epsilon: condition used to determine whether to select a given disorder
    distribution.
    If mode=0: nan
 
-12) dW_min: value of the disorder strength parameter for which the epsilon
+14) dW_min: value of the disorder strength parameter for which the epsilon
    was evaluated.
    If mode=0: nan
 
-13) variance_before: variance of variances of the disorder distributions before
+14) variance_before: variance of variances of the disorder distributions before
     post.
 
-14) variance_after: variance of variances of the disorder distributions after
+15) variance_after: variance of variances of the disorder distributions after
     post.
 
-15) nsamples: number of all the random samples
+16) nsamples: number of all the random samples
 
-16) nsamples_selected: number of the random disorder samples with an
+17) nsamples_selected: number of the random disorder samples with an
     appropriate variance.
     NOTE: if mode (entry 15) ) equals 0, nsamples equals nsamples.
 
-17) nsamples_rejected: nsamples - nsamples_selected
+18) nsamples_rejected: nsamples - nsamples_selected
     NOTE: if mode (entry 15) ) equals 0, this should be equal to 0.
 
-18) mode: which postprocessing mode was selected
+19) mode: which postprocessing mode was selected
     NOTE: 0 indicates no postprocessing!
 
-19) population_variance: integer specifying whether theoretical prediction for
+20) population_variance: integer specifying whether theoretical prediction for
+    the population variance was used in order calculate the target variance.
+    1 if that is the case, 0 if not.
+"""
+
+
+footer_t_thouless = """
+Formulae for the calculation of the spectral form factor
+(SFF) K(tau):
+
+Spectral form factor with the included disconnected part:
+
+K(tau)_uncon = < | \sum_n g(E_n) exp(-1j E_n \tau) | ^2 >
+
+Here, < ... > is the disorder averaging, E_n are the eigenvalues
+and g(E_n) is a filter used to minimize the finite-size effects.
+
+To obtain the connected spetral form factor K(tau)_conn, we need
+to subtract the disconnected part, which is defined as follows:
+
+uncon(tau) = |< \sum g(E_n) exp(-1j E_n \tau) >|^2
+
+Below we explain the contents of this file.
+
+Each row is organised as follows:
+
+0) dW: disorder strength
+
+1) tau_th: thouless time in nonphysical units -> extracted from the
+   SFF(tau) dependence for the case with performed unfolding where the
+   tau values have been rescaled such that the SFF(tau) plateau
+   takes place at tau=1.
+
+2) t_th (or tau_th_phys): thouless time in physical units, obtained
+   from tau_th as:
+   t_th = tau_th / mn_lvl_spc, where
+   mn_lvl_spc is the mean level spacing, defined in the next entry.
+
+3) mn_lvl_spc: the mean level spacing, defined as:
+   mn_lvl_spc = gamma / (0.3413 * D), where D is the
+   Hilbert space dimension of the (full) Hilbert space. See
+   also:
+   https://arxiv.org/abs/1905.06345v2   
+
+4) K(t_th): value of the SFF curve at the thouless time.
+
+5) K(tau)_conn: SFF dependence without the disconnected part
+   and normalized so that the quantity should equal
+   K(tau=0) = 0.
+   Normalization is as follows:
+   (1/D') (K(tau)_uncon- (A/B) * uncon(tau))
+   Here, A and B are the values of K(0)_uncon and uncon(0), respectively.
+   Hence,
+   A = < | \sum_n g(E_n) |^2 >
+   B = |< \sum g(E_n) >|^2
+
+6) nener0: number of energies obtained using the diagonalization routine.
+   If some parts of the spectrum were discarded during the unfolding
+   procedure, the actual number of the energies used in the calculation
+   might be smaller.
+
+7) gamma: width of the original spectrum for which we assume a Gaussian
+   shape.
+
+8) unfolding_n: degree of the unfolding polynomial used in the
+   unfolding procedure.
+
+9) discard_unfolding: number of energies that have been discarded due
+   to the unfolding procedure if slope needed to be corrected ->
+   unfolding can sometimes introduce unphysical effects near the spectral
+   edges with the slope (density of states) becoming negative -> we
+   need to cut those edges, thus discarding some values.
+
+10) filter_eta: eta used in the gaussian filtering of the spectra
+   for the SFF calculation.
+
+11) epsilon_th: epsilon used in the thouless time determination as
+   the limit parameter to stop the thouless time extraction
+   algorithm.
+
+12) smoothing_th: width of the running mean window used to smoothen
+    the data before the thouless time extraction.
+
+13) size L: system size
+
+14) nener: number of energies obtained using partial diagonalization
+
+15) target_variance: Variance of the disordered samples
+    with which to compare the numerical results in the postprocessing
+    steps if mode equals 1 or 2.
+    If mode=0: nan, this argument is not needed if preprocessing is not
+    performed.
+
+16) epsilon: condition used to determine whether to select a given disorder
+   distribution.
+   If mode=0: nan
+
+17) dW_min: value of the disorder strength parameter for which the epsilon
+   was evaluated.
+   If mode=0: nan
+
+18) variance_before: variance of variances of the disorder distributions before
+    post.
+
+19) variance_after: variance of variances of the disorder distributions after
+    post.
+
+20) nsamples: number of all the random samples
+
+21) nsamples_selected: number of the random disorder samples with an
+    appropriate variance.
+    NOTE: if mode (entry 15) ) equals 0, nsamples equals nsamples.
+
+22) nsamples_rejected: nsamples - nsamples_selected
+    NOTE: if mode (entry 15) ) equals 0, this should be equal to 0.
+
+23) mode: which postprocessing mode was selected
+    NOTE: 0 indicates no postprocessing!
+
+24) population_variance: integer specifying whether theoretical prediction for
     the population variance was used in order calculate the target variance.
     1 if that is the case, 0 if not.
 """
@@ -136,6 +261,36 @@ def _sff(spectrum, condition, size, eff_dims,
     return (np.atleast_1d(taulist),
             np.atleast_1d(sff_disconn), np.atleast_1d(sff_conn),
             nener, gamma, unfolding_n, discarded_unfolding, filter_eta)
+
+
+def _thouless_tau(spectrum, condition, size, eff_dims,
+                  normal_con, normal_uncon,
+                  gamma0, nener0,
+                  unfolding_n,
+                  discarded_unfolding,
+                  filter_eta,
+                  epsilon_th=0.05,
+                  smoothing_th=50,
+                  *args, **kwargs):
+
+    (taulist, sff_disconn, sff_conn, nener, gamma, unfolding_n,
+     discardd_unfolding, filter_eta) = _sff(spectrum, condition,
+                                            size, eff_dims, normal_con,
+                                            normal_uncon, gamma0,
+                                            nener0, unfolding_n,
+                                            discarded_unfolding,
+                                            filter_eta)
+
+    taulist_ = taulist * 2 * np.pi
+    t_th, sff_th = sff_functions.ext_t_thouless(taulist_, sff_disconn,
+                                                epsilon_th, smoothing_th)
+    t_th *= 1 / (2 * np.pi)
+    mn_lvl_spc = gamma[0] / (nener[0] * 0.3413)
+    t_th_phys = t_th / mn_lvl_spc
+    return (t_th, sff_th, t_th_phys, mn_lvl_spc,
+            nener[0], gamma[0], unfolding_n[0],
+            discarded_unfolding[0], filter_eta[0],
+            epsilon_th, smoothing_th)
 
 
 def get_sff(h5file, results_key='SFF_spectrum',
@@ -262,7 +417,7 @@ def get_sff(h5file, results_key='SFF_spectrum',
                         disorder_string,
                         target_variance, population_variance,
                         mode, epsilon, dW_min,
-                        _sff, 5, eff_dims=eff_dims,
+                        _sff, 7, eff_dims=eff_dims,
                         normal_con=normal_con,
                         normal_uncon=normal_uncon,
                         gamma0=gamma0,
@@ -270,4 +425,46 @@ def get_sff(h5file, results_key='SFF_spectrum',
                         unfolding_n=unfolding_n,
                         discarded_unfolding=discarded_unfolding,
                         filter_eta=filter_eta,
+                        *args, **kwargs)
+
+
+def get_tau_thouless(h5file, results_key='SFF_spectrum',
+                     disorder_key='dW',
+                     target_variance=1. / 3.,
+                     epsilon=0.,
+                     dW_min=0.,
+                     population_variance=True,
+                     mode=0,
+                     disorder_string='Hamiltonian_random_disorder_partial',
+                     epsilon_th=0.05,
+                     smoothing_th=50,
+                     *args,
+                     **kwargs
+                     ):
+
+    with h5py.File(h5file, 'r') as file:
+
+        eff_dims = file[results_key].attrs['dims_eff']
+        normal_con = file[results_key].attrs['normal_con']
+        normal_uncon = file[results_key].attrs['normal_uncon']
+        gamma0 = file[results_key].attrs['gamma0']
+        nener0 = file[results_key].attrs['nener0']
+        discarded_unfolding = file[results_key].attrs['discarded_unfolding']
+        unfolding_n = file[results_key].attrs['sff_unfolding_n']
+        filter_eta = file[results_key].attrs['eta']
+
+    return _preparation(h5file, results_key, disorder_key,
+                        disorder_string,
+                        target_variance, population_variance,
+                        mode, epsilon, dW_min,
+                        _thouless_tau, 11, eff_dims=eff_dims,
+                        normal_con=normal_con,
+                        normal_uncon=normal_uncon,
+                        gamma0=gamma0,
+                        nener0=nener0,
+                        unfolding_n=unfolding_n,
+                        discarded_unfolding=discarded_unfolding,
+                        filter_eta=filter_eta,
+                        epsilon_th=epsilon_th,
+                        smoothing_th=smoothing_th,
                         *args, **kwargs)
