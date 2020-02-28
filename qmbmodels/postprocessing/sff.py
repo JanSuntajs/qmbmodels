@@ -274,12 +274,12 @@ def _thouless_tau(spectrum, condition, size, eff_dims,
                   *args, **kwargs):
 
     (taulist, sff_disconn, sff_conn, nener, gamma, unfolding_n,
-     discardd_unfolding, filter_eta) = _sff(spectrum, condition,
-                                            size, eff_dims, normal_con,
-                                            normal_uncon, gamma0,
-                                            nener0, unfolding_n,
-                                            discarded_unfolding,
-                                            filter_eta)
+     discarded_unfolding, filter_eta) = _sff(spectrum, condition,
+                                             size, eff_dims, normal_con,
+                                             normal_uncon, gamma0,
+                                             nener0, unfolding_n,
+                                             discarded_unfolding,
+                                             filter_eta)
 
     taulist_ = taulist * 2 * np.pi
     t_th, sff_th = sff_functions.ext_t_thouless(taulist_, sff_disconn,
