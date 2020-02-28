@@ -125,7 +125,7 @@ def _sff(spectrum, condition, size, eff_dims,
 
     # remove the disconnected part and rescale so that
     # the start is at zero:
-    sff_conn = (spectrum[1] - (normal_uncon / normal_con) *
+    sff_conn = (spectrum[1] - (normal_con / normal_uncon) *
                 spectrum[2]) / eff_dims
 
     gamma = np.ones_like(sff_conn) * gamma0

@@ -96,7 +96,7 @@ pathsErgod = PathSetter(*paramsErgod)
 
 if __name__ == '__main__':
 
-    for model in [pathsErgod, pathsIso]:
+    for model in [pathsIso]:
 
         method = 'get_sff'
         for mode in [0]:
@@ -104,14 +104,12 @@ if __name__ == '__main__':
                 'population_variance': True,
                 'mode': mode,
             }
-            savepath_ = model.savepath
-            savepath = savepath_.format(mode)
-
+            savepath = model.savepath
 
             dae.extract_data(topdir, savepath, routine=method,
                              partial=False, disorder_key='dW',
                              savename='sff', reverse_order=True,
                              exclude_keys=model.exclude_keys,
                              collapse=True,
-			     merge=False,
+                             merge=False,
                              **kwargs_dict)
