@@ -273,33 +273,27 @@ def _thouless_tau(spectrum, condition, size, eff_dims,
                   smoothing_th=50,
                   *args, **kwargs):
 
-    (taulist, sff_disconn, sff_conn, nener, gamma, unfolding_n,
-     discarded_unfolding, filter_eta) = _sff(spectrum, condition,
-                                             size, eff_dims, normal_con,
-                                             normal_uncon, gamma0,
-                                             nener0, unfolding_n,
-                                             discarded_unfolding,
-                                             filter_eta)
-
-    taulist_ = taulist * 2 * np.pi
+    taulist = spectrum[0]
+    sff = spectrum[1]
+    sff_disconn_part = spectrum[2]
     misc_dict = {
         'dims_eff': eff_dims,
         'normal_con': normal_con,
         'normal_uncon': normal_uncon
     }
-    sff_object = SFF_checker(taulist_, sff_disconn, np.zeros_like(sff_disconn),
+    sff_object = SFF_checker(taulist_, sff, sff_disconn_part,
                              misc_dict
                              )
 
     t_th, sff_th, *rest = sff_object.get_thouless_time(epsilon_th, False,
                                                        smoothing_th)
 
-    mn_lvl_spc = gamma[0] / (nener[0] * 0.3413)
+    mn_lvl_spc = gamma0 / (nener0 * 0.3413)
     t_th_phys = t_th / mn_lvl_spc
 
     results = (t_th, sff_th, t_th_phys, mn_lvl_spc,
-               nener[0], gamma[0], unfolding_n[0],
-               discarded_unfolding[0], filter_eta[0],
+               nener0, gamma0, unfolding_n,
+               discarded_unfolding, filter_eta,
                epsilon_th, smoothing_th)
 
     results = tuple(map(np.atleast_1d, results))
