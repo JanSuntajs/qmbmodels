@@ -281,7 +281,7 @@ def _thouless_tau(spectrum, condition, size, eff_dims,
         'normal_con': normal_con,
         'normal_uncon': normal_uncon
     }
-    sff_object = SFF_checker(taulist_, sff, sff_disconn_part,
+    sff_object = SFF_checker(taulist, sff, sff_disconn_part,
                              misc_dict
                              )
 
