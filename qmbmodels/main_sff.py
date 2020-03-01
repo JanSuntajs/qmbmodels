@@ -154,24 +154,27 @@ if __name__ == '__main__':
             attrs.update({'nener': spc.nener, 'nsamples': spc.nsamples,
                           'nener0': spc._nener, 'nsamples0': spc._nsamples})
 
-
             # add the actual sff values
-            if 'SFF_spectra' not in f.keys():
+            key_spectra = 'SFF_spectra_eta_{:.4f}_filter_{}'.format(eta,
+                                                                    sff_filter)
+            key_spectrum = 'SFF_spectrum_eta_{:.4f}_filter_{}'.format(
+                eta, sff_filter)
+            if key_spectra not in f.keys():
 
-                f.create_dataset('SFF_spectra', data=sfflist,
+                f.create_dataset(key_spectra, data=sfflist,
                                  maxshape=(None, None))
-                f.create_dataset('SFF_spectrum', data=sffvals,
+                f.create_dataset(key_spectrum, data=sffvals,
                                  maxshape=(3, None))
 
-                f['SFF_spectra'].attrs['Description'] = sfflist_desc
-                f['SFF_spectrum'].attrs['Description'] = sff_desc
+                f[key_spectra].attrs['Description'] = sfflist_desc
+                f[key_spectrum].attrs['Description'] = sff_desc
 
             else:
-                f['SFF_spectra'].resize(sfflist.shape)
-                f['SFF_spectrum'].resize(sffvals.shape)
+                f[key_spectra].resize(sfflist.shape)
+                f[key_spectrum].resize(sffvals.shape)
 
-                f['SFF_spectra'][()] = sfflist
-                f['SFF_spectrum'][()] = sffvals
+                f[key_spectra][()] = sfflist
+                f[key_spectrum][()] = sffvals
 
             # data which led to the SFF calculation
             for key in _misc_include:
@@ -185,7 +188,7 @@ if __name__ == '__main__':
                     f[key][()] = spc.misc_dict[key]
 
             # append the attributes
-            for key1 in ['SFF_spectra', 'SFF_spectrum'] + _misc_include:
+            for key1 in [key_spectra, key_spectrum] + _misc_include:
                 for key2, value in attrs.items():
                     f[key1].attrs[key2] = value
 
