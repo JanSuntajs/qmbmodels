@@ -151,7 +151,7 @@ if __name__ == '__main__':
             sff_con = (spc.sff - (normal_con / normal_uncon) *
                        spc.sff_uncon) / D_eff
 
-            sffvals_rescale = np.array(
+            sffvals_rescaled = np.array(
                 [spc.taulist / (2 * np.pi), sff_discon, sff_con])
             # prepare additional attributes
             filt_dict = {key: spc.filt_dict[key] for key in spc.filt_dict
