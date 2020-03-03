@@ -109,12 +109,16 @@ if __name__ == '__main__':
     savepath = argsDict['results']
     print(savepath)
 
+    sff_folder = f'{savepath}/sff_ext'
+    if not os.path.isdir(sff_folder):
+
+        os.makedirs(sff_folder)
     try:
         file = glob.glob(f"{savepath}/*.hdf5")[0]
         print(('Starting sff analysis in the {}'
                'folder!').format(savepath))
 
-        with h5py.File(file, 'a') as f:
+        with h5py.File(file, 'r') as f:
 
             data = f['Eigenvalues'][:]
 
@@ -133,14 +137,22 @@ if __name__ == '__main__':
             spc.spectral_unfolding(n=unfold_n, merge=False, correct_slope=True)
             spc.get_ham_misc(individual=True)
             spc.spectral_filtering(filter_key=sff_filter, eta=eta)
-            sfflist = np.zeros(
-                (spc.nsamples + 1, len(taulist)), dtype=np.complex128)
-            sfflist[0] = taulist
+
             # calculate the SFF
-            sfflist[1:, :] = spc.calc_sff(taulist, return_sfflist=True)
+            spc.calc_sff(taulist, return_sfflist=False)
             # gather the results
             sffvals = np.array([spc.taulist, spc.sff, spc.sff_uncon])
 
+            D_eff = spc.filt_dict['dims_eff']
+            normal_uncon = spc.filt_dict['normal_uncon']
+            normal_con = spc.filt_dict['normal_con']
+
+            sff_discon = spc.sff / D_eff
+            sff_con = (spc.sff - (normal_con / normal_uncon) *
+                       spc.sff_uncon) / D_eff
+
+            sffvals_rescale = np.array(
+                [spc.taulist / (2 * np.pi), sff_discon, sff_con])
             # prepare additional attributes
             filt_dict = {key: spc.filt_dict[key] for key in spc.filt_dict
                          if key not in _filt_exclude}
@@ -159,44 +171,13 @@ if __name__ == '__main__':
             attrs.update({'nener': spc.nener, 'nsamples': spc.nsamples,
                           'nener0': spc._nener, 'nsamples0': spc._nsamples})
 
-            # add the actual sff values
-            key_spectra = 'SFF_spectra_eta_{:.4f}_filter_{}'.format(eta,
-                                                                    sff_filter)
-            key_spectrum = 'SFF_spectrum_eta_{:.4f}_filter_{}'.format(
-                eta, sff_filter)
-            if key_spectra not in f.keys():
+            name_spectrum = ('SFF_spectrum_eta'
+                             '_{:.4f}_filter_{}_{}_{}.npz').format(
+                eta, sff_filter, argsDict['syspar'], argsDict['modpar'])
 
-                f.create_dataset(key_spectra, data=sfflist,
-                                 maxshape=(None, None))
-                f.create_dataset(key_spectrum, data=sffvals,
-                                 maxshape=(3, None))
-
-                f[key_spectra].attrs['Description'] = sfflist_desc
-                f[key_spectrum].attrs['Description'] = sff_desc
-
-            else:
-                f[key_spectra].resize(sfflist.shape)
-                f[key_spectrum].resize(sffvals.shape)
-
-                f[key_spectra][()] = sfflist
-                f[key_spectrum][()] = sffvals
-
-            # data which led to the SFF calculation
-            for key in _misc_include:
-
-                if key not in f.keys():
-
-                    f.create_dataset(
-                        key, data=spc.misc_dict[key], maxshape=(None,))
-                else:
-                    f[key].resize(spc.misc_dict[key].shape)
-                    f[key][()] = spc.misc_dict[key]
-
-            # append the attributes
-            for key1 in [key_spectra, key_spectrum] + _misc_include:
-                for key2, value in attrs.items():
-                    f[key1].attrs[key2] = value
-
+            filedict = {'sff_raw': sffvals,
+                        'sff_rescaled': sffvals_rescaled}
+            np.savez(f'{sff_folder}/{name_spectrum}', **attrs, **filedict)
     except IndexError:
         print('No hdf5 file in the {} folder! Exiting.'.format(savepath))
         pass
