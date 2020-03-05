@@ -434,7 +434,7 @@ def get_sff(h5file, results_key='SFF_spectrum',
     except KeyError:
         print('No results_key: {}. File: {}'.format(results_key,
                                                     h5file))
-        sys.exit(0)
+        pass
 
 
 def get_tau_thouless(h5file, results_key='SFF_spectrum',
@@ -485,4 +485,4 @@ def get_tau_thouless(h5file, results_key='SFF_spectrum',
     except KeyError:
         print('No results_key: {}. File: {}'.format(results_key,
                                                     h5file))
-        sys.exit(0)
+        pass
