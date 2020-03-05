@@ -299,6 +299,8 @@ def get_sff(h5file, results_key='SFF_spectrum',
             dW_min=0.,
             population_variance=True,
             mode=0,
+            eta=0.5,
+            sff_filter='gaussian',
             disorder_string='Hamiltonian_random_disorder_partial',
             *args,
             **kwargs
@@ -400,6 +402,8 @@ def get_sff(h5file, results_key='SFF_spectrum',
     Whether theoretical population variance was used to
     estimate the target variance or not.
     """
+    results_key += '_eta_{:.4f}_filter_{}'.format(
+        eta, sff_filter)
 
     with h5py.File(h5file, 'r') as file:
 
@@ -434,12 +438,16 @@ def get_tau_thouless(h5file, results_key='SFF_spectrum',
                      dW_min=0.,
                      population_variance=True,
                      mode=0,
+                     eta=0.5,
+                     sff_filter='gaussian',
                      disorder_string='Hamiltonian_random_disorder_partial',
                      epsilon_th=0.05,
                      smoothing_th=50,
                      *args,
                      **kwargs
                      ):
+    results_key += '_eta_{:.4f}_filter_{}'.format(
+        eta, sff_filter)
 
     with h5py.File(h5file, 'r') as file:
 
