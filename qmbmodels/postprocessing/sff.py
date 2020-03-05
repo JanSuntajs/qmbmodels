@@ -467,10 +467,6 @@ def get_tau_thouless(h5file, results_key='SFF_spectrum',
             unfolding_n = file[results_key].attrs['sff_unfolding_n']
             filter_eta = file[results_key].attrs['eta']
 
-            except KeyError:
-                print('No results_key: {}. File: {}'.format(results_key,
-                                                            h5file))
-                sys.exit(0)
         return _preparation(h5file, results_key, disorder_key,
                             disorder_string,
                             target_variance, population_variance,
