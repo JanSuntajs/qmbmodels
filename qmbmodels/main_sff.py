@@ -163,7 +163,7 @@ if __name__ == '__main__':
             key_spectra = 'SFF_spectra_eta_{:.4f}_filter_{}'.format(eta,
                                                                     sff_filter)
             key_spectrum = 'SFF_spectrum_eta_{:.4f}_filter_{}'.format(
-                eta, sff_filter)
+                eta, sff_filter)    
             if key_spectra not in f.keys():
 
                 f.create_dataset(key_spectra, data=sfflist,

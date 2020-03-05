@@ -1,5 +1,6 @@
 import numpy as np
 import h5py
+import sys
 
 from spectral_stats.sff.sff_functions import SFF_checker
 
@@ -405,30 +406,35 @@ def get_sff(h5file, results_key='SFF_spectrum',
     results_key += '_eta_{:.4f}_filter_{}'.format(
         eta, sff_filter)
 
-    with h5py.File(h5file, 'r') as file:
+    try:
+        with h5py.File(h5file, 'r') as file:
 
-        eff_dims = file[results_key].attrs['dims_eff']
-        normal_con = file[results_key].attrs['normal_con']
-        normal_uncon = file[results_key].attrs['normal_uncon']
-        gamma0 = file[results_key].attrs['gamma0']
-        nener0 = file[results_key].attrs['nener0']
-        discarded_unfolding = file[results_key].attrs['discarded_unfolding']
-        unfolding_n = file[results_key].attrs['sff_unfolding_n']
-        filter_eta = file[results_key].attrs['eta']
+            eff_dims = file[results_key].attrs['dims_eff']
+            normal_con = file[results_key].attrs['normal_con']
+            normal_uncon = file[results_key].attrs['normal_uncon']
+            gamma0 = file[results_key].attrs['gamma0']
+            nener0 = file[results_key].attrs['nener0']
+            discarded_unfolding = file[results_key].attrs['discarded_unfolding']
+            unfolding_n = file[results_key].attrs['sff_unfolding_n']
+            filter_eta = file[results_key].attrs['eta']
 
-    return _preparation(h5file, results_key, disorder_key,
-                        disorder_string,
-                        target_variance, population_variance,
-                        mode, epsilon, dW_min,
-                        _sff, 7, eff_dims=eff_dims,
-                        normal_con=normal_con,
-                        normal_uncon=normal_uncon,
-                        gamma0=gamma0,
-                        nener0=nener0,
-                        unfolding_n=unfolding_n,
-                        discarded_unfolding=discarded_unfolding,
-                        filter_eta=filter_eta,
-                        *args, **kwargs)
+        return _preparation(h5file, results_key, disorder_key,
+                            disorder_string,
+                            target_variance, population_variance,
+                            mode, epsilon, dW_min,
+                            _sff, 7, eff_dims=eff_dims,
+                            normal_con=normal_con,
+                            normal_uncon=normal_uncon,
+                            gamma0=gamma0,
+                            nener0=nener0,
+                            unfolding_n=unfolding_n,
+                            discarded_unfolding=discarded_unfolding,
+                            filter_eta=filter_eta,
+                            *args, **kwargs)
+    except KeyError:
+        print('No results_key: {}. File: {}'.format(results_key,
+                                                    h5file))
+        sys.exit(0)
 
 
 def get_tau_thouless(h5file, results_key='SFF_spectrum',
@@ -449,29 +455,38 @@ def get_tau_thouless(h5file, results_key='SFF_spectrum',
     results_key += '_eta_{:.4f}_filter_{}'.format(
         eta, sff_filter)
 
-    with h5py.File(h5file, 'r') as file:
+    try:
+        with h5py.File(h5file, 'r') as file:
 
-        eff_dims = file[results_key].attrs['dims_eff']
-        normal_con = file[results_key].attrs['normal_con']
-        normal_uncon = file[results_key].attrs['normal_uncon']
-        gamma0 = file[results_key].attrs['gamma0']
-        nener0 = file[results_key].attrs['nener0']
-        discarded_unfolding = file[results_key].attrs['discarded_unfolding']
-        unfolding_n = file[results_key].attrs['sff_unfolding_n']
-        filter_eta = file[results_key].attrs['eta']
+            eff_dims = file[results_key].attrs['dims_eff']
+            normal_con = file[results_key].attrs['normal_con']
+            normal_uncon = file[results_key].attrs['normal_uncon']
+            gamma0 = file[results_key].attrs['gamma0']
+            nener0 = file[results_key].attrs['nener0']
+            discarded_unfolding = file[results_key].attrs['discarded_unfolding']
+            unfolding_n = file[results_key].attrs['sff_unfolding_n']
+            filter_eta = file[results_key].attrs['eta']
 
-    return _preparation(h5file, results_key, disorder_key,
-                        disorder_string,
-                        target_variance, population_variance,
-                        mode, epsilon, dW_min,
-                        _thouless_tau, 11, eff_dims=eff_dims,
-                        normal_con=normal_con,
-                        normal_uncon=normal_uncon,
-                        gamma0=gamma0,
-                        nener0=nener0,
-                        unfolding_n=unfolding_n,
-                        discarded_unfolding=discarded_unfolding,
-                        filter_eta=filter_eta,
-                        epsilon_th=epsilon_th,
-                        smoothing_th=smoothing_th,
-                        *args, **kwargs)
+            except KeyError:
+                print('No results_key: {}. File: {}'.format(results_key,
+                                                            h5file))
+                sys.exit(0)
+        return _preparation(h5file, results_key, disorder_key,
+                            disorder_string,
+                            target_variance, population_variance,
+                            mode, epsilon, dW_min,
+                            _thouless_tau, 11, eff_dims=eff_dims,
+                            normal_con=normal_con,
+                            normal_uncon=normal_uncon,
+                            gamma0=gamma0,
+                            nener0=nener0,
+                            unfolding_n=unfolding_n,
+                            discarded_unfolding=discarded_unfolding,
+                            filter_eta=filter_eta,
+                            epsilon_th=epsilon_th,
+                            smoothing_th=smoothing_th,
+                            *args, **kwargs)
+    except KeyError:
+        print('No results_key: {}. File: {}'.format(results_key,
+                                                    h5file))
+        sys.exit(0)
