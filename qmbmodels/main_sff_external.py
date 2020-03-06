@@ -183,8 +183,8 @@ if __name__ == '__main__':
                               'nener0': spc._nener,
                               'nsamples0': spc._nsamples})
 
-                name_spectrum = ('SFF_spectrum_perc_{}_eta'
-                                 '{:.5f}_{:.4f}_filter_{}_{}_{}.npz').format(
+                name_spectrum = ('SFF_spectrum_perc_{:.5f}_eta'
+                                 '_{:.4f}_filter_{}_{}_{}.npz').format(
                     spc_width[1] - spc_width[0],
                     eta, sff_filter, argsDict['syspar'], argsDict['modpar'])
 

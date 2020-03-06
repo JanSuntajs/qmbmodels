@@ -84,7 +84,7 @@ paramsIso = (
      'XXZ_isotropic_entro_post_nev_100_paper/mode_{}'),
     'pbc_True_disorder_uniform_ham_type_spin1d',
     'L_12_nu_6',
-    1.0,
+    2.0,
     ('J1_1.0_J2_0.0_delta1'
      '_1.0_delta2_0.0_W_0.0_dW_{}'),
     1. / 3.,
