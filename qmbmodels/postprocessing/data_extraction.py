@@ -351,10 +351,14 @@ def extract_data(topdir, savepath, routine='get_entro_ave',
 
                     # sort according to disorder
                     data = data[data[:, 0].argsort()]
-
                     print(_join(savefolder_, savename_))
-                    np.savetxt(_join(savefolder_, savename_),
-                               data, footer=footer)
+                    try:
+
+                        np.savetxt(_join(savefolder_, savename_),
+                                   data, footer=footer)
+                    except ValueError:
+                        print('Encountered error, file will not be saved!')
+                        pass
                 else:
 
                     data = []
@@ -367,5 +371,9 @@ def extract_data(topdir, savepath, routine='get_entro_ave',
                         savename_temp = savename_ + '_{}_{}'.format(
                             disorder_key, value[0])
                         print(_join(savefolder_, savename_))
-                        np.savetxt(_join(savefolder_, savename_temp),
-                                   result, footer=footer)
+                        try:
+                            np.savetxt(_join(savefolder_, savename_temp),
+                                       result, footer=footer)
+                        except ValueError:
+                            print('Encountered error, file will not be saved!')
+                            pass
