@@ -95,6 +95,15 @@ for a more technical introduction of the Spectral form
 factor.
 """
 
+
+# spectral_widths
+spec_widths = [
+    [0., 1],
+    [0.45, 0.55],
+    [0.495, 0.505],
+    [0.4995, 0.5005]
+]
+
 if __name__ == '__main__':
 
     sffDict, sffextra = arg_parser_general(_sff_parse_dict)
@@ -129,55 +138,59 @@ if __name__ == '__main__':
 
             # if the sff spectrum dataset does not yet exist, create it
             # perform the calculations
-            spc = Spectra(data)
-            if sff_filter == 'gaussian':
-                spc.spectral_width = (0., 1.)
-            elif sff_filter == 'identity':
-                spc.spectral_width = (0.5 * eta, 1 - 0.5 * eta)
-            spc.spectral_unfolding(n=unfold_n, merge=False, correct_slope=True)
-            spc.get_ham_misc(individual=True)
-            spc.spectral_filtering(filter_key=sff_filter, eta=eta)
+            for spc_width in spc_widths:
+                spc = Spectra(data)
+                # if sff_filter == 'gaussian':
+                spc.spectral_width = tuple(spectral_width)
 
-            # calculate the SFF
-            spc.calc_sff(taulist, return_sfflist=False)
-            # gather the results
-            sffvals = np.array([spc.taulist, spc.sff, spc.sff_uncon])
+                spc.spectral_unfolding(
+                    n=unfold_n, merge=False, correct_slope=True)
+                spc.get_ham_misc(individual=True)
+                spc.spectral_filtering(filter_key=sff_filter, eta=eta)
 
-            D_eff = spc.filt_dict['dims_eff']
-            normal_uncon = spc.filt_dict['normal_uncon']
-            normal_con = spc.filt_dict['normal_con']
+                # calculate the SFF
+                spc.calc_sff(taulist, return_sfflist=False)
+                # gather the results
+                sffvals = np.array([spc.taulist, spc.sff, spc.sff_uncon])
 
-            sff_discon = spc.sff / D_eff
-            sff_con = (spc.sff - (normal_con / normal_uncon) *
-                       spc.sff_uncon) / D_eff
+                D_eff = spc.filt_dict['dims_eff']
+                normal_uncon = spc.filt_dict['normal_uncon']
+                normal_con = spc.filt_dict['normal_con']
 
-            sffvals_rescaled = np.array(
-                [spc.taulist / (2 * np.pi), sff_discon, sff_con])
-            # prepare additional attributes
-            filt_dict = {key: spc.filt_dict[key] for key in spc.filt_dict
-                         if key not in _filt_exclude}
-            misc_dict = {key: spc.misc_dict[key]
-                         for key in spc.misc_dict if key not in _misc_include}
-            misc0 = spc.misc0_dict.copy()
-            misc0_keys = [key for key in misc0]
+                sff_discon = spc.sff / D_eff
+                sff_con = (spc.sff - (normal_con / normal_uncon) *
+                           spc.sff_uncon) / D_eff
 
-            for key in misc0_keys:
-                misc0[key + '0'] = misc0.pop(key)
-            attrs.update(spc.unfold_dict.copy())
+                sffvals_rescaled = np.array(
+                    [spc.taulist / (2 * np.pi), sff_discon, sff_con])
+                # prepare additional attributes
+                filt_dict = {key: spc.filt_dict[key] for key in spc.filt_dict
+                             if key not in _filt_exclude}
+                misc_dict = {key: spc.misc_dict[key]
+                             for key in spc.misc_dict if
+                             key not in _misc_include}
+                misc0 = spc.misc0_dict.copy()
+                misc0_keys = [key for key in misc0]
 
-            for dict_ in (misc_dict, filt_dict, misc0):
-                attrs.update(dict_)
+                for key in misc0_keys:
+                    misc0[key + '0'] = misc0.pop(key)
+                attrs.update(spc.unfold_dict.copy())
 
-            attrs.update({'nener': spc.nener, 'nsamples': spc.nsamples,
-                          'nener0': spc._nener, 'nsamples0': spc._nsamples})
+                for dict_ in (misc_dict, filt_dict, misc0):
+                    attrs.update(dict_)
 
-            name_spectrum = ('SFF_spectrum_eta'
-                             '_{:.4f}_filter_{}_{}_{}.npz').format(
-                eta, sff_filter, argsDict['syspar'], argsDict['modpar'])
+                attrs.update({'nener': spc.nener, 'nsamples': spc.nsamples,
+                              'nener0': spc._nener,
+                              'nsamples0': spc._nsamples})
 
-            filedict = {'sff_raw': sffvals,
-                        'sff_rescaled': sffvals_rescaled}
-            np.savez(f'{sff_folder}/{name_spectrum}', **attrs, **filedict)
+                name_spectrum = ('SFF_spectrum_perc_{}_eta'
+                                 '{:.5f}_{:.4f}_filter_{}_{}_{}.npz').format(
+                    spc_width[1] - spc_width[0],
+                    eta, sff_filter, argsDict['syspar'], argsDict['modpar'])
+
+                filedict = {'sff_raw': sffvals,
+                            'sff_rescaled': sffvals_rescaled}
+                np.savez(f'{sff_folder}/{name_spectrum}', **attrs, **filedict)
     except IndexError:
         print('No hdf5 file in the {} folder! Exiting.'.format(savepath))
         pass
