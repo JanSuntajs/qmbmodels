@@ -34,10 +34,9 @@ _sff_parse_dict = {'sff_min_tau': [float, -5],
 # which attributes of the Spectra class instance to exclude
 # from the final hdf5 file
 
-_filt_exclude = ['filter', 'dims']
+_filt_exclude = []  # ['filter', 'dims']
 # which attributes to consider as separate datasets
-_misc_include = ['mean_ener', 'sq_ham_tr', 'ham_tr_sq', 'gamma',
-                 ]
+_misc_include = []  # ['mean_ener', 'sq_ham_tr', 'ham_tr_sq', 'gamma', ]
 
 # sfflist text descriptor
 sfflist_desc = """
