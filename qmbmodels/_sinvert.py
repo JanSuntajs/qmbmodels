@@ -301,21 +301,24 @@ def sinvert_body(mod, argsDict, syspar, syspar_keys,
                 eigvals.append(eigval)
                 eigvec = np.array(zvec)
 
-                if model.Nu is not None:
-                    rdm_matrix = build_rdm(eigvec, int(
-                        argsDict['L'] / 2.), argsDict['L'], int(
-                        argsDict['nu']))
-                    rdm_eigvals = LA.eigvalsh(rdm_matrix.todense())
-                    rdm_eigvals = rdm_eigvals[rdm_eigvals > 1e-014]
-                    entro = -np.dot(rdm_eigvals, np.log(rdm_eigvals))
-                else:
-                    entangled = Entangled(eigvec, argsDict['L'],
-                                          int(argsDict['L'] / 2.))
-                    entangled.partitioning('homogenous')
-                    entangled.svd()
-                    entro = entangled.eentro()
+                cond_anderson = (argsdict['ham_type'] != 'anderson')
+                cond_free = (argsdict['ham_type'] != 'free1d')
+                if (cond_anderson or cond_free):
+                    if model.Nu is not None:
+                        rdm_matrix = build_rdm(eigvec, int(
+                            argsDict['L'] / 2.), argsDict['L'], int(
+                            argsDict['nu']))
+                        rdm_eigvals = LA.eigvalsh(rdm_matrix.todense())
+                        rdm_eigvals = rdm_eigvals[rdm_eigvals > 1e-014]
+                        entro = -np.dot(rdm_eigvals, np.log(rdm_eigvals))
+                    else:
+                        entangled = Entangled(eigvec, argsDict['L'],
+                                              int(argsDict['L'] / 2.))
+                        entangled.partitioning('homogenous')
+                        entangled.svd()
+                        entro = entangled.eentro()
 
-                entropy.append(entro)
+                    entropy.append(entro)
 
             # destroy the scatter context before the new
             # loop iteration
@@ -329,7 +332,6 @@ def sinvert_body(mod, argsDict, syspar, syspar_keys,
             sortargs = np.argsort(eigvals)
             eigvals = np.array(eigvals)[sortargs]
 
-            entropy = np.array(entropy)[sortargs]
             metadata = np.array([ener0, ener1, nconv])
 
             saveargs = (savepath, syspar, modpar, argsDict,
@@ -339,9 +341,12 @@ def sinvert_body(mod, argsDict, syspar, syspar_keys,
                         'Hamiltonian_diagonal_matelts_partial': diagonals[0],
                         'Hamiltonian_squared_diagonal_matelts_partial':
                         diagonals[1],
-                        'Entropy_partial': entropy,
                         'Eigenvalues_partial_spectral_info': metadata,
                         **fields}
+
+            if not (cond_anderson or cond_free):
+                entropy = np.array(entropy)[sortargs]
+                savedict['Entropy_partial'] = entropy
             # save the eigenvalues, entropy and spectral info as
             # a npz array
 

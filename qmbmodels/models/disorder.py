@@ -38,7 +38,7 @@ _available_disorders = ['none', 'uniform', 'binary', 'gaussian',
 """array_like: specifies which types of disorder are currently implemented."""
 
 
-def get_disorder_dist(L, disorder_type='none', *args):
+def get_disorder_dist(L, disorder_type='none', dim=1, *args):
     """
     A function that returns some of the most commonly
     used disorder types used in our calculations. The
@@ -60,6 +60,13 @@ def get_disorder_dist(L, disorder_type='none', *args):
                 'uniform', 'binary', 'gaussian', 'incommensurate',
                 'cosuniform' (cosine of a uniform variable)
                 'none'
+                NOTE: incomm type is currently only implemented
+                in the 1D case
+    dim: int, optional
+                Integer specifying the system's dimensionality.
+                Defaults to 1 as higher dimensions are only
+                applicable in the Anderson noninteracting case
+                for now.
 
     *args: tuple
             Specifying disorder-specific parameters.
@@ -90,6 +97,7 @@ def get_disorder_dist(L, disorder_type='none', *args):
                        '{}').format(disorder_type, _available_disorders)
         raise ValueError(err_message)
 
+    size = tuple(L for i in range(dim))
     # this try/except block handles the cases
     # in which all the args are not specified
     # because they may not be needed to initialize
@@ -104,22 +112,26 @@ def get_disorder_dist(L, disorder_type='none', *args):
 
     if disorder_type == 'none':
 
-        disorder = np.zeros(L, dtype=np.float64)
+        disorder = np.zeros(size, dtype=np.float64)
 
     if disorder_type == 'uniform':
 
         disorder = np.random.uniform(
-            W - dW, W + dW, size=L)
+            W - dW, W + dW, size=size)
 
     if disorder_type == 'binary':
 
-        disorder = np.random.choice([W - dW, W + dW], size=L)
+        disorder = np.random.choice([W - dW, W + dW], size=size)
 
     if disorder_type == 'gaussian':
 
-        disorder = np.random.normal(loc=W, scale=dW, size=L)
+        disorder = np.random.normal(loc=W, scale=dW, size=size)
 
     if disorder_type == 'incomm':
+
+        if dim != 1:
+            raise ValueError(('incomm disorder type '
+                              'only works in 1 dimension!'))
 
         gldn_ratio = 0.5 * (np.sqrt(5.) - 1.)
 
@@ -133,13 +145,13 @@ def get_disorder_dist(L, disorder_type='none', *args):
 
         # randomly distributed disorder -> site dependent
         # disorder on a lattice
-        lattice = np.random.uniform(0., 2 * np.pi, size=L)
+        lattice = np.random.uniform(0., 2 * np.pi, size=size)
 
         disorder = dW * np.cos(lattice)
 
     if disorder_type == 'powerlaw':
 
-        disorder = np.random.uniform(0., 1., size=L)
+        disorder = np.random.uniform(0., 1., size=size)
 
         disorder = dW * disorder ** (1. / W)
 

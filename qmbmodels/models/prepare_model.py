@@ -44,6 +44,8 @@ def _importer(model, mode='select'):
         from models import imbrie as mod
     elif model_ == 'heisenberg_weak_links':
         from models import heisenberg_weak_links as mod
+    elif model_ == 'anderson':
+        from models import anderson as mod
     else:
         print(('model {} not '
                'recognised! Exiting!').format(model['model']))
