@@ -83,12 +83,7 @@ if __name__ == '__main__':
 
     for model in [pathsAnder]:
 
-        (dW_min, means, variances,
-         std_variances,
-         rescale_factor) = dis.get_min_variance(model.topdir, model.descriptor,
-                                                model.syspar_min,
-                                                model.modpar_min, 'dW')
-
+        dW_min = model.min_dis
         # if we calculate the minimum stopping condition
         # from the numerics
         epsilon_num = std_variances * rescale_factor
