@@ -105,4 +105,4 @@ def construct_hamiltonian(argsdict, parallel=False, mpirank=0, mpisize=0):
     hamiltonian = ham(L, dim, hopping, fields, pbc, parallel=parallel,
                       mpirank=mpirank, mpisize=mpisize)
 
-    return hamiltonian, {'Hamiltonian_random_disorder': fields}
+    return hamiltonian, {'Hamiltonian_random_disorder': fields.flatten()}

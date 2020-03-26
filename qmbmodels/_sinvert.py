@@ -96,6 +96,11 @@ def sinvert_body(mod, argsDict, syspar, syspar_keys,
     #
     # ------------------------------------------------------------
 
+    # distinguish two special cases
+    cond_anderson = (argsDict['ham_type'] == 'anderson')
+    cond_free = (argsDict['ham_type'] == 'free1d')
+
+    many_body = not (cond_free or cond_anderson)
     # get the instance of the appropriate hamiltonian
     # class and the diagonal random fields used
     model, fields = mod.construct_hamiltonian(argsDict, parallel=True,
@@ -301,9 +306,7 @@ def sinvert_body(mod, argsDict, syspar, syspar_keys,
                 eigvals.append(eigval)
                 eigvec = np.array(zvec)
 
-                cond_anderson = (argsDict['ham_type'] != 'anderson')
-                cond_free = (argsDict['ham_type'] != 'free1d')
-                if (cond_anderson or cond_free):
+                if many_body:
                     if model.Nu is not None:
                         rdm_matrix = build_rdm(eigvec, int(
                             argsDict['L'] / 2.), argsDict['L'], int(
@@ -344,7 +347,7 @@ def sinvert_body(mod, argsDict, syspar, syspar_keys,
                         'Eigenvalues_partial_spectral_info': metadata,
                         **fields}
 
-            if not (cond_anderson or cond_free):
+            if many_body:
                 entropy = np.array(entropy)[sortargs]
                 savedict['Entropy_partial'] = entropy
             # save the eigenvalues, entropy and spectral info as
