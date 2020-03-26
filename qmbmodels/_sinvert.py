@@ -301,8 +301,8 @@ def sinvert_body(mod, argsDict, syspar, syspar_keys,
                 eigvals.append(eigval)
                 eigvec = np.array(zvec)
 
-                cond_anderson = (argsdict['ham_type'] != 'anderson')
-                cond_free = (argsdict['ham_type'] != 'free1d')
+                cond_anderson = (argsDict['ham_type'] != 'anderson')
+                cond_free = (argsDict['ham_type'] != 'free1d')
                 if (cond_anderson or cond_free):
                     if model.Nu is not None:
                         rdm_matrix = build_rdm(eigvec, int(
