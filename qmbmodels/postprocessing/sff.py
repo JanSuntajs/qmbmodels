@@ -409,6 +409,19 @@ def get_sff(h5file, results_key='SFF_spectrum',
     try:
         with h5py.File(h5file, 'r') as file:
 
+            if '_eta_eta' in results_key:
+
+                results_key_ = results_key.replace('_eta_eta', '_eta')
+                spectra_key = results_key.replace('spectrum', 'spectra')
+                spectra_key_ = spectra_key.replace('_eta_eta', '_eta')
+
+                file[results_key_] = file[results_key]
+                del file[results_key]
+                file[spectra_key_] = file[spectra_key]
+                del file[spectra_key]
+
+                results_key = results_key_
+
             eff_dims = file[results_key].attrs['dims_eff']
             normal_con = file[results_key].attrs['normal_con']
             normal_uncon = file[results_key].attrs['normal_uncon']
