@@ -159,11 +159,12 @@ if __name__ == '__main__':
             attrs.update({'nener': spc.nener, 'nsamples': spc.nsamples,
                           'nener0': spc._nener, 'nsamples0': spc._nsamples})
 
+            eta_filt_desc = '_eta_{:.4f}_filter_{}'.format(eta,
+                                                           sff_filter)
+
             # add the actual sff values
-            key_spectra = 'SFF_spectra_eta_{:.4f}_filter_{}'.format(eta,
-                                                                    sff_filter)
-            key_spectrum = 'SFF_spectrum_eta_{:.4f}_filter_{}'.format(
-                eta, sff_filter)    
+            key_spectra = 'SFF_spectra_eta{}'.format(eta_filt_desc)
+            key_spectrum = 'SFF_spectrum_eta{}'.format(eta_filt_desc)
             if key_spectra not in f.keys():
 
                 f.create_dataset(key_spectra, data=sfflist,
@@ -187,10 +188,11 @@ if __name__ == '__main__':
                 if key not in f.keys():
 
                     f.create_dataset(
-                        key, data=spc.misc_dict[key], maxshape=(None,))
+                        key + eta_filt_desc,
+                        data=spc.misc_dict[key], maxshape=(None,))
                 else:
-                    f[key].resize(spc.misc_dict[key].shape)
-                    f[key][()] = spc.misc_dict[key]
+                    f[key + eta_filt_desc].resize(spc.misc_dict[key].shape)
+                    f[key + eta_filt_desc][()] = spc.misc_dict[key]
 
             # append the attributes
             for key1 in [key_spectra, key_spectrum] + _misc_include:
