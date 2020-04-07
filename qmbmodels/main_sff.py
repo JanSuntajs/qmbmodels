@@ -182,9 +182,10 @@ if __name__ == '__main__':
                 f[key_spectra][()] = sfflist
                 f[key_spectrum][()] = sffvals
 
+            _misc_include_ = []
             # data which led to the SFF calculation
             for key in _misc_include:
-
+                _misc_include_.append(key + eta_filt_desc)
                 if key not in f.keys():
 
                     f.create_dataset(
@@ -195,7 +196,7 @@ if __name__ == '__main__':
                     f[key + eta_filt_desc][()] = spc.misc_dict[key]
 
             # append the attributes
-            for key1 in [key_spectra, key_spectrum] + _misc_include:
+            for key1 in [key_spectra, key_spectrum] + _misc_include_:
                 for key2, value in attrs.items():
                     f[key1].attrs[key2] = value
 
