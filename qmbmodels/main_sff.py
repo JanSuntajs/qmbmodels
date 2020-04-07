@@ -169,6 +169,8 @@ if __name__ == '__main__':
             key_spectra = 'SFF_spectra{}'.format(eta_filt_desc)
             key_spectrum = 'SFF_spectrum{}'.format(eta_filt_desc)
             if key_spectra not in f.keys():
+                print('Creating datasets {} and {}'.format(
+                    key_spectra, key_spectrum))
 
                 f.create_dataset(key_spectra, data=sfflist,
                                  maxshape=(None, None))
@@ -179,6 +181,9 @@ if __name__ == '__main__':
                 f[key_spectrum].attrs['Description'] = sff_desc
 
             else:
+
+                print('Updating datasets {} and {}'.format(
+                    key_spectra, key_spectrum))
                 f[key_spectra].resize(sfflist.shape)
                 f[key_spectrum].resize(sffvals.shape)
 
