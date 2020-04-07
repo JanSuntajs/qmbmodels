@@ -133,6 +133,8 @@ if __name__ == '__main__':
                 spc.spectral_width = (0.5 * eta, 1 - 0.5 * eta)
             spc.spectral_unfolding(n=unfold_n, merge=False, correct_slope=True)
             spc.get_ham_misc(individual=True)
+            print(('Performing spectral filtering... '
+                   'Filter used: {}. eta: {}').format(sff_filter, eta))
             spc.spectral_filtering(filter_key=sff_filter, eta=eta)
             sfflist = np.zeros(
                 (spc.nsamples + 1, len(taulist)), dtype=np.complex128)
