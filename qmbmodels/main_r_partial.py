@@ -65,7 +65,7 @@ if __name__ == '__main__':
     try:
         file = glob.glob(f"{loadpath}/*.hdf5")[0]
 
-        with h5py.File(file, 'a') as f:
+        with h5py.File(file, 'a', libver='latest', swmr=True) as f:
 
             data = f['Eigenvalues_partial'][:]
 

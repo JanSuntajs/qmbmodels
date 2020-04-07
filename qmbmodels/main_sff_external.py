@@ -126,7 +126,7 @@ if __name__ == '__main__':
         print(('Starting sff analysis in the {}'
                'folder!').format(savepath))
 
-        with h5py.File(file, 'r') as f:
+        with h5py.File(file, 'r', libver='latest', swmr=True) as f:
 
             data = f['Eigenvalues'][:]
 
