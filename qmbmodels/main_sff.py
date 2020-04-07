@@ -115,7 +115,8 @@ if __name__ == '__main__':
                'folder!').format(savepath))
 
         with h5py.File(file, 'a', libver='latest', swmr=True) as f:
-
+            print(('Starting the sff calculation process... '
+                   'Loading the eigenvalues.'))
             data = f['Eigenvalues'][:]
 
             attrs = dict(f['Eigenvalues'].attrs)
@@ -140,7 +141,7 @@ if __name__ == '__main__':
             sfflist[1:, :] = spc.calc_sff(taulist, return_sfflist=True)
             # gather the results
             sffvals = np.array([spc.taulist, spc.sff, spc.sff_uncon])
-
+            print('Finished with calculations... Storing results!')
             # prepare additional attributes
             filt_dict = {key: spc.filt_dict[key] for key in spc.filt_dict
                          if key not in _filt_exclude}
@@ -201,6 +202,7 @@ if __name__ == '__main__':
                 for key2, value in attrs.items():
                     f[key1].attrs[key2] = value
 
+            print('Finished!')
     except IndexError:
         print('No hdf5 file in the {} folder! Exiting.'.format(savepath))
         pass
