@@ -407,7 +407,7 @@ def get_sff(h5file, results_key='SFF_spectrum',
         eta, sff_filter)
 
     try:
-        with h5py.File(h5file, 'r') as file:
+        with h5py.File(h5file, 'r+') as file:
 
             # if 'eta_eta' in results_key:
             results_key_ = results_key.replace('eta_eta', 'eta')
