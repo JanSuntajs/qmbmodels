@@ -403,7 +403,7 @@ def get_sff(h5file, results_key='SFF_spectrum',
     Whether theoretical population variance was used to
     estimate the target variance or not.
     """
-    results_key += 'eta_eta_{:.4f}_filter_{}'.format(
+    results_key += '_eta_eta_{:.4f}_filter_{}'.format(
         eta, sff_filter)
 
     try:
