@@ -403,20 +403,11 @@ def get_sff(h5file, results_key='SFF_spectrum',
     Whether theoretical population variance was used to
     estimate the target variance or not.
     """
-    results_key += '_eta_eta_{:.4f}_filter_{}'.format(
+    results_key += '_eta_{:.4f}_filter_{}'.format(
         eta, sff_filter)
 
     try:
         with h5py.File(h5file, 'r+') as file:
-
-            # if 'eta_eta' in results_key:
-            results_key_ = results_key.replace('eta_eta', 'eta')
-            spectrum_key = results_key.replace('spectrum', 'spectra')
-            spectrum_key_ = spectrum_key.replace('eta_eta', 'eta')
-            file[results_key_] = file[results_key]
-            file[spectrum_key_] = file[spectrum_key]
-            del file[results_key]
-            del file[spectrum_key]
 
             eff_dims = file[results_key].attrs['dims_eff']
             normal_con = file[results_key].attrs['normal_con']
