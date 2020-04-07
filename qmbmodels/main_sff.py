@@ -186,14 +186,15 @@ if __name__ == '__main__':
             # data which led to the SFF calculation
             for key in _misc_include:
                 _misc_include_.append(key + eta_filt_desc)
-                if key not in f.keys():
+                key_ = key + eta_filt_desc
+                if key_ not in f.keys():
 
                     f.create_dataset(
-                        key + eta_filt_desc,
+                        key_,
                         data=spc.misc_dict[key], maxshape=(None,))
                 else:
-                    f[key + eta_filt_desc].resize(spc.misc_dict[key].shape)
-                    f[key + eta_filt_desc][()] = spc.misc_dict[key]
+                    f[key_].resize(spc.misc_dict[key].shape)
+                    f[key_][()] = spc.misc_dict[key]
 
             # append the attributes
             for key1 in [key_spectra, key_spectrum] + _misc_include_:
