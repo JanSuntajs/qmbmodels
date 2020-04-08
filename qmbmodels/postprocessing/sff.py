@@ -407,7 +407,7 @@ def get_sff(h5file, results_key='SFF_spectrum',
         eta, sff_filter)
 
     try:
-        with h5py.File(h5file, 'r') as file:
+        with h5py.File(h5file, 'r', liber='latest', swmr=True) as file:
 
             eff_dims = file[results_key].attrs['dims_eff']
             normal_con = file[results_key].attrs['normal_con']
@@ -456,7 +456,7 @@ def get_tau_thouless(h5file, results_key='SFF_spectrum',
         eta, sff_filter)
 
     try:
-        with h5py.File(h5file, 'r') as file:
+        with h5py.File(h5file, 'r', libver='latest', swmr=True) as file:
 
             eff_dims = file[results_key].attrs['dims_eff']
             normal_con = file[results_key].attrs['normal_con']
