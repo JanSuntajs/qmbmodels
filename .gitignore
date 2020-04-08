@@ -7,7 +7,7 @@
 *.hdf5
 
 #ignore the runner script
-*runner.py
+*runner*.py
 
 # cache files for sublime text
 *.tmlanguage.cache
@@ -32,7 +32,7 @@ sftp-config.json
 .LSOverride
 
 # Icon must end with two \r
-Icon
+Icon
 
 # Thumbnails
 ._*
