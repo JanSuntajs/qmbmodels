@@ -283,7 +283,7 @@ if __name__ == '__main__':
         filename = os.path.join(savepath, filename + '.hdf5')
 
         # save a hdf5 file
-        with h5py.File(filename, 'a', libver='latest', swmr=True) as f:
+        with h5py.File(filename, 'a') as f:
 
             # attributes of the whole file
             for key, value in creator.items():

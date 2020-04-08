@@ -99,8 +99,8 @@ def construct_hamiltonian(argsdict, parallel=False, mpirank=0, mpisize=0):
                        'case is valid!').format(ham_type)
         raise ValueError(err_message)
 
-    fields = get_disorder_dist(L, disorder, dim, argsdict['W'],
-                               argsdict['dW'], argsdict['seed'])
+    fields = get_disorder_dist(L, disorder, argsdict['W'],
+                               argsdict['dW'], argsdict['seed'], dim=dim)
 
     hamiltonian = ham(L, dim, hopping, fields, pbc, parallel=parallel,
                       mpirank=mpirank, mpisize=mpisize)

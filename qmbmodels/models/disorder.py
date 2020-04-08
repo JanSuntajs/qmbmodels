@@ -38,7 +38,7 @@ _available_disorders = ['none', 'uniform', 'binary', 'gaussian',
 """array_like: specifies which types of disorder are currently implemented."""
 
 
-def get_disorder_dist(L, disorder_type='none', dim=1, *args):
+def get_disorder_dist(L, disorder_type='none', *args, dim=1, **kwargs):
     """
     A function that returns some of the most commonly
     used disorder types used in our calculations. The
