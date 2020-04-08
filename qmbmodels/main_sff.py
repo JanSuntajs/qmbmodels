@@ -114,102 +114,104 @@ if __name__ == '__main__':
         print(('Starting sff analysis in the {}'
                'folder!').format(savepath))
 
-        with h5py.File(file, 'a', libver='latest', swmr=True) as f:
-            print(('Starting the sff calculation process... '
-                   'Loading the eigenvalues.'))
-            data = f['Eigenvalues'][:]
+        for eta in [0.1, 0.3, 0.5]:
+            with h5py.File(file, 'a', libver='latest', swmr=True) as f:
+                print(('Starting the sff calculation process... '
+                       'Loading the eigenvalues.'))
+                data = f['Eigenvalues'][:]
 
-            attrs = dict(f['Eigenvalues'].attrs)
-            attrs.update(sffDict)
-            # create the spectra class instance
-            taulist = np.logspace(min_tau, max_tau, n_tau)
+                attrs = dict(f['Eigenvalues'].attrs)
+                attrs.update(sffDict)
+                # create the spectra class instance
+                taulist = np.logspace(min_tau, max_tau, n_tau)
 
-            # if the sff spectrum dataset does not yet exist, create it
-            # perform the calculations
-            spc = Spectra(data)
-            if sff_filter == 'gaussian':
-                spc.spectral_width = (0., 1.)
-            elif sff_filter == 'identity':
-                spc.spectral_width = (0.5 * eta, 1 - 0.5 * eta)
-            spc.spectral_unfolding(n=unfold_n, merge=False, correct_slope=True)
-            spc.get_ham_misc(individual=True)
-            print(('Performing spectral filtering... '
-                   'Filter used: {}. eta: {}').format(sff_filter, eta))
-            spc.spectral_filtering(filter_key=sff_filter, eta=eta)
-            sfflist = np.zeros(
-                (spc.nsamples + 1, len(taulist)), dtype=np.complex128)
-            sfflist[0] = taulist
-            # calculate the SFF
-            sfflist[1:, :] = spc.calc_sff(taulist, return_sfflist=True)
-            # gather the results
-            sffvals = np.array([spc.taulist, spc.sff, spc.sff_uncon])
-            print('Finished with calculations... Storing results!')
-            # prepare additional attributes
-            filt_dict = {key: spc.filt_dict[key] for key in spc.filt_dict
-                         if key not in _filt_exclude}
-            misc_dict = {key: spc.misc_dict[key]
-                         for key in spc.misc_dict if key not in _misc_include}
-            misc0 = spc.misc0_dict.copy()
-            misc0_keys = [key for key in misc0]
+                # if the sff spectrum dataset does not yet exist, create it
+                # perform the calculations
+                spc = Spectra(data)
+                if sff_filter == 'gaussian':
+                    spc.spectral_width = (0., 1.)
+                elif sff_filter == 'identity':
+                    spc.spectral_width = (0.5 * eta, 1 - 0.5 * eta)
+                spc.spectral_unfolding(
+                    n=unfold_n, merge=False, correct_slope=True)
+                spc.get_ham_misc(individual=True)
+                print(('Performing spectral filtering... '
+                       'Filter used: {}. eta: {}').format(sff_filter, eta))
+                spc.spectral_filtering(filter_key=sff_filter, eta=eta)
+                sfflist = np.zeros(
+                    (spc.nsamples + 1, len(taulist)), dtype=np.complex128)
+                sfflist[0] = taulist
+                # calculate the SFF
+                sfflist[1:, :] = spc.calc_sff(taulist, return_sfflist=True)
+                # gather the results
+                sffvals = np.array([spc.taulist, spc.sff, spc.sff_uncon])
+                print('Finished with calculations... Storing results!')
+                # prepare additional attributes
+                filt_dict = {key: spc.filt_dict[key] for key in spc.filt_dict
+                             if key not in _filt_exclude}
+                misc_dict = {key: spc.misc_dict[key]
+                             for key in spc.misc_dict if key not in _misc_include}
+                misc0 = spc.misc0_dict.copy()
+                misc0_keys = [key for key in misc0]
 
-            for key in misc0_keys:
-                misc0[key + '0'] = misc0.pop(key)
-            attrs.update(spc.unfold_dict.copy())
+                for key in misc0_keys:
+                    misc0[key + '0'] = misc0.pop(key)
+                attrs.update(spc.unfold_dict.copy())
 
-            for dict_ in (misc_dict, filt_dict, misc0):
-                attrs.update(dict_)
+                for dict_ in (misc_dict, filt_dict, misc0):
+                    attrs.update(dict_)
 
-            attrs.update({'nener': spc.nener, 'nsamples': spc.nsamples,
-                          'nener0': spc._nener, 'nsamples0': spc._nsamples})
+                attrs.update({'nener': spc.nener, 'nsamples': spc.nsamples,
+                              'nener0': spc._nener, 'nsamples0': spc._nsamples})
 
-            eta_filt_desc = '_eta_{:.4f}_filter_{}'.format(eta,
-                                                           sff_filter)
+                eta_filt_desc = '_eta_{:.4f}_filter_{}'.format(eta,
+                                                               sff_filter)
 
-            # add the actual sff values
-            key_spectra = 'SFF_spectra{}'.format(eta_filt_desc)
-            key_spectrum = 'SFF_spectrum{}'.format(eta_filt_desc)
-            if key_spectra not in f.keys():
-                print('Creating datasets {} and {}'.format(
-                    key_spectra, key_spectrum))
+                # add the actual sff values
+                key_spectra = 'SFF_spectra{}'.format(eta_filt_desc)
+                key_spectrum = 'SFF_spectrum{}'.format(eta_filt_desc)
+                if key_spectra not in f.keys():
+                    print('Creating datasets {} and {}'.format(
+                        key_spectra, key_spectrum))
 
-                f.create_dataset(key_spectra, data=sfflist,
-                                 maxshape=(None, None))
-                f.create_dataset(key_spectrum, data=sffvals,
-                                 maxshape=(3, None))
+                    f.create_dataset(key_spectra, data=sfflist,
+                                     maxshape=(None, None))
+                    f.create_dataset(key_spectrum, data=sffvals,
+                                     maxshape=(3, None))
 
-                f[key_spectra].attrs['Description'] = sfflist_desc
-                f[key_spectrum].attrs['Description'] = sff_desc
+                    f[key_spectra].attrs['Description'] = sfflist_desc
+                    f[key_spectrum].attrs['Description'] = sff_desc
 
-            else:
-
-                print('Updating datasets {} and {}'.format(
-                    key_spectra, key_spectrum))
-                f[key_spectra].resize(sfflist.shape)
-                f[key_spectrum].resize(sffvals.shape)
-
-                f[key_spectra][()] = sfflist
-                f[key_spectrum][()] = sffvals
-
-            _misc_include_ = []
-            # data which led to the SFF calculation
-            for key in _misc_include:
-                _misc_include_.append(key + eta_filt_desc)
-                key_ = key + eta_filt_desc
-                if key_ not in f.keys():
-
-                    f.create_dataset(
-                        key_,
-                        data=spc.misc_dict[key], maxshape=(None,))
                 else:
-                    f[key_].resize(spc.misc_dict[key].shape)
-                    f[key_][()] = spc.misc_dict[key]
 
-            # append the attributes
-            for key1 in [key_spectra, key_spectrum] + _misc_include_:
-                for key2, value in attrs.items():
-                    f[key1].attrs[key2] = value
+                    print('Updating datasets {} and {}'.format(
+                        key_spectra, key_spectrum))
+                    f[key_spectra].resize(sfflist.shape)
+                    f[key_spectrum].resize(sffvals.shape)
 
-            print('Finished!')
+                    f[key_spectra][()] = sfflist
+                    f[key_spectrum][()] = sffvals
+
+                _misc_include_ = []
+                # data which led to the SFF calculation
+                for key in _misc_include:
+                    _misc_include_.append(key + eta_filt_desc)
+                    key_ = key + eta_filt_desc
+                    if key_ not in f.keys():
+
+                        f.create_dataset(
+                            key_,
+                            data=spc.misc_dict[key], maxshape=(None,))
+                    else:
+                        f[key_].resize(spc.misc_dict[key].shape)
+                        f[key_][()] = spc.misc_dict[key]
+
+                # append the attributes
+                for key1 in [key_spectra, key_spectrum] + _misc_include_:
+                    for key2, value in attrs.items():
+                        f[key1].attrs[key2] = value
+
+                print('Finished!')
     except IndexError:
         print('No hdf5 file in the {} folder! Exiting.'.format(savepath))
         pass
