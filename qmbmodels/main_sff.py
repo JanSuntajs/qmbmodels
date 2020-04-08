@@ -115,7 +115,7 @@ if __name__ == '__main__':
                'folder!').format(savepath))
 
         for eta in [0.1, 0.3, 0.5]:
-            with h5py.File(file, 'a', libver='latest', swmr=True) as f:
+            with h5py.File(file, 'a', libver='latest') as f:
                 print(('Starting the sff calculation process... '
                        'Loading the eigenvalues.'))
                 data = f['Eigenvalues'][:]
