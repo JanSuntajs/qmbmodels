@@ -377,4 +377,3 @@ def extract_data(topdir, savepath, routine='get_entro_ave',
                         except ValueError:
                             print('Encountered error, file will not be saved!')
                             pass
-s
