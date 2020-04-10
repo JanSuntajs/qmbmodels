@@ -61,16 +61,16 @@ from entro_analyse import PathSetter
 
 
 topdir = ('/scratch/jan/qmbmodels/results/'
-          '3D_anderson_model_check_transition')
+          'heisenberg_single_impurity_spin1d_test')
 
 paramsAnder = (
     topdir,
     ('/home/jan/'
-     '3D_anderson_nev_100_paper/mode_{}'),
+     'heisenberg_single_impurity'),
     'pbc_True_disorder_uniform_ham_type_anderson',
-    'L_10_dim_3',
+    'L_12_nu_6',
     1.0,
-    't_1.0_W_0.0_dW_{}',
+    'J1_1.0_delta1_0.5_W_0.0_dW_{:.5f}_noise_0.0001',
     1. / 3.,
     [],
 )
@@ -86,7 +86,6 @@ if __name__ == '__main__':
         dW_min = model.min_dis
         # if we calculate the minimum stopping condition
         # from the numerics
-        # epsilon_num = std_variances * rescale_factor
         # we can also do it theoretically -> from the prediction
         # for the minimum std of the variances, which is, for a
         # box distribution, approximately equal to dW_min**2/3
@@ -95,23 +94,22 @@ if __name__ == '__main__':
         # epsilon_theor = 0.8
         # epsilon_theor = 0.2
 
-        methods = [['get_r', 'r_sweep_post']]
+        methods = [['get_r', 'r_sweep_post'],
+                   ['get_entro_ave', 'entro_sweep_post']]
 
-        for mode in [0]:
-            kwargs_dict = {
-                'target_variance': model.var_prefactor,
-                'epsilon': epsilon_theor,
-                'population_variance': True,
-                'mode': mode,
-                'dW_min': model.min_dis,
-            }
-            savepath_ = model.savepath
-            savepath = savepath_.format(mode)
+        kwargs_dict = {
+            'target_variance': model.var_prefactor,
+            'epsilon': epsilon_theor,
+            'population_variance': True,
+            'mode': 0,
+            'dW_min': model.min_dis,
+        }
+        savepath_ = model.savepath
 
-            for method in methods:
-                dae.extract_data(topdir, savepath, routine=method[0],
-                                 partial=True, disorder_key='dW',
-                                 savename=method[1], reverse_order=True,
-                                 exclude_keys=model.exclude_keys,
-                                 collapse=True,
-                                 **kwargs_dict)
+        for method in methods:
+            dae.extract_data(topdir, savepath_, routine=method[0],
+                             partial=True, disorder_key='dW',
+                             savename=method[1], reverse_order=True,
+                             exclude_keys=model.exclude_keys,
+                             collapse=True,
+                             **kwargs_dict)
