@@ -34,7 +34,7 @@ Cosuniform (cosine of a random number:
 import numpy as np
 
 _available_disorders = ['none', 'uniform', 'binary', 'gaussian',
-                        'incomm', 'cosuniform', 'powerlaw']
+                        'incomm', 'cosuniform', 'powerlaw', 'single']
 """array_like: specifies which types of disorder are currently implemented."""
 
 
@@ -79,6 +79,16 @@ def get_disorder_dist(L, disorder_type='none', *args, dim=1, **kwargs):
             args[-1] -> seed. The random seed integer
             should always come last.
 
+    **kwargs:
+            Specifying keyword arguments used mostly for some
+            special disorder distributions, such as in the case
+            when disorder_type == 'single', which corresponds
+            to the single impurity model. In that case,
+            'loc' (for location) is the appropriate keyword
+            argument specifying the location of the impurity.
+
+            loc: integer or 1D array-like of dtype int.
+
     Returns:
     --------
     disorder: ndarray
@@ -109,6 +119,14 @@ def get_disorder_dist(L, disorder_type='none', *args, dim=1, **kwargs):
         np.random.seed(seed=seed)
     except IndexError:
         pass
+
+    if 'loc' in kwargs.keys():
+
+        location = np.atleast_1d(kwargs['loc'])
+        if location.shape[0] != dim:
+
+            raise ValueError(
+                'loc shape should be equal to the system\'s dimension!')
 
     if disorder_type == 'none':
 
@@ -154,5 +172,11 @@ def get_disorder_dist(L, disorder_type='none', *args, dim=1, **kwargs):
         disorder = np.random.uniform(0., 1., size=size)
 
         disorder = dW * disorder ** (1. / W)
+
+    if disorder_type == 'single':
+
+        disorder = np.zeros(size, dtype=np.float64)
+
+        disorder[location] = dW
 
     return disorder
