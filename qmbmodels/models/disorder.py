@@ -33,7 +33,7 @@ Cosuniform (cosine of a random number:
 """
 import numpy as np
 
-_available_disorders = ['none', 'uniform', 'binary', 'gaussian',
+_available_disorders = ['none', 'constant', 'uniform', 'binary', 'gaussian',
                         'incomm', 'cosuniform', 'powerlaw', 'single']
 """array_like: specifies which types of disorder are currently implemented."""
 
@@ -131,6 +131,11 @@ def get_disorder_dist(L, disorder_type='none', *args, dim=1, **kwargs):
     if disorder_type == 'none':
 
         disorder = np.zeros(size, dtype=np.float64)
+
+    if disorder_type == 'constant':
+
+        val = np.random.uniform(W - dW, W + dW)
+        disorder = val * np.ones(size, dtype=np.float64)
 
     if disorder_type == 'uniform':
 

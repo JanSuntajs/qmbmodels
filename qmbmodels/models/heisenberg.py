@@ -1,7 +1,25 @@
 """
 This module contains the tools for construction
 of the Heisenberg XXZ model with nearest- and
-next-nearest neighbour terms.
+next-nearest neighbour terms. Both periodic boundary
+conditions (PBC) and open boundary conditions (OBC)
+are possible.
+
+The model in the hard-core boson (spin) case:
+
+H = 0.5 * J1 * \sum_i (s_i^+ s_{i+1}^- + s_i^- s_{i+1}^-) +
+    0.5 * J2 * \sum_i (s_i^+ s_{i+2}^- + s_i^- s_{i+2}^-) +
+    delta1 * J1 * \sum_i s_i^z s_{i+1}^z +
+    delta2 * J2 * \sum_i s_i^z s_{i+2}^z +
+    \sum_i w_i s_i^z
+
+The model in the fermionic case reads:
+
+H = 0.5 * J1 * \sum_i (c_i^+ c_{i+1}^- + c_{i+1}^+ c_i^-) +
+    0.5 * J2 * \sum_i (c_i^+ c_{i+2}^- + c_{i+2}^+ c_i^-) +
+    delta1 * J1 * \sum_i n_i^z n_{i+1}^z +
+    delta2 * J2 * \sum_i n_i^z n_{i+2}^z +
+    \sum_i w_i n_i
 
 Attributes:
 -----------

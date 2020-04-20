@@ -38,7 +38,7 @@ from .disorder import get_disorder_dist
 from ._common_keys import comm_modpar_keys, comm_syspar_keys
 
 syspar_keys = ['L', 'nu'] + comm_syspar_keys
-modpar_keys = ['J1', 'delta1',
+modpar_keys = ['J', 'dJ', 'delta',
                'W', 'dW', 'noise'] + comm_modpar_keys
 
 _modpar_keys = [key for key in modpar_keys if '_seed' not in key]
@@ -101,7 +101,6 @@ def construct_hamiltonian(argsdict, parallel=False, mpirank=0, mpisize=0):
 
     L = argsdict['L']
     nu = argsdict['nu']
-
     pbc = argsdict['pbc']
     disorder = argsdict['disorder']
     if disorder != 'single':
@@ -123,27 +122,39 @@ def construct_hamiltonian(argsdict, parallel=False, mpirank=0, mpisize=0):
         coup1p = [[i, (i + 1)] for i in range_1]
         coup1m = [[i, (i - 1)] for i in range_2]
 
+    # in case averaging is needed, we perform averaging over different
+    # J values
+    J_fields = get_disorder_dist(len(coup1p), 'constant',
+                                 argsdict['J'], argsdict['dJ'],
+                                 argsdict['seed'])
+    inter_fields = J_fields * argsdict['delta']
+
     if ham_type == 'ferm1d':
 
         ham = fehm
 
-        hops = [['+-', [[0.5 * argsdict['J1'], *coup] for coup in coup1p]],
-                ['+-', [[0.5 * argsdict['J1'], *coup] for coup in coup1m]],
+        hops = [['+-', [[0.5 * J_fields[i], *coup] for i, coup
+                        in enumerate(coup1p)]],
+                ['+-', [[0.5 * J_fields[i], *coup] for i, coup
+                        in enumerate(coup1m)]],
                 ]
         num_op = 'n'
 
     elif ham_type == 'spin1d':
 
         ham = sphm
-        hops = [['+-', [[0.5 * argsdict['J1'], *coup] for coup in coup1p]],
-                ['-+', [[0.5 * argsdict['J1'], *coup] for coup in coup1p]]]
+        hops = [['+-', [[0.5 * J_fields[i], *coup] for i, coup
+                        in enumerate(coup1p)]],
+                ['-+', [[0.5 * J_fields[i], *coup] for i, coup
+                        in enumerate(coup1p)]]]
 
         num_op = 'z'
 
-    inter = [[num_op + num_op, [[argsdict['J1'] * argsdict['delta1'],
+    inter = [[num_op + num_op, [[inter_fields[i],
                                  *coup]
-                                for coup in coup1p]], ]
+                                for i, coup in enumerate(coup1p)]], ]
     # put the impurity at the center of the chain
+    # NOTE: seed is zero here, since disorder is a constant
     fields = get_disorder_dist(L, disorder, argsdict['W'],
                                argsdict['dW'], argsdict['seed'], loc=int(L * 0.5))
 
@@ -157,4 +168,7 @@ def construct_hamiltonian(argsdict, parallel=False, mpirank=0, mpisize=0):
     hamiltonian = ham(L, static_list, [], Nu=int(nu), parallel=parallel,
                       mpirank=mpirank, mpisize=mpisize)
 
-    return hamiltonian, {'Hamiltonian_random_disorder': fields}
+    return hamiltonian, {'Hamiltonian_random_disorder': fields,
+                         'Hamiltonian_J_random_disorder': J_fields,
+                         'Hamiltonian_interaction_random_disorder':
+                         inter_fields}
