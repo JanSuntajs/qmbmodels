@@ -60,17 +60,19 @@ from postprocessing import data_extraction as dae
 from entro_analyse import PathSetter
 
 
-topdir = ('/scratch/jan/qmbmodels/results/'
-          'heisenberg_single_impurity_spin1d_test')
+# topdir = ('/scratch/jan/qmbmodels/results/'
+#           'heisenberg_single_impurity_spin1d_test')
+topdir = ('./results/'
+          'heisenberg_single_impurity_spin1d_integrability_breaking')
 
 paramsAnder = (
     topdir,
-    ('/home/jan/'
-     'heisenberg_single_impurity'),
-    'pbc_True_disorder_uniform_ham_type_anderson',
+    ('./results/'
+     'heisenberg_single_impurity_analysis'),
+    'pbc_False_disorder_single_ham_type_anderson',
     'L_12_nu_6',
     1.0,
-    'J1_1.0_delta1_0.5_W_0.0_dW_{:.5f}_noise_0.0001',
+    'J_4.0_dJ_0.0_delta_0.5_W_0.0_dW_0.0_noise_{}',
     1. / 3.,
     [],
 )
@@ -81,35 +83,36 @@ pathsAnder = PathSetter(*paramsAnder)
 
 if __name__ == '__main__':
 
-    for model in [pathsAnder]:
+  for model in [pathsAnder]:
 
-        dW_min = model.min_dis
-        # if we calculate the minimum stopping condition
-        # from the numerics
-        # we can also do it theoretically -> from the prediction
-        # for the minimum std of the variances, which is, for a
-        # box distribution, approximately equal to dW_min**2/3
-        # this is \Sigma_0(W_min) from our notes
-        epsilon_theor = dW_min**2 * model.var_prefactor - 0.1
-        # epsilon_theor = 0.8
-        # epsilon_theor = 0.2
+    dW_min = model.min_dis
+    # if we calculate the minimum stopping condition
+    # from the numerics
+    # we can also do it theoretically -> from the prediction
+    # for the minimum std of the variances, which is, for a
+    # box distribution, approximately equal to dW_min**2/3
+    # this is \Sigma_0(W_min) from our notes
+    epsilon_theor = dW_min**2 * model.var_prefactor - 0.1
+    # epsilon_theor = 0.8
+    # epsilon_theor = 0.2
 
-        methods = [['get_r', 'r_sweep_post'],
-                   ['get_entro_ave', 'entro_sweep_post']]
+    methods = [['get_r', 'r_sweep_post'],
+               ['get_entro_ave', 'entro_sweep_post']]
 
-        kwargs_dict = {
-            'target_variance': model.var_prefactor,
-            'epsilon': epsilon_theor,
-            'population_variance': True,
-            'mode': 0,
-            'dW_min': model.min_dis,
-        }
-        savepath_ = model.savepath
+    kwargs_dict = {
+        'target_variance': model.var_prefactor,
+        'epsilon': epsilon_theor,
+        'population_variance': True,
+        'mode': 0,
+        'dW_min': model.min_dis,
+    }
+    savepath_ = model.savepath
 
-        for method in methods:
-            dae.extract_data(topdir, savepath_, routine=method[0],
-                             partial=True, disorder_key='dW',
-                             savename=method[1], reverse_order=True,
-                             exclude_keys=model.exclude_keys,
-                             collapse=True,
-                             **kwargs_dict)
+    for method in methods:
+      dae.extract_data(topdir, savepath_, routine=method[0],
+                       partial=True, disorder_key='noise',
+                       disorder_string='Hamiltonian_J_random_disorder_partial',
+                       savename=method[1], reverse_order=True,
+                       exclude_keys=model.exclude_keys,
+                       collapse=True,
+                       **kwargs_dict)

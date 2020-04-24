@@ -19,11 +19,19 @@ syspar_keys: list
 modpar_keys: list
     Module parameters for the
     Heisenberg model:
-    'J1', 'J2', 'delta1', 'delta2', 'W', 'dW': float
-    nearest and next nearest echange couplings, nearest
-    and next-nearest anisotropy parameters, center of
-    the disorder distribution and width of the disorder
-    distribution, respectively.
+    'J', 'dJ', 'delta', 'ddelta', 'W', 'dW', 'noise: float
+    - nearest neighbour exchange coupling and the halfwidth of
+    the random distribution from which the random value
+    of the exchange coupling should be selected. The random
+    coupling is the same for all the links in the chain.
+    - anisotropy parameter and the halfwidth of the random
+    distribution from which the anisotropy value should be
+    selected. As in the exhange coupling case, the chosen
+    anisotropy value is the same for all the links.
+    - center of the disorder distribution and width of the
+    disorder distribution, respectively.
+    - noise is the value of the integrability breaking
+    potential at the zeroth site.
     The rest: see the docstring for the _common_keys
     module.
 """
@@ -38,7 +46,7 @@ from .disorder import get_disorder_dist
 from ._common_keys import comm_modpar_keys, comm_syspar_keys
 
 syspar_keys = ['L', 'nu'] + comm_syspar_keys
-modpar_keys = ['J', 'dJ', 'delta',
+modpar_keys = ['J', 'dJ', 'delta', 'ddelta',
                'W', 'dW', 'noise'] + comm_modpar_keys
 
 _modpar_keys = [key for key in modpar_keys if '_seed' not in key]
@@ -127,7 +135,10 @@ def construct_hamiltonian(argsdict, parallel=False, mpirank=0, mpisize=0):
     J_fields = get_disorder_dist(len(coup1p), 'constant',
                                  argsdict['J'], argsdict['dJ'],
                                  argsdict['seed'])
-    inter_fields = J_fields * argsdict['delta']
+
+    delta_field = get_disorder_dist(1, 'constant', argsdict['delta'],
+                                    argsdict['ddelta'], argsdict['seed'])
+    inter_fields = J_fields * delta_field[0]
 
     if ham_type == 'ferm1d':
 
