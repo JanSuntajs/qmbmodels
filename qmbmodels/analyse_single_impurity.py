@@ -63,16 +63,16 @@ from entro_analyse import PathSetter
 # topdir = ('/scratch/jan/qmbmodels/results/'
 #           'heisenberg_single_impurity_spin1d_test')
 topdir = ('./results/'
-          'heisenberg_single_impurity_spin1d_integrability_breaking')
+          'heisenberg_single_impurity_spin1d_delta_averaging')
 
 paramsAnder = (
     topdir,
     ('./results/'
-     'heisenberg_single_impurity_analysis'),
+     'heisenberg_single_impurity_spin1d_delta_averaging'),
     'pbc_False_disorder_single_ham_type_anderson',
     'L_12_nu_6',
     1.0,
-    'J_4.0_dJ_0.0_delta_0.5_W_0.0_dW_0.0_noise_{}',
+    'J_4.0_dJ_0.0_delta_0.5_ddelta_0.05_W_0.0_dW_{:.5f}_noise_0.05000',
     1. / 3.,
     [],
 )
@@ -110,8 +110,8 @@ if __name__ == '__main__':
 
     for method in methods:
       dae.extract_data(topdir, savepath_, routine=method[0],
-                       partial=True, disorder_key='noise',
-                       disorder_string='Hamiltonian_J_random_disorder_partial',
+                       partial=True, disorder_key='dW',
+                       disorder_string='Hamiltonian_random_disorder_partial',
                        savename=method[1], reverse_order=True,
                        exclude_keys=model.exclude_keys,
                        collapse=True,
