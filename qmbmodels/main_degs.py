@@ -64,7 +64,7 @@ if __name__ == '__main__':
             degs = np.zeros(spc.nsamples)
 
             for i, engies in enumerate(spc.spectrum):
-                u, c = np.unique(np.around(engies, decimals=14), return_counts=True)
+                u, c = np.unique(np.around(engies, decimals=12), return_counts=True)
                 # degeneracies are all those values which
                 # are not unique and hence appear more than once
                 degs[i] = np.sum(c[c > 1])
