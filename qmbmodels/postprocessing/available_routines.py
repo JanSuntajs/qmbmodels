@@ -3,7 +3,7 @@ from .entropy import footer_entro_analyse, \
     footer_entro_no_sample_averaging
 from .rstat import footer_r_ave, r_ave
 from .sff import get_sff, footer_sff, get_tau_thouless, footer_t_thouless
-
+from .degeneracies import deg_ave, footer_deg_ave
 
 # Routines available for calculations:
 # get_entro_ave: average entropy, sampling averaging performed
@@ -24,6 +24,7 @@ _routines_dict = {
     'entro_analyse': [entro_post_analysis, 'Entropy',
                       None, footer_entro_analyse],
     'get_r': [r_ave, 'r_data', 15, footer_r_ave],
+    'get_deg': [deg_ave, 'degeneracies_data', 14, footer_deg_ave],
     'get_sff': [get_sff, 'SFF_spectrum', None, footer_sff],
     'get_tau_thouless': [get_tau_thouless, 'SFF_spectrum', 24,
                          footer_t_thouless]

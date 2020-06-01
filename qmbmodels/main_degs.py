@@ -33,7 +33,10 @@ multiplicities of those energy eigenvalues which appear
 in the spectrum more than once (and are thus degenerate).
 For easier representation, the numbers of degeneracies
 for different spectra are averaged in order to obtain
-a single scalar value.
+a single scalar value. Before checking for degeneracies,
+the values in the spectra are rounded to 14 decimal places
+so as to be able to discern actual (physical) degeneracies
+from the consequences of different round-offs.
 """
 
 
@@ -61,7 +64,7 @@ if __name__ == '__main__':
             degs = np.zeros(spc.nsamples)
 
             for i, engies in enumerate(spc.spectrum):
-                u, c = np.unique(engies, return_counts=True)
+                u, c = np.unique(np.around(engies, decimals=14), return_counts=True)
                 # degeneracies are all those values which
                 # are not unique and hence appear more than once
                 degs[i] = np.sum(c[c > 1])

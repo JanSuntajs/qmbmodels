@@ -63,12 +63,12 @@ from entro_analyse import PathSetter
 # topdir = ('/scratch/jan/qmbmodels/results/'
 #           'heisenberg_single_impurity_spin1d_test')
 topdir = ('./results/'
-          'heisenberg_single_impurity_spin1d_delta_averaging')
+          'heisenberg_single_impurity_spin1d_check_degs_special_points')
 
 paramsAnder = (
     topdir,
     ('./results/'
-     'heisenberg_single_impurity_spin1d_delta_averaging'),
+     'heisenberg_single_impurity_spin1d_check_degs_special_points_post'),
     'pbc_False_disorder_single_ham_type_anderson',
     'L_12_nu_6',
     1.0,
@@ -96,8 +96,9 @@ if __name__ == '__main__':
     # epsilon_theor = 0.8
     # epsilon_theor = 0.2
 
-    methods = [['get_r', 'r_sweep_post'],
-               ['get_entro_ave', 'entro_sweep_post']]
+    methods = [['get_deg', 'deg_sweep_post'],]
+               #['get_r', 'r_sweep_post'],
+               #'get_entro_ave', 'entro_sweep_post']]
 
     kwargs_dict = {
         'target_variance': model.var_prefactor,
@@ -110,8 +111,8 @@ if __name__ == '__main__':
 
     for method in methods:
       dae.extract_data(topdir, savepath_, routine=method[0],
-                       partial=True, disorder_key='dW',
-                       disorder_string='Hamiltonian_random_disorder_partial',
+                       partial=False, disorder_key='delta',
+                       disorder_string='Hamiltonian_random_disorder',
                        savename=method[1], reverse_order=True,
                        exclude_keys=model.exclude_keys,
                        collapse=True,
