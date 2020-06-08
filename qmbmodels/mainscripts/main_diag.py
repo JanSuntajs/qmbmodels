@@ -27,6 +27,9 @@ if __name__ == '__main__':
 
         print('Starting diagonalization ...')
         eigvals = model.eigvals(complex=False)
+
+        parity = model.parity_shuffle()
+        print(parity)
         # eigvals, eigvecs = model.eigsystem(complex=False, turbo=True)
         print('Diagonalization finished!')
 

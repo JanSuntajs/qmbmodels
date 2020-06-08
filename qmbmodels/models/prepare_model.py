@@ -48,6 +48,8 @@ def _importer(model, mode='select'):
         from models import anderson as mod
     elif model_ == 'heisenberg_single_impurity':
         from models import heisenberg_single_impurity as mod
+    elif model_ == 'heisenberg_double_impurity':
+        from models import heisenberg_double_impurity as mod
     else:
         print(('model {} not '
                'recognised! Exiting!').format(model['model']))
