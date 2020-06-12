@@ -54,10 +54,10 @@ paramsISO, paramsErgod: tuple
 """
 
 
-from postprocessing import disorder as dis
-from postprocessing import data_extraction as dae
+from qmbmodels.postprocessing import disorder as dis
+from qmbmodels.postprocessing import data_extraction as dae
 
-from entro_analyse import PathSetter
+from .entro_analyse import PathSetter
 
 
 topdir = ('/scratch/jan/qmbmodels/results/'

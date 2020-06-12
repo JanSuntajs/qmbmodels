@@ -17,7 +17,7 @@ and the quantities of interest are recalculated.
 from postprocessing import disorder as dis
 from postprocessing import data_extraction as dae
 
-from entro_analyse import PathSetter
+from .entro_analyse import PathSetter
 
 topdir = ('/scratch/jan/qmbmodels/results/'
           'spin1d_xxz_get_entropy_si_L_12_n_dependence')
