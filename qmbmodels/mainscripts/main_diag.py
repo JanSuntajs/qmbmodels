@@ -1,11 +1,11 @@
 #!/usr/bin/env python
 
 
-from utils import set_mkl_lib
-from utils.cmd_parser_tools import arg_parser
-from models.prepare_model import get_module_info
-from utils.filesaver import savefile
-from models.prepare_model import select_model
+from qmbmodels.utils import set_mkl_lib
+from qmbmodels.utils.cmd_parser_tools import arg_parser
+from qmbmodels.models.prepare_model import get_module_info
+from qmbmodels.utils.filesaver import savefile
+from qmbmodels.models.prepare_model import select_model
 
 save_metadata = True
 

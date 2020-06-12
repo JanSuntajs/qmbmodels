@@ -18,8 +18,8 @@ import h5py
 
 from spectral_stats.spectra import Spectra
 
-from utils import set_mkl_lib
-from utils.cmd_parser_tools import arg_parser, arg_parser_general
+from qmbmodels.utils import set_mkl_lib
+from qmbmodels.utils.cmd_parser_tools import arg_parser, arg_parser_general
 
 _sff_keys = ['lvl_min_tau', 'lvl_max_tau', 'lvl_n_tau',
              'lvl_unfolding_n', ]

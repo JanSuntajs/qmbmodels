@@ -23,8 +23,8 @@ import h5py
 
 from spectral_stats.spectra import Spectra
 
-from utils import set_mkl_lib
-from utils.cmd_parser_tools import arg_parser, arg_parser_general
+from qmbmodels.utils import set_mkl_lib
+from qmbmodels.utils.cmd_parser_tools import arg_parser, arg_parser_general
 
 
 _r_name = 'r_data_partial'

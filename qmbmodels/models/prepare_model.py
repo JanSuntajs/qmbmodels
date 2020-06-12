@@ -6,9 +6,9 @@ main script.
 
 """
 import sys
-from utils.cmd_parser_tools import arg_parser_general
-from utils.cmd_parser_tools import arg_parser
-from models._common_keys import minmax_seed_default
+from qmbmodels.utils.cmd_parser_tools import arg_parser_general
+from qmbmodels.utils.cmd_parser_tools import arg_parser
+from ._common_keys import minmax_seed_default
 
 
 def _importer(model, mode='select'):
@@ -39,15 +39,15 @@ def _importer(model, mode='select'):
         model_ = model
 
     if model_ == 'heisenberg':
-        from models import heisenberg as mod
+        from . import heisenberg as mod
     elif model_ == 'imbrie':
-        from models import imbrie as mod
+        from . import imbrie as mod
     elif model_ == 'heisenberg_weak_links':
-        from models import heisenberg_weak_links as mod
+        from . import heisenberg_weak_links as mod
     elif model_ == 'anderson':
-        from models import anderson as mod
+        from . import anderson as mod
     elif model_ == 'heisenberg_single_impurity':
-        from models import heisenberg_single_impurity as mod
+        from . import heisenberg_single_impurity as mod
     else:
         print(('model {} not '
                'recognised! Exiting!').format(model['model']))
