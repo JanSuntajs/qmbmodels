@@ -2,13 +2,31 @@
 This module contains a routine
 that selects a proper hamiltonian
 module to import in the calling
-main script.
+main script. The routine
+automatically checks which
+types of Hamiltonians are implemented
+and available for importing.
 
 """
-import sys
+
+import os
+import importlib
+import pkgutil
+
+from qmbmodels import models
+
 from qmbmodels.utils.cmd_parser_tools import arg_parser_general
 from qmbmodels.utils.cmd_parser_tools import arg_parser
 from ._common_keys import minmax_seed_default
+
+
+# automatically find out which hamiltonian types are
+# available for importing
+_available_modules = [module.name for module in pkgutil.iter_modules(
+    [os.path.dirname(models.__file__)])]
+
+_available_modules.remove('_common_keys').remove('prepare_model')
+print(_available_modules)
 
 
 def _importer(model, mode='select'):
@@ -38,16 +56,11 @@ def _importer(model, mode='select'):
     elif mode == 'import':
         model_ = model
 
-    if model_ == 'heisenberg':
-        from . import heisenberg as mod
-    elif model_ == 'imbrie':
-        from . import imbrie as mod
-    elif model_ == 'heisenberg_weak_links':
-        from . import heisenberg_weak_links as mod
-    elif model_ == 'anderson':
-        from . import anderson as mod
-    elif model_ == 'heisenberg_single_impurity':
-        from . import heisenberg_single_impurity as mod
+    if model_ in _available_modules:
+        # import_module allows for importing a module
+        # if a string specifying its name is provided
+        mod = importlib.import_module(f'.{model_}',
+                                      package='qmbmodels.models')
 
     else:
         print(('model {} not '
