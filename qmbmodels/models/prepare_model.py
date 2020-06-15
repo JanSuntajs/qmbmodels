@@ -25,7 +25,9 @@ from ._common_keys import minmax_seed_default
 _available_modules = [module.name for module in pkgutil.iter_modules(
     [os.path.dirname(models.__file__)])]
 
-_available_modules.remove('_common_keys').remove('prepare_model')
+_available_modules = [module for module in _available_modules
+                      if module not in [
+                          '_common_keys', 'prepare_model']]
 print(_available_modules)
 
 
