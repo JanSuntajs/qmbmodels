@@ -10,7 +10,7 @@ from scipy import linalg as LA
 
 from ham1d.entropy.rdm import build_rdm
 from ham1d.entropy.ententro import Entangled
-from utils.filesaver import savefile
+from qmbmodels.utils.filesaver import savefile
 
 
 def sinvert_body(mod, argsDict, syspar, syspar_keys,
@@ -345,7 +345,7 @@ def sinvert_body(mod, argsDict, syspar, syspar_keys,
                         'Hamiltonian_squared_diagonal_matelts_partial':
                         diagonals[1],
                         'Eigenvalues_partial_spectral_info': metadata,
-                        **fields}
+                        ** fields}
 
             if many_body:
                 entropy = np.array(entropy)[sortargs]

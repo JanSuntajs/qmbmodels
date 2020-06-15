@@ -17,13 +17,13 @@ if __name__ == '__main__':
         'L': [12],
         'J': [4.],
         'dJ': [0.0],
-        'W': [0.],
+        'W': [10.],
         'dW': [0.0],
         # [0.00001, 0.00005, 0.00010, 0.00050, 0.00100, 0.00500,
         'noise': [0.00000],
         # 0.01000, 0.05000, 0.10000, 0.50000, 1.00000],
         # [np.cos(np.pi / x) for x in np.arange(1, 7, 1)],
-        'delta': [np.cos(np.pi / x) for x in np.arange(1, 7, 1)], #np.arange(0, 1.01, 0.01),
+        'delta': [1.0], #np.arange(0, 1.01, 0.01),
         'ddelta': [0.0],
         'pbc': [False],
         'ham_type': [ham_type],
@@ -58,7 +58,7 @@ if __name__ == '__main__':
     auxpar_keys = ['sff_min_tau', 'sff_max_tau', 'sff_n_tau', 'sff_eta',
                    'sff_unfolding_n', 'sff_filter', 'r_step']
 
-    name = f'{model}_{ham_type}_check_degs_special_points'
+    name = f'{model}_{ham_type}_test_changes'
     time = "00:59:59"
     nodes = 1   # number of nodes
     ntasks = 1  # number of threads

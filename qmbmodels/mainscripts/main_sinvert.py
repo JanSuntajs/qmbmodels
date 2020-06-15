@@ -20,7 +20,7 @@ from qmbmodels.utils import set_mkl_lib
 
 from qmbmodels.models.prepare_model import get_module_info
 
-from ._sinvert import sinvert_body
+from _sinvert import sinvert_body
 
 store_eigvecs = False
 save_metadata = True

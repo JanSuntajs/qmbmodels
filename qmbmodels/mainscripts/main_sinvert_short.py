@@ -19,12 +19,12 @@ cause a significant overlay and slowning down of the
 scheduling system.
 """
 
-from qmmodels.utils.set_petsc_slepc import *
+from qmbmodels.utils.set_petsc_slepc import *
 from qmbmodels.utils import set_mkl_lib
 
 from qmbmodels.models.prepare_model import get_module_info
 
-from ._sinvert import sinvert_body
+from _sinvert import sinvert_body
 
 store_eigvecs = False
 
