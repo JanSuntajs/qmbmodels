@@ -8,6 +8,9 @@ the head node/ home machine.
 import os
 import subprocess as sp
 
+from qmbmodels import mainscripts
+from qmbmodels import utils
+
 # attributes of the programs dict:
 # programs[mode] -> which type of job to perform
 # programs[mode]['name'] -> name of the executable script
@@ -57,8 +60,8 @@ import subprocess as sp
 #             task would be wasteful.
 #
 
-_mainfold = '../mainscripts/'
-_utilfold = '../utils/'
+_mainfold = f'{os.path.dirname(mainscripts.__file__)}/'
+_utilfold = f'{os.path.dirname(utils.__file__)}/'
 programs = {
 
     'diag': {'name': f'{_mainfold}main_diag.py', 'array': True,
