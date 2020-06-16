@@ -230,8 +230,11 @@ class SubmittedScript(object):
 
             # prepare partial scripts
             tmp = sender.tmp
+            log_deps = sender.log_deps
             if not os.path.isdir(tmp):
                 os.makedirs(tmp)
+            if not os.path.isdir(log_deps):
+                os.makedirs(log_deps)
 
             descriptor = ''.join(random.choices(string.ascii_lowercase +
                                                 string.digits, k=200))
@@ -254,7 +257,7 @@ class SubmittedScript(object):
             name = f"{tmp}/dep_{descriptor}.run"
 
             depscript = rsc.prepare_dependency_script(
-                scriptnames, name)
+                scriptnames, name, log_deps)
 
             sp.check_call(f"sbatch {depscript}", shell=True)
 

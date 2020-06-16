@@ -124,10 +124,17 @@ slurm_opt: list
         running the scripts and saving
         the data and outputing log files.
 
+        tmp -> temporary folder for slurm scripts
+        log -> folder for slurm log files for the
+               actual SLURM running scripts
+        results -> folder to store the results of the
+                   project
+        log_deps -> log folder for the dependency scripts
+
         """
 
         self.storage = storage
-        subdirs_list = ['tmp', 'log', 'results']
+        subdirs_list = ['tmp', 'log', 'results', 'log_deps']
         subdirs_dict = {}
         # make the storage directory if it
         # is not yet present

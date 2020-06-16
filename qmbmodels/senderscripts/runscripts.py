@@ -393,7 +393,7 @@ def prep_sub_script(mode='diag', queue=False, cmd_arg='',
     return submission_scripts
 
 
-def prepare_dependency_script(scripts, name, *args, **kwargs):
+def prepare_dependency_script(scripts, name, logfolder, *args, **kwargs):
     """
     In order to be able to run our jobs consecutively,
     we make use of the SLURM dependencies. See this
@@ -416,11 +416,15 @@ def prepare_dependency_script(scripts, name, *args, **kwargs):
           The name of the dependency script to be stored on
           disk.
 
+    logfolder: str
+          Folder in which the logs of the dependency script jobs
+          should be stored.
+
     """
 
     dep_script = ("""#!/bin/bash\n"""
                   """#SBATCH --time=00:01:00\n"""
-                  """#SBATCH --output=./log/dep_%j.out\n""")
+                  f"""#SBATCH --output={logfolder}/dep_%j.out\n""")
 
     dep_script += f"\njid0=$(sbatch --parsable {scripts[0]})"
     try:
