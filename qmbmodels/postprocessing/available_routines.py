@@ -4,7 +4,7 @@ from .entropy import footer_entro_analyse, \
 from .rstat import footer_r_ave, r_ave
 from .sff import get_sff, footer_sff, get_tau_thouless, footer_t_thouless
 from .degeneracies import deg_ave, footer_deg_ave
-
+from .gamma import gamma_ave, footer_gamma_ave
 # Routines available for calculations:
 # get_entro_ave: average entropy, sampling averaging performed
 #
@@ -25,6 +25,7 @@ _routines_dict = {
                       None, footer_entro_analyse],
     'get_r': [r_ave, 'r_data', 15, footer_r_ave],
     'get_deg': [deg_ave, 'degeneracies_data', 14, footer_deg_ave],
+    'get_gamma': [gamma_ave, 'gamma_data', 19, footer_gamma_ave],
     'get_sff': [get_sff, 'SFF_spectrum', None, footer_sff],
     'get_tau_thouless': [get_tau_thouless, 'SFF_spectrum', 24,
                          footer_t_thouless]
