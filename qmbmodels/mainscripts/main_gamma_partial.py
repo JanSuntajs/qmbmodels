@@ -103,7 +103,7 @@ if __name__ == '__main__':
             if _gamma_name not in f.keys():
 
                 f.create_dataset(_gamma_name, data=gamma_data,
-                                 maxshape=(None, 3))
+                                 maxshape=(None, 6))
 
             else:
 
