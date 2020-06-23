@@ -29,45 +29,44 @@ Each row is organised as follows:
 
 6)
 
-7)
 
-8) size L: system size
+7) size L: system size
 
-9) nener: number of energies obtained using partial diagonalization
+8) nener: number of energies obtained using partial diagonalization
 
-10) target_variance: Variance of the disordered samples
+9) target_variance: Variance of the disordered samples
     with which to compare the numerical results in the postprocessing
     steps if mode equals 1 or 2.
     If mode=0: nan, this argument is not needed if preprocessing is not
     performed.
 
-11) epsilon: condition used to determine whether to select a given disorder
+10) epsilon: condition used to determine whether to select a given disorder
    distribution.
    If mode=0: nan
 
-12) dW_min: value of the disorder strength parameter for which the epsilon
+11) dW_min: value of the disorder strength parameter for which the epsilon
    was evaluated.
    If mode=0: nan
 
-13)  variance_before: variance of variances of the disorder distributions before
+12)  variance_before: variance of variances of the disorder distributions before
     post.
 
-14)  variance_after: variance of variances of the disorder distributions after
+13)  variance_after: variance of variances of the disorder distributions after
     post.
 
-15) nsamples: number of all the random samples
+14) nsamples: number of all the random samples
 
-16) nsamples_selected: number of the random disorder samples with an
+15) nsamples_selected: number of the random disorder samples with an
     appropriate variance.
     NOTE: if mode (entry 15) ) equals 0, nsamples equals nsamples.
 
-17) nsamples_rejected: nsamples - nsamples_selected
+16) nsamples_rejected: nsamples - nsamples_selected
     NOTE: if mode (entry 15) ) equals 0, this should be equal to 0.
 
-18) mode: which postprocessing mode was selected
+17) mode: which postprocessing mode was selected
     NOTE: 0 indicates no postprocessing!
 
-19) population_variance: integer specifying whether theoretical prediction for
+18) population_variance: integer specifying whether theoretical prediction for
     the population variance was used in order calculate the target variance.
     1 if that is the case, 0 if not.
 """
@@ -75,12 +74,12 @@ Each row is organised as follows:
 
 def _gamma_ave(gammavals, condition, size, *args, **kwargs):
 
-    gamma = gammavals[0][1]
-    gamma_sq = gammavals[0][2]
-    gamma_sq_err = gammavals[0][3]
-    hilbert_dim = gammavals[0][4]
-    ham_tr = gammavals[0][5]
-    ham_sq_tr = gammavals[0][6]
+    gamma = gammavals[0][0]
+    gamma_sq = gammavals[0][1]
+    gamma_sq_err = gammavals[0][2]
+    hilbert_dim = gammavals[0][3]
+    ham_tr = gammavals[0][4]
+    ham_sq_tr = gammavals[0][5]
 
     return (np.atleast_1d(gamma), np.atleast_1d(gamma_sq),
             np.atleast_1d(gamma_sq_err), np.atleast_1d(hilbert_dim),
