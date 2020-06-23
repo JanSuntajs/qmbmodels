@@ -1,3 +1,9 @@
+"""
+Code for analysing gamma
+
+"""
+
+
 import numpy as np
 
 from .disorder import _preparation
