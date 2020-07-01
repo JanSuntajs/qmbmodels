@@ -82,7 +82,7 @@ if __name__ == '__main__':
             matelts_sq_ = np.sum(matelts_sq, axis=1)
             matelts_ = np.sum(matelts, axis=1)
             gamma_sq_ = matelts_sq_ / hilbert_dim - \
-                (np.sum(matelts_, axis=1) / hilbert_dim)**2
+                (matelts_ / hilbert_dim)**2
 
             gamma_sq = np.mean(gamma_sq_)
             gamma_sq_dev = np.std(gamma_sq_)
