@@ -57,22 +57,22 @@ paramsISO, paramsErgod: tuple
 from qmbmodels.postprocessing import disorder as dis
 from qmbmodels.postprocessing import data_extraction as dae
 
-from .entro_analyse import PathSetter
+from entro_analyse import PathSetter
 
 
-# topdir = ('/scratch/jan/qmbmodels/results/'
-#           'heisenberg_single_impurity_spin1d_test')
-topdir = ('./results/'
-          'heisenberg_single_impurity_spin1d_check_degs_special_points')
+topdir = ('/scratch/jan/heisenberg_single_impurity_paper/results/'
+           'heisenberg_double_impurity_spin1d_figure_2')
+#topdir = ('./results/'
+#          'heisenberg_single_impurity_spin1d_check_degs_special_points')
 
 paramsAnder = (
     topdir,
-    ('./results/'
-     'heisenberg_single_impurity_spin1d_check_degs_special_points_post'),
-    'pbc_False_disorder_single_ham_type_anderson',
+    ('/home/jan/heisenberg_single_impurity_paper/'
+     'heisenberg_double_impurity_spin1d_figure_2'),
+    'pbc_False_disorder_double_ham_type_spin1d',
     'L_12_nu_6',
     1.0,
-    'J_4.0_dJ_0.0_delta_0.5_ddelta_0.05_W_0.0_dW_{:.5f}_noise_0.05000',
+    'J_4.0_dJ_0.0_delta_0.60_ddelta_0.09_W1_0.0_dW1_1.0_W2_0.0_dW2_{:.6f}_noise_0.00000',
     1. / 3.,
     [],
 )
@@ -96,8 +96,9 @@ if __name__ == '__main__':
     # epsilon_theor = 0.8
     # epsilon_theor = 0.2
 
-    methods = [['get_deg', 'deg_sweep_post'],]
-               #['get_r', 'r_sweep_post'],
+    methods = [
+               ['get_r', 'r_sweep_post'],
+	       ['get_gamma', 'gamma_sweep_post']]
                #'get_entro_ave', 'entro_sweep_post']]
 
     kwargs_dict = {
@@ -108,10 +109,10 @@ if __name__ == '__main__':
         'dW_min': model.min_dis,
     }
     savepath_ = model.savepath
-
+    print(savepath_)
     for method in methods:
       dae.extract_data(topdir, savepath_, routine=method[0],
-                       partial=False, disorder_key='noise',
+                       partial=True, disorder_key='dW2',
                        disorder_string='Hamiltonian_random_disorder',
                        savename=method[1], reverse_order=True,
                        exclude_keys=model.exclude_keys,
