@@ -79,6 +79,8 @@ if __name__ == '__main__':
             # mean level spacing
             mean_lvl_spc = mean_width / (hilbert_dim * 1.0)
             std_lvl_spc = np.std(widths / (hilbert_dim * 1.0))
+
+            deltaE_data = np.zeros((1, 6))
             deltaE_data[0] = [hilbert_dim, data.shape[0], mean_lvl_spc,
                               std_lvl_spc,
                               mean_width, std_width]
@@ -88,7 +90,7 @@ if __name__ == '__main__':
             if _deltaE_name not in f.keys():
 
                 f.create_dataset(_deltaE_name, data=deltaE_data,
-                                 maxshape=(None, 4))
+                                 maxshape=(None, 6))
 
             else:
 
