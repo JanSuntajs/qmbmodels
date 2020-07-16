@@ -1,7 +1,9 @@
 """
 This module contains routines
 for saving the eigenvalues files
-to the disk.
+to the disk as well as routines
+for saving results of data analysis
+routines such as r calculation.
 """
 
 import numpy as np
@@ -118,3 +120,4 @@ def savefile(files, savepath, syspar, modpar, argsDict,
 
                     jsonfile = json.dumps(dict_)
                     f.write(jsonfile)
+
