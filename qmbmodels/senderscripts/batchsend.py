@@ -101,7 +101,7 @@ slurm_opt: list
     """
 
     def __init__(self, params, syspar_keys, modpar_keys, auxpar_keys=[],
-                 storage='.', cmd_opt=[], slurm_opt=[]):
+                 storage='.', cmd_opt=[], slurm_opt=[], redef={}):
         super(BatchSender, self).__init__()
 
         self.params = params
@@ -110,6 +110,7 @@ slurm_opt: list
         self._auxpar_keys = auxpar_keys
         self.cmd_opt = cmd_opt
         self.slurm_opt = slurm_opt
+        self._redef = redef
         self.prepare_jobs()
         self.prepare_folders(storage)
 
@@ -186,7 +187,8 @@ slurm_opt: list
             add_items = dict(zip(keys, i))
 
             job = Job(add_items, self._syspar_keys,
-                      self._modpar_keys, self._auxpar_keys)
+                      self._modpar_keys, self._auxpar_keys,
+                      self._redef)
 
             jobs.append(job)
 

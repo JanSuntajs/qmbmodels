@@ -183,14 +183,14 @@ def arg_parser(system_keys, module_keys):
     return vars(args), extra
 
 
-def arg_parser_general(*args):
+def arg_parser_general(args):
     """
     A general function for parsing the command-line arguments.
 
     Parameters
     ----------
 
-    args: a tuple of dictionaries, each of the form:
+    args: a dictionary of the form:
 
     {'cmd_arg': [type_, default_value],}
 
@@ -205,14 +205,12 @@ def arg_parser_general(*args):
     parser = argparse.ArgumentParser(prog='Obtain runtime command arguments '
                                      'for the executable script.')
 
-    for arg in args:
+    for key, value in args.items():
 
-        for key, value in arg.items():
+        type_, default = value
 
-            type_, default = value
-
-            parser.add_argument('--{}'.format(key),
-                                type=type_, default=default)
+        parser.add_argument('--{}'.format(key),
+                            type=type_, default=default)
 
     args, extra = parser.parse_known_args()
 

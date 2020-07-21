@@ -32,46 +32,51 @@ class Job(object):
     Parameters:
 
     params: dict
-        A dictionary of parameter string value
-        lists. Example:
+        A dictionary of parameter (string) values
+        with their corresponding keys. Example
 
         params = {
-            'L': [8, 10],
-            'J': [0.0],
-            'dJ': [1.0],
-            'W': [0.0],
-            'dW': [1.0],
-            'Gamma': [0.],
-            'dGamma': [1.0],
-            'min_seed': [1],
-            'max_seed': [10],
+            'L': 8,
+            'J': 0.0,
+            'dJ': 1.0,
+            'W': 0.0,
+            'dW': 1.0,
+            'Gamma': 0.,
+            'dGamma': 1.0,
+            'min_seed': 1,
+            'max_seed': 10,
             }
 
-        syspar_keys: list
-            A list of strings which specifies
-            which parameters correspond to the
-            system, such as system size or
-            dimensionality. Example:
-            syspar_keys = syspar_keys = ['L']
+    redef: dict
+           Dictionary with redefinitions of params dict entries.
+           This is especially useful when one wishes params dict
+           entries to depend on other params dict entries.
 
-        modpar_keys: list
-            A list of strings which specifies
-            which parameters correspond to the
-            Hamiltonian modules. Example:
+    syspar_keys: list
+        A list of strings which specifies
+        which parameters correspond to the
+        system, such as system size or
+        dimensionality. Example:
+        syspar_keys = syspar_keys = ['L']
 
-            modpar_keys = ['J', 'dJ', 'W', 'dW', 'Gamma',
-                           'dGamma', 'min_seed', 'max_seed']
+    modpar_keys: list
+        A list of strings which specifies
+        which parameters correspond to the
+        Hamiltonian modules. Example:
 
-        auxpar_keys: list
-            A list of strings which specifies which
-            parameters correspond to the auxiliary
-            parameters, such as the parameters in the
-            postprocessing steps (for instance,
-            in sff or spectral statistics calculations).
-            Example:
+        modpar_keys = ['J', 'dJ', 'W', 'dW', 'Gamma',
+                       'dGamma', 'min_seed', 'max_seed']
 
-            auxpar_keys = ['min_tau', 'max_tau', 'n_tau',
-                           'unfolding_n', 'sff_filter']
+    auxpar_keys: list
+        A list of strings which specifies which
+        parameters correspond to the auxiliary
+        parameters, such as the parameters in the
+        postprocessing steps (for instance,
+        in sff or spectral statistics calculations).
+        Example:
+
+        auxpar_keys = ['min_tau', 'max_tau', 'n_tau',
+                       'unfolding_n', 'sff_filter']
 
     Attributes:
 
@@ -100,9 +105,12 @@ class Job(object):
     Routines:
     """
 
-    def __init__(self, params, syspar_keys, modpar_keys, auxpar_keys=[]):
+    def __init__(self, params, syspar_keys, modpar_keys, auxpar_keys=[],
+                 redef={}):
         super(Job, self).__init__()
         self.params = params
+        self._redef = redef
+        self._update_params()
         self._syspar_keys = syspar_keys
         self._modpar_keys = modpar_keys
         self._auxpar_keys = auxpar_keys
@@ -113,6 +121,23 @@ class Job(object):
     def __repr__(self):
 
         return f"A job to be executed."
+
+    def _update_params(self):
+        """
+        A function for modifying keys and values
+        of the params dictionary.
+        """
+
+        parsed_params = self.parameters.copy()
+
+        for key, rule in self._redef.items():
+            try:
+                value = parsed_params[key]
+            except KeyError:
+
+            parsed_params.update(rule(value ,self.parameters))
+
+        self.params = parsed_params
 
     def prepare_job(self):
         """
