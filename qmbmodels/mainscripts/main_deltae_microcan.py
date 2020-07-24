@@ -19,9 +19,11 @@ import h5py
 from spectral_stats.spectra import Spectra
 
 from qmbmodels.utils import set_mkl_lib
+from qmbmodels.utils.filesaver import save_hdf_datasets, \
+    save_external_files, load_eigvals
 from qmbmodels.utils.cmd_parser_tools import arg_parser, arg_parser_general
 
-
+_e_parse_dict = {'r_nener': [int, -1], }
 _deltaE_name = 'deltaE_data_partial'
 # sfflist text descriptor
 deltaE_data_desc = """
@@ -53,6 +55,7 @@ microcanonical ensemble.'
 if __name__ == '__main__':
 
     # rDict, rextra = arg_parser_general(_r_parse_dict)
+    eDict, rextra = arg_parser_general(_e_parse_dict)
     argsDict, extra = arg_parser([], [])
 
     savepath = argsDict['results']
@@ -66,7 +69,8 @@ if __name__ == '__main__':
 
         with h5py.File(file, 'a', libver='latest', swmr=True) as f:
 
-            data = f['Eigenvalues_partial'][:]
+            data, attrs, setnames = load_eigvals(f, [_deltaE_name],
+                                                 nener=eDict['r_nener'])
 
             hilbert_dim = data.shape[1]
             attrs = dict(f['Eigenvalues_partial'].attrs)
@@ -86,23 +90,9 @@ if __name__ == '__main__':
                               mean_width, std_width]
             # except ValueError:
             # pass#
+            save_hdf_datasets(
+                {setnames[0]: [deltaE_data, (None, 6)]}, f, attrs)
 
-            if _deltaE_name not in f.keys():
-
-                f.create_dataset(_deltaE_name, data=deltaE_data,
-                                 maxshape=(None, 6))
-
-            else:
-
-                f[_deltaE_name][()] = deltaE_data
-
-            for key, value in attrs.items():
-                f[_deltaE_name].attrs[key] = value
-
-        txt_file = file.replace('eigvals', 'deltaE_microcan_stats_partial')
-        txt_file = txt_file.replace('.hdf5', '.txt')
-        print(txt_file)
-        np.savetxt(txt_file, deltaE_data)
-
+        save_external_files(file, {setnames[0]: deltaE_data})
     except IndexError:
         pass
