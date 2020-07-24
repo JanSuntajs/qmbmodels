@@ -22,7 +22,8 @@ from qmbmodels.utils import set_mkl_lib
 from qmbmodels.utils.cmd_parser_tools import arg_parser, arg_parser_general
 
 _sff_keys = ['sff_min_tau', 'sff_max_tau', 'sff_n_tau',
-             'sff_eta', 'sff_unfolding_n', 'sff_filter']
+             'sff_unfolding_n', 'sff_filter', 'sff_eta_min',
+             'sff_eta_max', 'sff_eta_step']
 
 _sff_parse_dict = {
     'sff_min_tau': [float, -5],  # minimum tau exponent
