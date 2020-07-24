@@ -50,7 +50,16 @@ class Job(object):
     redef: dict
            Dictionary with redefinitions of params dict entries.
            This is especially useful when one wishes params dict
-           entries to depend on other params dict entries.
+           entries to depend on other params dict entries. An example
+           redef entry where we wish one entry to depend on another
+           one would be written as follows:
+
+           redef = {'max_seed': lambda x: {'max_seed': x['min_seed'] + 10}}
+
+           The required structure is thus as follows: the value corresponding
+           to a key should be a lambda expression (callable) returning a dict
+           with a matching key and specifying how the redefined value
+           should depend on other dictionary values.
 
     syspar_keys: list
         A list of strings which specifies
@@ -128,14 +137,12 @@ class Job(object):
         of the params dictionary.
         """
 
-        parsed_params = self.parameters.copy()
+        # copy the initial dict of parameters
+        parsed_params = self.params.copy()
 
-        for key, rule in self._redef.items():
-            try:
-                value = parsed_params[key]
-            except KeyError:
+        for key in self._redef.keys():
 
-            parsed_params.update(rule(value ,self.parameters))
+            parsed_params.update(self._redef[key](self.params))
 
         self.params = parsed_params
 
