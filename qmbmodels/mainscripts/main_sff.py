@@ -22,14 +22,22 @@ from qmbmodels.utils import set_mkl_lib
 from qmbmodels.utils.cmd_parser_tools import arg_parser, arg_parser_general
 
 _sff_keys = ['sff_min_tau', 'sff_max_tau', 'sff_n_tau',
-             'sff_eta', 'sff_unfolding_n', 'sff_filter']
+             'sff_unfolding_n', 'sff_filter', 'sff_eta_min',
+             'sff_eta_max', 'sff_eta_step']
 
-_sff_parse_dict = {'sff_min_tau': [float, -5],
-                   'sff_max_tau': [float, 2],
-                   'sff_n_tau': [int, 1000],
-                   'sff_eta': [float, 0.5],
-                   'sff_unfolding_n': [int, 3],
-                   'sff_filter': [str, 'gaussian']}
+_sff_parse_dict = {
+    'sff_min_tau': [float, -5],  # minimum tau exponent
+    'sff_max_tau': [float, 2],  # upper tau exponent (log powers)
+    'sff_n_tau': [int, 1000],  # number of tau values
+    # the degree of the unfolding poly.
+    'sff_unfolding_n': [int, 3],
+    # what kind of filtering to perform
+    'sff_filter': [str, 'gaussian'],
+    'sff_eta_min': [float, 0.5],  # eta minimum value
+    'sff_eta_max': [float, 0.5],  # eta maximum value
+    # incremental step for increasing eta val.
+    'sff_eta_step': [float, 0.0]
+}
 
 # which attributes of the Spectra class instance to exclude
 # from the final hdf5 file
@@ -100,8 +108,17 @@ if __name__ == '__main__':
     sffDict, sffextra = arg_parser_general(_sff_parse_dict)
     argsDict, extra = arg_parser([], [])
 
-    min_tau, max_tau, n_tau, eta, unfold_n, sff_filter = [
-        sffDict[key] for key in _sff_parse_dict.keys()]
+    min_tau, max_tau, n_tau, unfold_n, sff_filter, \
+        min_eta, max_eta, step_eta = [
+            sffDict[key] for key in _sff_parse_dict.keys()]
+
+    if max_eta < min_eta:
+        raise ValueError('min_eta larger than max eta!')
+    if step_eta < 0.:
+        raise ValueError('step_eta must be nonnegative!')
+    # number of eta points
+    n_eta = np.int((max_eta - min_eta) / step_eta) + 1
+    etavals = np.linspace(min_eta, max_eta, n_eta)
 
     sff_filter = sff_filter.lower()
     print(min_tau, max_tau, n_tau, sff_filter)
@@ -114,7 +131,7 @@ if __name__ == '__main__':
         print(('Starting sff analysis in the {}'
                'folder!').format(savepath))
 
-        for eta in [0.1, 0.3, 0.5]:
+        for eta in etavals:
             with h5py.File(file, 'a', libver='latest') as f:
                 print(('Starting the sff calculation process... '
                        'Loading the eigenvalues.'))

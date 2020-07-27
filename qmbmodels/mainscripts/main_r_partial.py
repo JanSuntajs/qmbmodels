@@ -24,9 +24,12 @@ import h5py
 from spectral_stats.spectra import Spectra
 
 from qmbmodels.utils import set_mkl_lib
+from qmbmodels.utils.filesaver import save_hdf_datasets, \
+    save_external_files, load_eigvals
 from qmbmodels.utils.cmd_parser_tools import arg_parser, arg_parser_general
 
 
+_r_parse_dict = {'r_nener': [int, -1], }
 _r_name = 'r_data_partial'
 # sfflist text descriptor
 r_data_desc = """
@@ -53,7 +56,8 @@ for a more technical introduction of our implementation.
 
 if __name__ == '__main__':
 
-    # rDict, rextra = arg_parser_general(_r_parse_dict)
+    rDict, rextra = arg_parser_general(_r_parse_dict)
+    print(rDict)
     argsDict, extra = arg_parser([], [])
 
     savepath = argsDict['results']
@@ -67,9 +71,10 @@ if __name__ == '__main__':
 
         with h5py.File(file, 'a', libver='latest', swmr=True) as f:
 
-            data = f['Eigenvalues_partial'][:]
-
-            attrs = dict(f['Eigenvalues_partial'].attrs)
+            # load the appropriate eigenvalue files
+            data, attrs, setnames = load_eigvals(
+                f, [_r_name], nener=rDict['r_nener'])
+            print(setnames)
             attrs.update({'r_desc': r_data_desc})
 
             # if the sff spectrum dataset does not yet exist, create it
@@ -80,23 +85,12 @@ if __name__ == '__main__':
             gap_mean, gap_dev = spc.gap_avg()
             gap_data[0] = [data.shape[1], gap_mean, gap_dev]
             # except ValueError:
-            # pass#
-
-            if _r_name not in f.keys():
-
-                f.create_dataset(_r_name, data=gap_data, maxshape=(None, 3))
-
-            else:
-
-                f[_r_name][()] = gap_data
-
-            for key, value in attrs.items():
-                f[_r_name].attrs[key] = value
-
-        txt_file = file.replace('eigvals', 'r_stats_partial')
-        txt_file = txt_file.replace('.hdf5', '.txt')
-        print(txt_file)
-        np.savetxt(txt_file, gap_data)
+            # pass
+            # take care of creation or appending to the hdf5 datasets
+            save_hdf_datasets({setnames[0]: [gap_data, (None, 3)]}, f, attrs)
+            # save txt files for easier reading without the need for
+            # inspection of the hdf5 files
+        save_external_files(file, {setnames[0]: gap_data})
 
     except IndexError:
         pass
