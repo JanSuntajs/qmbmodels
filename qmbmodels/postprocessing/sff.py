@@ -263,6 +263,7 @@ def _thouless_tau(spectrum, condition, size, eff_dims,
                   filter_eta,
                   epsilon_th=0.05,
                   smoothing_th=50,
+                  connected=False,
                   *args, **kwargs):
 
     taulist = spectrum[0]
@@ -277,7 +278,7 @@ def _thouless_tau(spectrum, condition, size, eff_dims,
                              misc_dict
                              )
 
-    t_th, sff_th, *rest = sff_object.get_thouless_time(epsilon_th, False,
+    t_th, sff_th, *rest = sff_object.get_thouless_time(epsilon_th, connected,
                                                        smoothing_th)
 
     mn_lvl_spc = gamma0 / (nener0 * 0.3413)
@@ -449,6 +450,7 @@ def get_tau_thouless(h5file, results_key='SFF_spectrum',
                      disorder_string='Hamiltonian_random_disorder_partial',
                      epsilon_th=0.05,
                      smoothing_th=50,
+                     connected=False,
                      *args,
                      **kwargs
                      ):
@@ -481,6 +483,7 @@ def get_tau_thouless(h5file, results_key='SFF_spectrum',
                             filter_eta=filter_eta,
                             epsilon_th=epsilon_th,
                             smoothing_th=smoothing_th,
+                            connected=connected,
                             *args, **kwargs)
     except KeyError:
         print('No results_key: {}. File: {}'.format(results_key,
