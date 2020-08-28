@@ -4,7 +4,7 @@
 @EXPLICIT
 https://repo.anaconda.com/pkgs/main/linux-64/_libgcc_mutex-0.1-main.tar.bz2
 https://repo.anaconda.com/pkgs/main/linux-64/blas-1.0-mkl.tar.bz2
-https://conda.anaconda.org/conda-forge/linux-64/ca-certificates-2019.9.11-hecc5488_0.tar.bz2
+https://repo.anaconda.com/pkgs/main/linux-64/ca-certificates-2020.7.22-0.tar.bz2
 https://repo.anaconda.com/pkgs/main/linux-64/intel-openmp-2019.4-243.tar.bz2
 https://conda.anaconda.org/conda-forge/linux-64/libgfortran-3.0.0-1.tar.bz2
 https://repo.anaconda.com/pkgs/main/linux-64/libgfortran-ng-7.3.0-hdf63c60_0.tar.bz2
@@ -27,7 +27,7 @@ https://repo.anaconda.com/pkgs/main/linux-64/libxcb-1.13-h1bed415_1.tar.bz2
 https://conda.anaconda.org/conda-forge/linux-64/metis-5.1.0-he1b5a44_1004.tar.bz2
 https://conda.anaconda.org/conda-forge/linux-64/mpich-3.2.1-hc99cbb1_1014.tar.bz2
 https://repo.anaconda.com/pkgs/main/linux-64/ncurses-6.1-he6710b0_1.tar.bz2
-https://conda.anaconda.org/conda-forge/linux-64/openssl-1.1.1c-h516909a_0.tar.bz2
+https://repo.anaconda.com/pkgs/main/linux-64/openssl-1.1.1g-h7b6447c_0.tar.bz2
 https://repo.anaconda.com/pkgs/main/linux-64/pcre-8.43-he6710b0_0.tar.bz2
 https://repo.anaconda.com/pkgs/main/linux-64/tbb-2019.8-hfd86e86_0.tar.bz2
 https://repo.anaconda.com/pkgs/main/linux-64/xz-5.2.4-h14c3975_4.tar.bz2
@@ -61,7 +61,7 @@ https://conda.anaconda.org/conda-forge/linux-64/mumps-mpi-5.2.1-h645f208_4.tar.b
 https://repo.anaconda.com/pkgs/main/linux-64/python-3.7.4-h265db76_1.tar.bz2
 https://repo.anaconda.com/pkgs/main/noarch/attrs-19.3.0-py_0.tar.bz2
 https://repo.anaconda.com/pkgs/main/linux-64/backcall-0.1.0-py37_0.tar.bz2
-https://conda.anaconda.org/conda-forge/linux-64/certifi-2019.9.11-py37_0.tar.bz2
+https://repo.anaconda.com/pkgs/main/linux-64/certifi-2020.6.20-py37_0.tar.bz2
 https://repo.anaconda.com/pkgs/main/linux-64/decorator-4.4.0-py37_1.tar.bz2
 https://repo.anaconda.com/pkgs/main/noarch/defusedxml-0.6.0-py_0.tar.bz2
 https://repo.anaconda.com/pkgs/main/linux-64/entrypoints-0.3-py37_0.tar.bz2
@@ -111,6 +111,7 @@ https://repo.anaconda.com/pkgs/main/linux-64/bleach-3.1.0-py37_0.tar.bz2
 https://repo.anaconda.com/pkgs/main/linux-64/importlib_metadata-0.23-py37_0.tar.bz2
 https://repo.anaconda.com/pkgs/main/noarch/jinja2-2.10.3-py_0.tar.bz2
 https://repo.anaconda.com/pkgs/main/linux-64/jupyter_core-4.6.0-py37_0.tar.bz2
+https://repo.anaconda.com/pkgs/main/noarch/networkx-2.5-py_0.tar.bz2
 https://repo.anaconda.com/pkgs/main/linux-64/numpy-base-1.17.2-py37hde5b4d6_0.tar.bz2
 https://repo.anaconda.com/pkgs/main/noarch/pygments-2.4.2-py_0.tar.bz2
 https://repo.anaconda.com/pkgs/main/linux-64/wheel-0.33.6-py37_0.tar.bz2

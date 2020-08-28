@@ -291,7 +291,7 @@ def extract_data(topdir, savepath, routine='get_entro_ave',
     if partial:
         results_key += '_partial'
 
-    results_key += f'_{append_to_results_key}'
+    results_key += f'{append_to_results_key}'
     arr_shape = routine[2]
     savedict = _crawl_folder_tree(
         topdir, results_key, disorder_key=disorder_key)
