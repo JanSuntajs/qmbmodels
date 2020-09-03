@@ -147,6 +147,7 @@ def extract_data(topdir, savepath, routine='get_entro_ave',
                  collapse=False,
                  exclude_keys=[],
                  merge=True,
+                 append_to_results_key='',
                  *args, **kwargs):
     """
     A routine for extracting numerical
@@ -289,6 +290,8 @@ def extract_data(topdir, savepath, routine='get_entro_ave',
     footer = routine[3]
     if partial:
         results_key += '_partial'
+
+    results_key += f'{append_to_results_key}'
     arr_shape = routine[2]
     savedict = _crawl_folder_tree(
         topdir, results_key, disorder_key=disorder_key)
