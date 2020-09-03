@@ -100,7 +100,7 @@ def construct_hamiltonian(argsdict, parallel=False, mpirank=0, mpisize=0):
         raise ValueError(err_message)
 
     fields = get_disorder_dist(L, disorder, argsdict['W'],
-                               argsdict['dW'], argsdict['seed'], dim=dim)
+                               0.5 * argsdict['dW'], argsdict['seed'], dim=dim)
 
     hamiltonian = ham(L, dim, hopping, fields, pbc, parallel=parallel,
                       mpirank=mpirank, mpisize=mpisize)
