@@ -80,7 +80,7 @@ def get_min_variance(topdir, descriptor, syspar, modpar, disorder_key,
         'apples to apples' comparison, we wish to make sure the disorder
         distributions of the examined spectra are of the approximately
         equal width (standard deviation/variance). This routine is mostly
-        intented for the extraction of some characteristic width of a chosen
+        intended for the extraction of some characteristic width of a chosen
         disorder distribution (e.g. the width of the disorder distribution
         for some system size and disorder strength parameter) which is then
         used
@@ -124,7 +124,8 @@ def get_min_variance(topdir, descriptor, syspar, modpar, disorder_key,
     return dW, means, variances, std_variances, rescale_factor
 
 
-def reduce_variance(disorder_samples, mode, size, target_variance, epsilon):
+def reduce_variance(disorder_samples, mode, size, target_variance, epsilon,
+                    skip_disorder_analysis=False):
     """
     A procedure for reducing the standard deviation of
     variances of different disorder realizations within
@@ -228,8 +229,10 @@ def reduce_variance(disorder_samples, mode, size, target_variance, epsilon):
 
         return sample_vars, sample_vars_sub, std_before
 
-    sample_vars, sample_vars_sub, std_before = _get_vars(disorder_samples)
-
+    if not skip_disorder_analysis:
+        sample_vars, sample_vars_sub, std_before = _get_vars(disorder_samples)
+    else:
+        sample_vars = sample_vars_sub = std_before = np.NaN
     std_after = std_before
     # implement the zeroth mode (nothing happens)
     nsamples = disorder_samples.shape[0]
@@ -287,6 +290,7 @@ def _preparation(h5file, results_key, disorder_key,
                  epsilon, dW_min, analysis_fun,
                  analysis_fun_shape,
                  sample_averaging=True,
+                 skip_disorder_analysis=False,
                  *args,
                  **kwargs):
     """
@@ -440,6 +444,10 @@ def _preparation(h5file, results_key, disorder_key,
     Whether theoretical population variance was used to
     estimate the target variance or not.
 
+    skip_disorder_analysis: boolean
+    Whether to skip disorder analysis related steps or not.
+    Especially useful for Anderson model type jobs where disorder
+    data can become rather large and can thus slow the calculations down.
     Returns:
     --------
 
@@ -495,50 +503,58 @@ def _preparation(h5file, results_key, disorder_key,
                 size = file[key].attrs['L']
                 dW = np.float(file[key].attrs[disorder_key])
 
-                try:
-                    disorder = file[disorder_string][()]
-                except KeyError:
-                    print(f'Key {disorder_string} does not exist!')
-                    if mode == 0:
-                        disorder = np.zeros((nsamples, size), dtype=np.float)
-                        print(f'Mode 0: setting disorder to zero artificially!')
+                if not skip_disorder_analysis:
+                    # if we perform various disorder analysis steps
+                    try:
+                        disorder = file[disorder_string][()]
+                    except KeyError:
+                        print(f'Key {disorder_string} does not exist!')
+                        if mode == 0:
+                            disorder = np.zeros(
+                                (nsamples, size), dtype=np.float)
+                            print(f'Mode 0: setting disorder to zero artificially!')
+                        else:
+                            print(f'Mode {mode} not possible with mode not equal to 0!'
+                                   'Exiting!')
+                            sys.exit(0)
+
+                    if bool(mode):
+
+                        if population_variance:
+
+                            target_variance *= dW**2
+
+                        else:
+
+                            means, variances, *rest = disorder_analysis(disorder,
+                                                                        size)
+
+                            target_variance = np.mean(variances)
+
                     else:
-                        print(f'Mode {mode} not possible with mode not equal to 0!'
-                               'Exiting!')
-                        sys.exit(0)
+                        epsilon = None
+                        dW_min = None
+                        target_variance = None
 
-                if bool(mode):
+                    (condition, nsamples_dis, nsamples_selected,
+                     std_before, std_after) = reduce_variance(disorder, mode,
+                                                              size,
+                                                              target_variance,
+                                                              epsilon,
+                                                            skip_disorder_analysis)
 
-                    if population_variance:
-
-                        target_variance *= dW**2
-
-                    else:
-
-                        means, variances, *rest = disorder_analysis(disorder,
-                                                                    size)
-
-                        target_variance = np.mean(variances)
-
+                    nsamples_rejected = nsamples - nsamples_selected
+                    check_shapes = (nsamples == nsamples_dis)
                 else:
-                    epsilon = None
-                    dW_min = None
-                    target_variance = None
-
-                (condition, nsamples_dis, nsamples_selected,
-                 std_before, std_after) = reduce_variance(disorder, mode,
-                                                          size,
-                                                          target_variance,
-                                                          epsilon)
-
-                nsamples_rejected = nsamples - nsamples_selected
-                check_shapes = (nsamples == nsamples_dis)
+                    check_shapes = True
+                    condition = np.arange(nsamples)
 
                 if ((mode == 0) and (not check_shapes)):
                     condition = np.arange(nsamples)
                     std_before = np.NaN
                     std_after = np.NaN
                     check_shapes = True
+
                 if check_shapes:
 
                     results = analysis_fun(result, condition, size,
