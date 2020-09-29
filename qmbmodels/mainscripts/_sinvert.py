@@ -84,7 +84,8 @@ def sinvert_body(mod, argsDict, syspar, syspar_keys,
     -> eigenvalues of the partial diagonalization
     -> hamiltonian's diagonal matrix elements
     -> diagonal matrix elements of the squared hamiltonian
-    -> entropy of the obtained eigenstates
+    -> entropy of the obtained eigenstates (for many-body calculations)
+    -> ipr (inverse participation ratio) (for free or anderson calculations)
     -> metadata (details about the calculations, procedures used,
     hamiltonian models etc.)
     -> fields -> a dictionary containing information about the
@@ -237,6 +238,8 @@ def sinvert_body(mod, argsDict, syspar, syspar_keys,
     #
     #       EXTRACTION OF EIGENVECTORS AND EIGENVALUES
     #       ENTANGLEMENT ENTROPY CALCULATION
+    #       IPR CALCULATION FOR NON-MANY BODY MODELS
+    #       IPR - INVERSE PARTICIPATION RATIO
     #
     # ------------------------------------------------------------
 
@@ -251,7 +254,10 @@ def sinvert_body(mod, argsDict, syspar, syspar_keys,
         # if mpirank == 0:
 
         eigvals = []
-        entropy = []
+        if many_body:
+            entropy = []
+        else:
+            ipr = []
 
         for i in range(0, nconv):
 
@@ -322,6 +328,10 @@ def sinvert_body(mod, argsDict, syspar, syspar_keys,
                         entro = entangled.eentro()
 
                     entropy.append(entro)
+                else:
+
+                    ipr_state = np.sum(np.abs(eigvec)**4)
+                    ipr.append(ipr_state)
 
             # destroy the scatter context before the new
             # loop iteration
@@ -350,6 +360,9 @@ def sinvert_body(mod, argsDict, syspar, syspar_keys,
             if many_body:
                 entropy = np.array(entropy)[sortargs]
                 savedict['Entropy_partial'] = entropy
+            else:
+                ipr = np.arry(entropy)[sortargs]
+                savedict['Ipr_partial'] = ipr
             # save the eigenvalues, entropy and spectral info as
             # a npz array
 
