@@ -130,8 +130,8 @@ if __name__ == '__main__':
 
 
             save_hdf_datasets({setnames[0]: [gap_data, (None, 3)],
-                setnames[1]: [gap_mean_dist, (1, None)],
-                setnames[2]: [gap_dist, (1, None)]}, f, attrs)
+                setnames[1]: [gap_mean_dist, (None,)],
+                setnames[2]: [gap_dist, (None,)]}, f, attrs)
             # save txt files for easier reading without the need for
             # inspection of the hdf5 files
         save_external_files(file, {setnames[0]: gap_data,
