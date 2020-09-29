@@ -29,10 +29,10 @@ from qmbmodels.utils.filesaver import save_hdf_datasets, \
 from qmbmodels.utils.cmd_parser_tools import arg_parser, arg_parser_general
 
 
-_r_parse_dict = {'r_nener': [int, -1], 
-                 'r_bins': [int, 100]}
+_r_parse_dict = {'r_nener': [int, -1]}
 _r_name = 'r_data_partial'
-_hist_name = 'r_hist_partial'
+_mean_dist_name = 'r_mean_dist_partial'
+_dist_name = 'r_dist_partial'
 # sfflist text descriptor
 r_data_desc = """
 This string provides a textual descriptor of the
@@ -55,22 +55,37 @@ See manuscript at: https://arxiv.org/abs/1905.06345
 for a more technical introduction of our implementation.
 """
 
-r_hist_desc = """
+mean_dist_desc = """
 This string provides a textual descriptor of the
-'r_hist_partial' hdf5 dataset. The latter contains
-the histogramed values of the level spacings averaged
-over different random spectra.
-(2, nbins).
+'r_mean_dist_partial' hdf5 dataset. The latter contains values
+of the mean level spacing for each individual disorder
+realization/random samples.
 
 The entries are:
 
-r_hist[0, 0] -> histogram edges
-r_hist[0, 1] -> histogram values.
-
+r_mean_dist[0, :] -> mean r values flattened into a 1D ndarray
 
 See manuscript at: https://arxiv.org/abs/1905.06345
 for a more technical introduction of our implementation.
 """
+
+
+dist_desc = """
+This string provides a textual descriptor of the
+'r_dist_partial' hdf5 dataset. The latter contains values
+of r statistic for all level spacings and all disorder
+samples. The data can be statistically analysed, such
+as put in histograms.
+
+The entries are:
+
+r_dist[0, :] -> r values flattened into a 1D ndarray
+
+See manuscript at: https://arxiv.org/abs/1905.06345
+for a more technical introduction of our implementation.
+"""
+
+
 
 
 if __name__ == '__main__':
@@ -92,33 +107,36 @@ if __name__ == '__main__':
 
             # load the appropriate eigenvalue files
             data, attrs, setnames = load_eigvals(
-                f, [_r_name, _hist_name], nener=rDict['r_nener'])
+                f, [_r_name, _dist_name, _mean_dist_name], nener=rDict['r_nener'])
             print(setnames)
             attrs.update({'r_desc': r_data_desc})
-            attrs.update({'r_hist_desc': r_hist_desc})
+            attrs.update({'r_mean_dist_desc': mean_dist_desc})
+            attrs.update({'r_dist_desc': dist_desc})
             # if the sff spectrum dataset does not yet exist, create it
             spc = Spectra(data)
             spc.spectral_width = (0., 1.)
             gap_data = np.zeros((1, 3))
 
-            gap_mean, gap_dev = spc.gap_avg()
+            # mean r for all samples, std. deviation of gap mean and
+            # distribution of mean values
+            gap_mean, gap_dev, gap_mean_dist = spc.gap_avg(return_distribution=True)
             gap_data[0] = [data.shape[1], gap_mean, gap_dev]
 
-            bins = rDict['r_bins']
-            gap_hist_data = np.zeros((2, bins+1))
-            gap_hist, gap_edges = spc.gap_hist(bins=bins)
-            gap_hist_data[0,:] = gap_edges
-            gap_hist_data[1,:-1] = gap_hist
-            gap_hist_data[1,-1] = np.NaN
+            gap_dist = spc.gap_dist()
+
             # except ValueError:
             # pass
             # take care of creation or appending to the hdf5 datasets
+
+
             save_hdf_datasets({setnames[0]: [gap_data, (None, 3)],
-                setnames[1]: [gap_hist_data, (2, None)]}, f, attrs)
+                setnames[1]: [gap_mean_dist, (1, None)],
+                setnames[2]: [gap_dist, (1, None)]}, f, attrs)
             # save txt files for easier reading without the need for
             # inspection of the hdf5 files
         save_external_files(file, {setnames[0]: gap_data,
-            setnames[1]: gap_hist_data.T})
+            setnames[1]: gap_mean_dist.T,
+            setnames[2]: gap_dist.T})
 
     except IndexError:
         pass
