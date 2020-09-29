@@ -106,12 +106,9 @@ if __name__ == '__main__':
 
             bins = rDict['r_bins']
             gap_hist_data = np.zeros((2, bins+1))
-            print(gap_hist_data.shape)
-            gap_hist, gap_edges = spc.gap_hist(bins=bins)
-            print(gap_hist.shape)
-            print(gap_edges.shape)
+            gap_hist, gap_edges = spc.gap_hist(bins=bins,
+                **{'cumulative': True})
             gap_hist_data[0,:] = gap_edges
-            print(gap_hist_data[0].shape)
             gap_hist_data[1,:-1] = gap_hist
             gap_hist_data[1,-1] = 1.
             # except ValueError:
@@ -122,7 +119,7 @@ if __name__ == '__main__':
             # save txt files for easier reading without the need for
             # inspection of the hdf5 files
         save_external_files(file, {setnames[0]: gap_data,
-            setnames[0]: gap_hist_data})
+            setnames[1]: gap_hist_data.T})
 
     except IndexError:
         pass
