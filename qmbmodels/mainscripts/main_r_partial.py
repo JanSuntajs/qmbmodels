@@ -106,8 +106,7 @@ if __name__ == '__main__':
 
             bins = rDict['r_bins']
             gap_hist_data = np.zeros((2, bins+1))
-            gap_hist, gap_edges = spc.gap_hist(bins=bins,
-                **{'cumulative': True})
+            gap_hist, gap_edges = spc.gap_hist(bins=bins)
             gap_hist_data[0,:] = gap_edges
             gap_hist_data[1,:-1] = gap_hist
             gap_hist_data[1,-1] = np.NaN
