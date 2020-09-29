@@ -121,7 +121,8 @@ if __name__ == '__main__':
                 setnames[1]: [gap_hist_data, (2, None)]}, f, attrs)
             # save txt files for easier reading without the need for
             # inspection of the hdf5 files
-        save_external_files(file, {setnames[0]: gap_data})
+        save_external_files(file, {setnames[0]: gap_data,
+            setnames[0]: gap_hist_data})
 
     except IndexError:
         pass
