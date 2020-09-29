@@ -107,8 +107,12 @@ if __name__ == '__main__':
 
             # load the appropriate eigenvalue files
             data, attrs, setnames = load_eigvals(
-                f, [_r_name, _dist_name, _mean_dist_name], nener=rDict['r_nener'])
+                f, [_r_name, _mean_dist_name, _dist_name], nener=rDict['r_nener'])
             print(setnames)
+            
+            # ----------------------
+            # r_mean values
+            # ----------------------
             attrs.update({'r_desc': r_data_desc})
             attrs.update({'r_mean_dist_desc': mean_dist_desc})
             attrs.update({'r_dist_desc': dist_desc})
