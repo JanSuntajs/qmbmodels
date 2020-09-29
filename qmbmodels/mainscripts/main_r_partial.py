@@ -110,7 +110,7 @@ if __name__ == '__main__':
                 **{'cumulative': True})
             gap_hist_data[0,:] = gap_edges
             gap_hist_data[1,:-1] = gap_hist
-            gap_hist_data[1,-1] = 1.
+            gap_hist_data[1,-1] = np.NaN
             # except ValueError:
             # pass
             # take care of creation or appending to the hdf5 datasets
