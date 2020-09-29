@@ -131,7 +131,11 @@ if __name__ == '__main__':
             # except ValueError:
             # pass
             # take care of creation or appending to the hdf5 datasets
-
+            for setname in setnames:
+                try:
+                    del f[setname]
+                except KeyError:
+                    print(f'{setname} not present in {file}!')
 
             save_hdf_datasets({setnames[0]: [gap_data, (None, 3)],
                 setnames[1]: [gap_mean_dist, (None,)],
