@@ -361,7 +361,7 @@ def sinvert_body(mod, argsDict, syspar, syspar_keys,
                 entropy = np.array(entropy)[sortargs]
                 savedict['Entropy_partial'] = entropy
             else:
-                ipr = np.arry(entropy)[sortargs]
+                ipr = np.array(ipr)[sortargs]
                 savedict['Ipr_partial'] = ipr
             # save the eigenvalues, entropy and spectral info as
             # a npz array
