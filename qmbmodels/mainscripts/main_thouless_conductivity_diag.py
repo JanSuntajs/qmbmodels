@@ -17,6 +17,7 @@ with non-interacting Hamiltonians.
 
 """
 import sys
+import numpy as np
 
 from qmbmodels.utils import set_mkl_lib
 from qmbmodels.utils.cmd_parser_tools import arg_parser
@@ -39,7 +40,7 @@ if __name__ == '__main__':
     # type and the selected boundary conditions should be
     # periodic along all the axes -> the pbc parameter is
     # simply a scalar boolean with the value of True
-    if model_name != 'Anderson':
+    if model_name != 'anderson':
         print(('Thouless conductivity calculation '
                'only works for the Anderson case. '
                f'{model_name} is not supported. Exiting.'))
@@ -48,7 +49,7 @@ if __name__ == '__main__':
     if argsDict['pbc'] is not True:
         print(('Please set the pbc parameter '
                'equal to True. Now you have '
-               f'{argsDict['pbc']} which is not '
+               f'{argsDict["pbc"]} which is not '
                'supported. Exiting.'))
         sys.exit()
 
@@ -66,31 +67,26 @@ if __name__ == '__main__':
         # eigvals, eigvecs = model.eigsystem(complex=False, turbo=True)
         print('Diagonalization for the pbc case finished!')
 
-        print('Displaying pbc eigvals')
-        print(eigvals_pbc)
-
         # repeat the calculation for the apbc case. First, make sure
         # that boundary conditions are changed across one of the axes.
-
+        argsDict_apbc = argsDict.copy()
         # make sure the bc are of the proper shape
-        argsDict['pbc'] = np.array(
+        argsDict_apbc['pbc'] = np.array(
             [1 for i in range(argsDict['dim'])], dtype=np.int32)
         # choose antiperiodic bc along the last axis
-        argsDict['pbc'][-1] = -1
+        argsDict_apbc['pbc'][-1] = -1
 
         model, fields = mod.construct_hamiltonian(
-            argsDict, parallel=False, mpisize=1)
+            argsDict_apbc, parallel=False, mpisize=1)
         print('Starting diagonalization for the apbc case...')
         eigvals_apbc = model.eigvals(complex=False)
 
         # eigvals, eigvecs = model.eigsystem(complex=False, turbo=True)
         print('Diagonalization for the apbc case finished!')
 
-        print('Displaying apbc eigvals')
-        print(eigvals_apbc)
-
         spectrum_differences = eigvals_pbc - eigvals_apbc
-
+        print('Displaying differences between spectra:')
+        print(spectrum_differences)
         # ----------------------------------------------------------------------
         # save the files
         eigvals_dict = {'Eigenvalues': eigvals_pbc,
