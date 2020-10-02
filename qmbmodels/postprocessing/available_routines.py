@@ -7,6 +7,7 @@ from .degeneracies import deg_ave, footer_deg_ave
 from .gamma import gamma_ave, footer_gamma_ave
 from .microcan_deltae import microcan_ave, footer_microcan_ave
 from .ipr import ipr_ave, footer_ipr_ave
+from .thouless_conductivity import thoucond_ave, footer_thoucond_ave
 # Routines available for calculations:
 # get_entro_ave: average entropy, sampling averaging performed
 #
@@ -33,6 +34,8 @@ _routines_dict = {
     'get_sff': [get_sff, 'SFF_spectrum', None, footer_sff],
     'get_tau_thouless': [get_tau_thouless, 'SFF_spectrum', 24,
                          footer_t_thouless],
-    'get_ipr': [ipr_ave, 'Ipr', 15, footer_ipr_ave]
+    'get_ipr': [ipr_ave, 'Ipr', 15, footer_ipr_ave],
+    'get_thoucond': [thoucond_ave, 'Spectrum_differences', 17,
+                     footer_thoucond_ave]
 
 }
