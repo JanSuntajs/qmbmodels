@@ -113,7 +113,12 @@ programs = {
                       'array': True, 'save': 'Eigvals',
                       'vectors': True, 'noqueue': False,
                       'mpi': True, 'short': True,
-                      'postprocess': False}
+                      'postprocess': False},
+    'thouless_diag': {'name': f'{_mainfold}main_thouless_conductivity_diag.py',
+                      'array': True,
+                      'save': 'Eigvals', 'vectors': True,
+                      'noqueue': False, 'mpi': False,
+                      'short': True, 'postprocess': False},
 
 }
 
@@ -124,8 +129,10 @@ programs = {
 # [<time>, <nodes>, <ntasks>, <cpus-per-task>,<mem-per-cpu>]
 # NOTE: mem-per-cpu is in MB
 default_postprocessing_params = ["02:59:59", 1, 1, 4, 4000]
-# diagonalization modes
-diag_modes = ['diag', 'sinvert', 'sinvert_short']
+# diagonalization modes - those are special since hdf5 script
+# has to be run after them
+# diag_modes = ['diag', 'thouless_diag', 'sinvert', 'sinvert_short',]
+diag_modes = [key for key in programs if programs[key]['save'] == 'Eigvals']
 # define shift-and-invert keys:
 #
 # eps_type -> eps_solver
