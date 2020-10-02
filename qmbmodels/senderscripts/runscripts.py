@@ -113,7 +113,12 @@ programs = {
                       'array': True, 'save': 'Eigvals',
                       'vectors': True, 'noqueue': False,
                       'mpi': True, 'short': True,
-                      'postprocess': False}
+                      'postprocess': False},
+    'thouless_diag': {'name': f'{_mainfold}main_thouless_conductivity_diag.py',
+                      'array': True,
+                      'save': 'Eigvals', 'vectors': True,
+                      'noqueue': False, 'mpi': False,
+                      'short': True, 'postprocess': False},
 
 }
 
