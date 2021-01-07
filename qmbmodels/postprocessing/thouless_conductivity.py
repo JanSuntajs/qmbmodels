@@ -9,7 +9,7 @@ https://iopscience.iop.org/article/10.1088/0022-3719/5/8/007
 
 import numpy as np
 from scipy.stats.mstats import gmean
-
+from math import ceil, floor
 from .disorder import _preparation, _preparation_analysis
 
 
@@ -18,81 +18,118 @@ Each row is organised as follows:
 
 0) dW: disorder strength
 
-1) ari_ari_mean TO DO: ADD EXPLANATIONS FOR 1)- 4)
+1) ari_ari_mean: arithmetic mean across both
+   samples and energies where entry 9) refers
+   to the number of energies considered in the analysis.
 
-2) ari_geo_mean
+2) ari_geo_mean: geometric mean of the energies in a single
+   disorder sample and the arithmetic mean of the means
+   of individual samples.
 
-3) geo_ari_mean
+3) geo_ari_mean: first, an arithmetic mean of the energies
+   in a single sample is taken and then the geometric mean
+   of the single sample mean values.
 
-4) geo_geo_mean
+4) geo_geo_mean: geometric mean of all the energies across
+   individual spectra and given disorder realizations.
 
-5) Delta_thou_cond: standard deviation of the thouless conductivity
+5) thouless conductivity g, obtained by 
+   dividing the thouless energy by the heisenberg energy -> 
+   multiplying 1) by 10)
 
-6) size L: system size
+6) analogous to 5), obtained by multiplying 2) by 10)
+ 
+7) analogous to 4) and 5), obtained by multiplying 3) by 10)
 
-7) nener: number of energies obtained using partial diagonalization
+8) ... obtained by multiplying 4) by 10)
 
-8) target_variance: Variance of the disordered samples
+9) nener: number of the energies considered in the calculations
+
+10) hilbert_dim: the full hilbert space dimension
+
+11) Delta_thou_cond: standard deviation of the thouless conductivity
+
+12) size L: system size
+
+13) disregard this entry completely
+
+14) target_variance: Variance of the disordered samples
     with which to compare the numerical results in the postprocessing
     steps if mode equals 1 or 2.
     If mode=0: nan, this argument is not needed if preprocessing is not
     performed.
 
-9) epsilon: condition used to determine whether to select a given disorder
+15) epsilon: condition used to determine whether to select a given disorder
    distribution.
    If mode=0: nan
 
-10) dW_min: value of the disorder strength parameter for which the epsilon
+16) dW_min: value of the disorder strength parameter for which the epsilon
    was evaluated.
    If mode=0: nan
 
-11) variance_before: variance of variances of the disorder distributions before
+17) variance_before: variance of variances of the disorder distributions before
     post.
 
-12) variance_after: variance of variances of the disorder distributions after
+18) variance_after: variance of variances of the disorder distributions after
     post.
 
-13) nsamples: number of all the random samples
+19) nsamples: number of all the random samples
 
-11) nsamples_selected: number of the random disorder samples with an
+20) nsamples_selected: number of the random disorder samples with an
     appropriate variance.
     NOTE: if mode (entry 15) ) equals 0, nsamples equals nsamples.
 
-14) nsamples_rejected: nsamples - nsamples_selected
+21) nsamples_rejected: nsamples - nsamples_selected
     NOTE: if mode (entry 15) ) equals 0, this should be equal to 0.
 
-15) mode: which postprocessing mode was selected
+22) mode: which postprocessing mode was selected
     NOTE: 0 indicates no postprocessing!
 
-16) population_variance: integer specifying whether theoretical prediction for
+23) population_variance: integer specifying whether theoretical prediction for
     the population variance was used in order calculate the target variance.
     1 if that is the case, 0 if not.
 """
 
 
 def _thoucond_ave(thoucond, condition, size, sample_averaging=True,
+                  nener=-1,
                   *args, **kwargs):
 
-    thoucond = thoucond[condition]
-    thoucond = thoucond
-    nsamples, nener = thoucond.shape
+    # nener: number of energies to consider; if -1, the whole spectrum
+    # is considered
+
+    thoucond = np.abs(thoucond)
+    nsamples, hilbert_dim = thoucond.shape
+
+    if ((nener == -1) or (hilbert_dim > nener)):
+        nener = hilbert_dim
+    else:
+        med_ener = int(hilbert_dim / 2.)
+        thoucond = thoucond[:,
+                            med_ener - ceil(nener / 2):
+                            med_ener + floor(nener / 2)]
 
     # arithmetic mean of samples
     # -> first arithmetic mean for each sample
     # then arithmetic mean across samples
-    ari_ari_mean = np.mean(thoucond, axis=None) * nener
+    ari_ari_mean = np.mean(thoucond, axis=None)
 
     # first the geometric mean inside a sample,
     # then the arithmetic mean across samples
-    ari_geo_mean = np.mean(gmean(np.abs(thoucond), axis=1)) * nener
+    ari_geo_mean = np.mean(gmean(thoucond, axis=1))
 
     #
-    geo_ari_mean = gmean(np.abs(np.mean(thoucond, axis=1)) * nener)
+    geo_ari_mean = gmean((np.mean(thoucond, axis=1)))
 
-    geo_geo_mean = gmean(np.abs(thoucond), axis=None) * nener
+    geo_geo_mean = gmean(thoucond, axis=None)
 
     output = (ari_ari_mean, ari_geo_mean,
-              geo_ari_mean, geo_geo_mean)
+              geo_ari_mean, geo_geo_mean,
+              ari_ari_mean * hilbert_dim,
+              ari_geo_mean * hilbert_dim,
+              geo_ari_mean * hilbert_dim,
+              geo_geo_mean * hilbert_dim,
+              nener, hilbert_dim)
 
     output = tuple(map(np.atleast_1d, output))
     return output
@@ -107,6 +144,7 @@ def thoucond_ave(h5file, results_key='Spectrum_differences',
                  mode=0,
                  disorder_string='Hamiltonian_random_disorder_partial',
                  sample_averaging=True,
+                 nener=-1,
                  *args,
                  **kwargs):
     """
@@ -211,8 +249,9 @@ def thoucond_ave(h5file, results_key='Spectrum_differences',
                            disorder_string,
                            target_variance, population_variance,
                            mode, epsilon, dW_min,
-                           _thoucond_ave, 4,
+                           _thoucond_ave, 10,
                            sample_averaging=sample_averaging,
+                           nener=nener,
                            *args,
                            **kwargs)
     return results

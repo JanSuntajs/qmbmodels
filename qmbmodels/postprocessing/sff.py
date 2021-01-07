@@ -164,62 +164,65 @@ Each row is organised as follows:
 6) gamma: width of the original spectrum for which we assume a Gaussian
    shape.
 
-7) unfolding_n: degree of the unfolding polynomial used in the
+7) chi: float, numerical prefactor for the percentage of all states
+   within one standard deviation (gamma)
+
+8) unfolding_n: degree of the unfolding polynomial used in the
    unfolding procedure.
 
-8) discard_unfolding: number of energies that have been discarded due
+9) discard_unfolding: number of energies that have been discarded due
    to the unfolding procedure if slope needed to be corrected ->
    unfolding can sometimes introduce unphysical effects near the spectral
    edges with the slope (density of states) becoming negative -> we
    need to cut those edges, thus discarding some values.
 
-9) filter_eta: eta used in the gaussian filtering of the spectra
+10) filter_eta: eta used in the gaussian filtering of the spectra
    for the SFF calculation.
 
-10) epsilon_th: epsilon used in the thouless time determination as
+11) epsilon_th: epsilon used in the thouless time determination as
    the limit parameter to stop the thouless time extraction
    algorithm.
 
-11) smoothing_th: width of the running mean window used to smoothen
+12) smoothing_th: width of the running mean window used to smoothen
     the data before the thouless time extraction.
 
-12) size L: system size
+13) size L: system size
 
-13) nener: number of energies obtained using partial diagonalization
+14) nener: number of energies obtained using partial diagonalization
 
-14) target_variance: Variance of the disordered samples
+15) target_variance: Variance of the disordered samples
     with which to compare the numerical results in the postprocessing
     steps if mode equals 1 or 2.
     If mode=0: nan, this argument is not needed if preprocessing is not
     performed.
 
-15) epsilon: condition used to determine whether to select a given disorder
+16) epsilon: condition used to determine whether to select a given disorder
    distribution.
    If mode=0: nan
 
-16) dW_min: value of the disorder strength parameter for which the epsilon
+17) dW_min: value of the disorder strength parameter for which the epsilon
    was evaluated.
    If mode=0: nan
 
-17) variance_before: variance of variances of the disorder distributions before
+18) variance_before: variance of variances of the disorder distributions before
     post.
 
-18) variance_after: variance of variances of the disorder distributions after
+19) variance_after: variance of variances of the disorder distributions after
     post.
 
-19) nsamples: number of all the random samples
+20) nsamples: number of all the random samples
 
-20) nsamples_selected: number of the random disorder samples with an
+21) nsamples_selected: number of the random disorder samples with an
     appropriate variance.
     NOTE: if mode (entry 15) ) equals 0, nsamples equals nsamples.
 
-21) nsamples_rejected: nsamples - nsamples_selected
+22) nsamples_rejected: nsamples - nsamples_selected
     NOTE: if mode (entry 15) ) equals 0, this should be equal to 0.
 
-22) mode: which postprocessing mode was selected
+23) mode: which postprocessing mode was selected
     NOTE: 0 indicates no postprocessing!
 
-23) population_variance: integer specifying whether theoretical prediction for
+24) population_variance: integer specifying whether theoretical prediction for
     the population variance was used in order calculate the target variance.
     1 if that is the case, 0 if not.
 """
@@ -255,6 +258,42 @@ def _sff(spectrum, condition, size, eff_dims,
             nener, gamma, unfolding_n, discarded_unfolding, filter_eta)
 
 
+def _spectral_ratio(eigspectrum, gamma0):
+    """
+    Internal routine for determining the
+    proper numerical prefactor determining
+    the ratio of the states between the
+    mean spectral energy and one standard
+    deviation (gamma0)
+
+    Parameters:
+
+    eigspectrum: 2D ndarray
+        Array of energies of the shape (nsamples, nenergies)
+
+    gamma0: spectral standard deviation, or, in general,
+    some energy for which we want to calculate the spectral
+    ratio.
+
+    Returns:
+
+    ratio: float
+
+    The ratio of the states corresponding to the condition
+    given above.
+    """
+    # get the mean energy
+    mean_ener = np.mean(eigspectrum)
+    eigspectrum = eigspectrum.flatten()
+
+    numtrue = np.sum((eigspectrum <= np.abs(gamma0))
+                     & (eigspectrum >= mean_ener))
+
+    ratio = 1.0 * numtrue / eigspectrum.size
+
+    return ratio
+
+
 def _thouless_tau(spectrum, condition, size, eff_dims,
                   normal_con, normal_uncon,
                   gamma0, nener0,
@@ -264,6 +303,7 @@ def _thouless_tau(spectrum, condition, size, eff_dims,
                   epsilon_th=0.05,
                   smoothing_th=50,
                   connected=False,
+                  chi=0.3413,
                   *args, **kwargs):
 
     taulist = spectrum[0]
@@ -281,11 +321,13 @@ def _thouless_tau(spectrum, condition, size, eff_dims,
     t_th, sff_th, *rest = sff_object.get_thouless_time(epsilon_th, connected,
                                                        smoothing_th)
 
-    mn_lvl_spc = gamma0 / (nener0 * 0.3413)
+    # chi is the ratiio of states that should be one gamma
+    # away from the mean -> 0.3413 for a Gaussian
+    mn_lvl_spc = gamma0 / (nener0 * chi)
     t_th_phys = t_th / mn_lvl_spc
 
     results = (t_th, sff_th, t_th_phys, mn_lvl_spc,
-               nener0, gamma0, unfolding_n,
+               nener0, gamma0, chi, unfolding_n,
                discarded_unfolding, filter_eta,
                epsilon_th, smoothing_th)
 
@@ -446,6 +488,7 @@ def get_tau_thouless(h5file, results_key='SFF_spectrum',
                      population_variance=True,
                      mode=0,
                      eta=0.5,
+                     assume_gaussian=True,
                      sff_filter='gaussian',
                      disorder_string='Hamiltonian_random_disorder_partial',
                      epsilon_th=0.05,
@@ -469,11 +512,20 @@ def get_tau_thouless(h5file, results_key='SFF_spectrum',
             unfolding_n = file[results_key].attrs['sff_unfolding_n']
             filter_eta = file[results_key].attrs['eta']
 
+            if assume_gaussian:
+                # then chi comes from the literature -> 
+                # one standard deviation
+                chi = 0.3413
+            else:
+                eigvals = file['Eigvals'][()]
+                # determine chi numerically
+                chi = _spectral_ratio(eigvals, gamma0)
+
         return _preparation(h5file, results_key, disorder_key,
                             disorder_string,
                             target_variance, population_variance,
                             mode, epsilon, dW_min,
-                            _thouless_tau, 11, eff_dims=eff_dims,
+                            _thouless_tau, 12, eff_dims=eff_dims,
                             normal_con=normal_con,
                             normal_uncon=normal_uncon,
                             gamma0=gamma0,
@@ -484,6 +536,7 @@ def get_tau_thouless(h5file, results_key='SFF_spectrum',
                             epsilon_th=epsilon_th,
                             smoothing_th=smoothing_th,
                             connected=connected,
+                            chi=chi,
                             *args, **kwargs)
     except KeyError:
         print('No results_key: {}. File: {}'.format(results_key,
