@@ -526,8 +526,9 @@ def _preparation(h5file, results_key, disorder_key,
 
                         else:
 
-                            means, variances, *rest = disorder_analysis(disorder,
-                                                                        size)
+                            means, variances, *rest = disorder_analysis(
+                                disorder,
+                                size)
 
                             target_variance = np.mean(variances)
 
@@ -537,11 +538,12 @@ def _preparation(h5file, results_key, disorder_key,
                         target_variance = None
 
                     (condition, nsamples_dis, nsamples_selected,
-                     std_before, std_after) = reduce_variance(disorder, mode,
-                                                              size,
-                                                              target_variance,
-                                                              epsilon,
-                                                            skip_disorder_analysis)
+                     std_before,
+                     std_after) = reduce_variance(disorder, mode,
+                                                  size,
+                                                  target_variance,
+                                                  epsilon,
+                                                  skip_disorder_analysis)
 
                     nsamples_rejected = nsamples - nsamples_selected
                     check_shapes = (nsamples == nsamples_dis)
