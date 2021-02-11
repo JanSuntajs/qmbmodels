@@ -19,43 +19,49 @@ Each row is organised as follows:
 
 2) Delta ipr: standard deviation of ipr.
 
-3) size L: system size
+3) participation entropy: log(ipr) (natural logarithm) averaged for
+   a given number of states and samples
 
-4) nener: number of energies obtained using partial diagonalization
+4) delta participation entropy: standard deviation of the participation
+   entropy
 
-5) target_variance: Variance of the disordered samples
+5) size L: system size
+
+6) nener: number of energies obtained using partial diagonalization
+
+7) target_variance: Variance of the disordered samples
     with which to compare the numerical results in the postprocessing
     steps if mode equals 1 or 2.
     If mode=0: nan, this argument is not needed if preprocessing is not
     performed.
 
-6) epsilon: condition used to determine whether to select a given disorder
+8) epsilon: condition used to determine whether to select a given disorder
    distribution.
    If mode=0: nan
 
-7) dW_min: value of the disorder strength parameter for which the epsilon
+9) dW_min: value of the disorder strength parameter for which the epsilon
    was evaluated.
    If mode=0: nan
 
-8) variance_before: variance of variances of the disorder distributions before
+10) variance_before: variance of variances of the disorder distributions before
     post.
 
-9) variance_after: variance of variances of the disorder distributions after
+11) variance_after: variance of variances of the disorder distributions after
     post.
 
-10) nsamples: number of all the random samples
+12) nsamples: number of all the random samples
 
-11) nsamples_selected: number of the random disorder samples with an
+13) nsamples_selected: number of the random disorder samples with an
     appropriate variance.
     NOTE: if mode (entry 15) ) equals 0, nsamples equals nsamples.
 
-12) nsamples_rejected: nsamples - nsamples_selected
+14) nsamples_rejected: nsamples - nsamples_selected
     NOTE: if mode (entry 15) ) equals 0, this should be equal to 0.
 
-13) mode: which postprocessing mode was selected
+15) mode: which postprocessing mode was selected
     NOTE: 0 indicates no postprocessing!
 
-14) population_variance: integer specifying whether theoretical prediction for
+16) population_variance: integer specifying whether theoretical prediction for
     the population variance was used in order calculate the target variance.
     1 if that is the case, 0 if not.
 """
@@ -63,6 +69,13 @@ Each row is organised as follows:
 
 def _ipr_ave(ipr, condition, size, sample_averaging=True,
              *args, **kwargs):
+    """
+    Perform the calculation of the IPR as well as the calculation
+    of the participation entropy, defined as the natural
+    logarithm of IPR. For both of the above quantities,
+    we also calculate their standard deviation.
+
+    """
 
     ipr = ipr[condition]
     if sample_averaging:
@@ -73,7 +86,9 @@ def _ipr_ave(ipr, condition, size, sample_averaging=True,
     ave_ipr = np.mean(ipr, axis=axis)
     std_ipr = np.std(ipr, axis=axis)
 
-    output = (ave_ipr, std_ipr)
+    ave_log_ipr = np.mean(np.log(ipr), axis=axis)
+    std_log_ipr = np.mean(np.log(ipr), axis=axis)
+    output = (ave_ipr, std_ipr, ave_log_ipr, std_log_ipr)
 
     output = tuple(map(np.atleast_1d, output))
     return output
@@ -191,7 +206,7 @@ def ipr_ave(h5file, results_key='Ipr',
                            disorder_string,
                            target_variance, population_variance,
                            mode, epsilon, dW_min,
-                           _ipr_ave, 2,
+                           _ipr_ave, 4,
                            sample_averaging=sample_averaging,
                            *args,
                            **kwargs)
