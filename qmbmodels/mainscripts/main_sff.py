@@ -183,6 +183,7 @@ if __name__ == '__main__':
 
                 momentlist = np.zeros((11, len(taulist)), dtype=np.float64)
                 sfflist[0] = taulist
+                momentlist[0] = taulist
                 # calculate the SFF
                 sfflist[1:, :] = spc.calc_sff(taulist, return_sfflist=True)
                 # gather the results
