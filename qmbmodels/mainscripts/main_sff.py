@@ -245,11 +245,9 @@ if __name__ == '__main__':
                         key_spectra, key_spectrum))
                     f[key_spectra].resize(sfflist.shape)
                     f[key_spectrum].resize(sffvals.shape)
-                    f[key_moments].resize(momentlist.shape)
 
                     f[key_spectra][()] = sfflist
                     f[key_spectrum][()] = sffvals
-                    f[key_moments][()] = momentlist
 
                 if key_moments not in f.keys():
                     f.create_dataset(key_moments, data=momentlist,
