@@ -103,6 +103,29 @@ for a more technical introduction of the Spectral form
 factor.
 """
 
+moments_desc = """
+This string provides a textual description of the
+'SFF_moments' hdf5 dataset. SFF_moments is a ndarray of the
+shape (11, len(taulist)) where len(taulist) stands for
+the number of tau values at which sff has been
+evaluated. Entries in the sff array:
+
+moments[0]: taulist -> tau values, at which sff was evaluated
+
+moments[1:]: moments of the sff calculated according to:
+
+            I_m = np.mean(np.abs(sfflist)**(2*m), axis=0) /
+                  np.mean(np.abs(sfflist)**2, axis=0)**m
+            where m takes interval values in the range
+            from 1 to 10.
+
+See manuscript at: https://arxiv.org/abs/1905.06345
+for a more technical introduction of the Spectral form
+factor.
+
+
+"""
+
 if __name__ == '__main__':
 
     sffDict, sffextra = arg_parser_general(_sff_parse_dict)
@@ -157,17 +180,32 @@ if __name__ == '__main__':
                 spc.spectral_filtering(filter_key=sff_filter, eta=eta)
                 sfflist = np.zeros(
                     (spc.nsamples + 1, len(taulist)), dtype=np.complex128)
+
+                momentlist = np.zeros((11, len(taulist)), dtype=np.float64)
                 sfflist[0] = taulist
+                momentlist[0] = taulist
                 # calculate the SFF
                 sfflist[1:, :] = spc.calc_sff(taulist, return_sfflist=True)
                 # gather the results
                 sffvals = np.array([spc.taulist, spc.sff, spc.sff_uncon])
+
+                # also calculate the first 10 moments for the distribution:
+                for m in range(1, 11, 1):
+
+                    denumerator = np.mean(
+                        np.abs(sfflist[1:, :])**(2 * m), axis=0)
+                    denominator = np.mean(np.abs(sfflist[1:, :]**2), axis=0)**m
+
+                    moment = denumerator / denominator
+                    momentlist[m, :] = moment
+
                 print('Finished with calculations... Storing results!')
                 # prepare additional attributes
                 filt_dict = {key: spc.filt_dict[key] for key in spc.filt_dict
                              if key not in _filt_exclude}
                 misc_dict = {key: spc.misc_dict[key]
-                             for key in spc.misc_dict if key not in _misc_include}
+                             for key in spc.misc_dict if key
+                             not in _misc_include}
                 misc0 = spc.misc0_dict.copy()
                 misc0_keys = [key for key in misc0]
 
@@ -179,7 +217,8 @@ if __name__ == '__main__':
                     attrs.update(dict_)
 
                 attrs.update({'nener': spc.nener, 'nsamples': spc.nsamples,
-                              'nener0': spc._nener, 'nsamples0': spc._nsamples})
+                              'nener0': spc._nener,
+                              'nsamples0': spc._nsamples})
 
                 eta_filt_desc = '_eta_{:.4f}_filter_{}'.format(eta,
                                                                sff_filter)
@@ -187,9 +226,11 @@ if __name__ == '__main__':
                 # add the actual sff values
                 key_spectra = 'SFF_spectra{}'.format(eta_filt_desc)
                 key_spectrum = 'SFF_spectrum{}'.format(eta_filt_desc)
+                key_moments = 'SFF_moments{}'.format(eta_filt_desc)
+
                 if key_spectra not in f.keys():
                     print('Creating datasets {} and {}'.format(
-                        key_spectra, key_spectrum))
+                        key_spectra, key_spectrum, key_moments))
 
                     f.create_dataset(key_spectra, data=sfflist,
                                      maxshape=(None, None))
@@ -209,6 +250,18 @@ if __name__ == '__main__':
                     f[key_spectra][()] = sfflist
                     f[key_spectrum][()] = sffvals
 
+                if key_moments not in f.keys():
+                    f.create_dataset(key_moments, data=momentlist,
+                                     maxshape=(11, None))
+                    f[key_moments].attrs['Description'] = moments_desc
+
+                else:
+                    print('Updating datasets {}'.format(
+                        key_moments))
+
+                    f[key_moments].resize(momentlist.shape)
+                    f[key_moments][()] = momentlist
+
                 _misc_include_ = []
                 # data which led to the SFF calculation
                 for key in _misc_include:
@@ -224,7 +277,8 @@ if __name__ == '__main__':
                         f[key_][()] = spc.misc_dict[key]
 
                 # append the attributes
-                for key1 in [key_spectra, key_spectrum] + _misc_include_:
+                for key1 in [key_spectra, key_spectrum,
+                             key_moments] + _misc_include_:
                     for key2, value in attrs.items():
                         f[key1].attrs[key2] = value
 

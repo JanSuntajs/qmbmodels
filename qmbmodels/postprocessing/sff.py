@@ -286,8 +286,8 @@ def _spectral_ratio(eigspectrum, gamma0):
     mean_ener = np.mean(eigspectrum)
     eigspectrum = eigspectrum.flatten()
 
-    numtrue = np.sum((eigspectrum <= np.abs(gamma0))
-                     & (eigspectrum >= mean_ener))
+    numtrue = np.sum((eigspectrum <= np.abs(gamma0)) & (
+        eigspectrum >= mean_ener))
 
     ratio = 1.0 * numtrue / eigspectrum.size
 
@@ -513,11 +513,11 @@ def get_tau_thouless(h5file, results_key='SFF_spectrum',
             filter_eta = file[results_key].attrs['eta']
 
             if assume_gaussian:
-                # then chi comes from the literature -> 
+                # then chi comes from the literature ->
                 # one standard deviation
                 chi = 0.3413
             else:
-                eigvals = file['Eigvals'][()]
+                eigvals = file['Eigenvalues'][()]
                 # determine chi numerically
                 chi = _spectral_ratio(eigvals, gamma0)
 
