@@ -78,10 +78,11 @@ if __name__ == '__main__':
         argsDict_apbc['pbc'] = np.array(
             [1 for i in range(argsDict['dim'])], dtype=np.int32)
 
-        ph_factor = argsDict_apbc['boundary_phase']
-        argsDict_apbc['pbc'][-1] = ph_factor
+        bc_modulus = argsDict_apbc['mod_bc']
+        bc_phase = argsDict_apbc['phase_bc']
+        argsDict_apbc['pbc'][-1] = bc_modulus * np.exp(1j * bc_phase)
         model, fields = mod.construct_hamiltonian(
-            argsDict_apbc, parallel=False, mpisize=1, dtype=np.complex128)
+            argsDict_apbc, parallel=False, mpisize=1)
         print('Starting diagonalization for the general bc case...')
         eigvals_apbc = model.eigvals(complex=True)
 
@@ -94,10 +95,9 @@ if __name__ == '__main__':
         # ----------------------------------------------------------------------
         # save the files
         eigvals_dict = {'Eigenvalues': eigvals_pbc,
-                        f('Spectrum_phase_factor_{ph_factor.real:.2f}'
-                          f'_{ph_factor.imag:.2f}j'): eigvals_apbc,
+                        f'Spectrum_phase_factor_{bc_phase:.8f}' :eigvals_apbc,
                         ('Spectrum_differences_phase_factor'
-                         f'_{ph_factor.real:.2f}_{ph_factor.imag:.2f}j'): spectrum_differences,
+                         f'_{bc_phase:.8f}'): spectrum_differences,
                         **fields}
 
         savefile(eigvals_dict, savepath, syspar, modpar, argsDict,

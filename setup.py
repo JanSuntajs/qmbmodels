@@ -12,5 +12,5 @@ setup(name='qmbmodels',
       install_requires=['ham1d'],
       dependency_links=[('https://github.com/JanSuntajs/'
                          'ham1d/tarball/'
-                         'master/#egg=ham1d-1.2.0')],
+                         'master/#egg=ham1d-1.2.3')],
       zip_safe=False)
