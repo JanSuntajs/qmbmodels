@@ -38,10 +38,6 @@ if __name__ == '__main__':
 
     save_metadata = True
 
-    # we also repeat the calculation for the case with
-    # slightly changed bc. First, make sure
-    # that boundary conditions are changed across one of the axes.
-    argsDict_apbc = argsDict.copy()
     # make sure that the input parameters are ok before
     # proceeding -> the hamiltonian should be of the Anderson
     # type and the selected boundary conditions should be
@@ -69,18 +65,24 @@ if __name__ == '__main__':
             argsDict, parallel=False, mpisize=1)
 
         print('Starting diagonalization for the pbc case...')
-        eigvals_pbc = model.eigvals(complex=False)
+        eigvals_pbc = model.eigvals(complex=True)
 
         # eigvals, eigvecs = model.eigsystem(complex=False, turbo=True)
         print('Diagonalization for the pbc case finished!')
 
+        # we also repeat the calculation for the case with
+        # slightly changed bc. First, make sure
+        # that boundary conditions are changed across one of the axes.
+        argsDict_apbc = argsDict.copy()
+
         # make sure the bc are of the proper shape
         argsDict_apbc['pbc'] = np.array(
-            [1 for i in range(argsDict['dim'])], dtype=np.int32)
+            [1 for i in range(argsDict['dim'])], dtype=np.complex128)
 
         bc_modulus = argsDict_apbc['mod_bc']
         bc_phase = argsDict_apbc['phase_bc']
         argsDict_apbc['pbc'][-1] = bc_modulus * np.exp(1j * bc_phase)
+
         model, fields = mod.construct_hamiltonian(
             argsDict_apbc, parallel=False, mpisize=1)
         print('Starting diagonalization for the general bc case...')
@@ -95,7 +97,7 @@ if __name__ == '__main__':
         # ----------------------------------------------------------------------
         # save the files
         eigvals_dict = {'Eigenvalues': eigvals_pbc,
-                        f'Spectrum_phase_factor_{bc_phase:.8f}' :eigvals_apbc,
+                        f'Spectrum_phase_factor_{bc_phase:.8f}': eigvals_apbc,
                         ('Spectrum_differences_phase_factor'
                          f'_{bc_phase:.8f}'): spectrum_differences,
                         **fields}
