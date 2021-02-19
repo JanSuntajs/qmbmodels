@@ -124,7 +124,10 @@ programs = {
                   'save': 'Eigvals', 'vectors': True,
                   'noqueue': False, 'mpi': False,
                   'short': True, 'postprocess': False},
-
+    'kohn_analyse': {'name': f'{_mainfold}main_kohn_conductivity_analyse.py', 'array': False,
+                     'save': 'Spectral_stats', 'vectors': False,
+                     'noqueue': False, 'mpi': False,
+                     'short': None, 'postprocess': True},
 }
 
 # define the default post-processing parameters so that
