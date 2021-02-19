@@ -291,6 +291,7 @@ def _preparation(h5file, results_key, disorder_key,
                  analysis_fun_shape,
                  sample_averaging=True,
                  skip_disorder_analysis=False,
+                 find_key=False,
                  *args,
                  **kwargs):
     """
@@ -494,6 +495,14 @@ def _preparation(h5file, results_key, disorder_key,
         with h5py.File(h5file, 'r') as file:
 
             key = results_key
+
+            if find_key:
+                # find key
+                try:
+                    key = [key_ for key_ in file.keys() if key in key_][0]
+                except IndexError:
+                    print(f'{key} is not a subtring of any model keys!')
+
 
             if key in file.keys():
 

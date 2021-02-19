@@ -275,6 +275,12 @@ def extract_data(topdir, savepath, routine='get_entro_ave',
     results for different values of sweeping parameters
     are stored into different files.
 
+    append_to_results_key: string, optional
+    A string to be appended to the results key in case
+    we wish to load data for particular parameters -> provided
+    there are more datasets with the same results_key
+    prefix.
+
     *args, **kwargs: arguments to be passed to the actual
     postprocessing routine.
 
