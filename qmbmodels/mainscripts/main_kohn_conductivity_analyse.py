@@ -92,10 +92,10 @@ to obtain the mean values for individual spectra. Those are then averaged
 using the arithmetic mean.
 kohn_data[0, 10] -> gamma = gamma^2=tr(ham^2)-tr(ham)**2 for the nener
 energies chosen in the calculation
-kohn_data[0, 11] -> Thouless energy for the whole (nener_orig number
+kohn_data[0, 11] -> Heisenberg energy for the whole (nener_orig number
 of energies) spectrum, not just the states from the centre. The arithmetic
 mean is used here both for inter- and intra-spectra calculations.
-kohn_data[0, 12] -> Thouless energy for the whole (nener_orig number
+kohn_data[0, 12] -> Heisenberg energy for the whole (nener_orig number
 of energies) spectrum, not just the states from the centre. Mean values
 for individual disorder realizations are obtained using the geometric mean,
 then values for different spectra are averaged using the arithmetic mean.
@@ -129,11 +129,11 @@ disorder realizations.)
 kohn_mean_dist[4] -> gamma values for individual disorder realizations
 
 kohn_mean_dist[5] -> distribution of mean values for
-the thouless energies across different disorder realizations calculated
+the Heisenberg energies across different disorder realizations calculated
 for ALL states, not just the ones from the center of the spectrum.
 
 kohn_mean_dist[6] -> distribution of the geometric mean values for
-the thouless energies across different disorder realizations, calculated
+the Heisenberg energies across different disorder realizations, calculated
 for ALL states, not just the ones from the centre of the spectrum.
 
 kohn_mean_dist[7] -> gamma values for individual disorder realizations
@@ -307,8 +307,8 @@ if __name__ == '__main__':
                                            e_heis_1,
                                            e_heis_3,
                                            gamma_1,
-                                           e_thou_0,
-                                           e_thou_000,
+                                           e_heis_0,
+                                           e_heiss_000,
                                            gamma_0,
                                            nener_,
                                            nener_orig_])
