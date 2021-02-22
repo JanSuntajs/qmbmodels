@@ -291,7 +291,7 @@ if __name__ == '__main__':
                               'nener0': nener_orig,
                               'nener': nener})
 
-                kohn_data = np.zeros((1, 14))
+                kohn_data = np.zeros((1, 15))
                 kohn_data[0] = [phase_factor, nener_orig, nener,
                                 g_1, g_2, g_3, g_4, e_thou_2, e_thou_4,
                                 e_heis_2, e_heis_4, gamma_2,
@@ -324,7 +324,7 @@ if __name__ == '__main__':
                 # disorders
                 # 2:
                 # 3:
-                save_hdf_datasets({setnames[0]: [kohn_data, (None, 14)],
+                save_hdf_datasets({setnames[0]: [kohn_data, (None, 15)],
                                    setnames[1]: [mean_dist_data,
                                                  (10, None)],
                                    setnames[2]: [data_phase.flatten(),
