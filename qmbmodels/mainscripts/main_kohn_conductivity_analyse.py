@@ -57,26 +57,26 @@ by taking the ratio of the Thouless and Heisenberg energy,
 where each of those have been calculated *globally*, that is,
 by taking their mean over all spectra and disorder realizations
 before taking their ratio.
-kohn_data[0, 4] -> g_3 -> "Kohn" conductivity, 
+kohn_data[0, 5] -> g_3 -> "Kohn" conductivity, 
 calculated by obtaining the ratio of each samples'
 Thouless and Heisenberg energy and then taking the
 average of the ratios over different disorder realizations. Here,
 Thouless and Heisenberg energies for samples have been calculated
 using the geometric mean.
-kohn_data[0, 5] -> g_4 -> "Kohn" conductivity, calculated
+kohn_data[0, 6] -> g_4 -> "Kohn" conductivity, calculated
 by taking the ratio of the Thouless and Heisenberg energy,
 where each of those have been calculated *globally*. In this
 case, we use the geometric mean to calculate mean values for
 individual disorder samples and then the arithmetic mean
 when averaging over disorder realizations. After doing this
 for both Heisenberg and Thoules energy, we take their ratio.
-kohn_data[0, 6] -> Thouless energy, obtained *globally*, hence
+kohn_data[0, 7] -> Thouless energy, obtained *globally*, hence
 by taking the average value across different energy spectra
 and different disorder realizations. The quantity being averaged
 is the absolute value of the difference of spectra upon changing
 the boundary conditions, rescaled by 2/\phi**2. The averaging
 over energies is over nener values.
-kohn_data[0, 7] -> Thouless energy, obtained *globally*, hence
+kohn_data[0, 8] -> Thouless energy, obtained *globally*, hence
 by taking the average value across different energy spectra
 and different disorder realizations. As oposed to the previous
 entry, the geometric mean is used to obtain the mean values
@@ -84,22 +84,22 @@ for individual samples. The quantity being averaged
 is the absolute value of the difference of spectra upon changing
 the boundary conditions, rescaled by 2/\phi**2. The averaging
 over energies is over nener values.
-kohn_data[0, 8] -> Heisenberg energy, obtained *globally.* The averaging
+kohn_data[0, 9] -> Heisenberg energy, obtained *globally.* The averaging
 over energies is over nener values.
-kohn_data[0, 9] -> -> Heisenberg energy, obtained *globally.* The averaging
+kohn_data[0, 10] -> -> Heisenberg energy, obtained *globally.* The averaging
 over energies is over nener values and the geometric mean is used
 to obtain the mean values for individual spectra. Those are then averaged
 using the arithmetic mean.
-kohn_data[0, 10] -> gamma = gamma^2=tr(ham^2)-tr(ham)**2 for the nener
+kohn_data[0, 11] -> gamma = gamma^2=tr(ham^2)-tr(ham)**2 for the nener
 energies chosen in the calculation
-kohn_data[0, 11] -> Heisenberg energy for the whole (nener_orig number
+kohn_data[0, 12] -> Heisenberg energy for the whole (nener_orig number
 of energies) spectrum, not just the states from the centre. The arithmetic
 mean is used here both for inter- and intra-spectra calculations.
-kohn_data[0, 12] -> Heisenberg energy for the whole (nener_orig number
+kohn_data[0, 13] -> Heisenberg energy for the whole (nener_orig number
 of energies) spectrum, not just the states from the centre. Mean values
 for individual disorder realizations are obtained using the geometric mean,
 then values for different spectra are averaged using the arithmetic mean.
-kohn_data[0, 13] -> gamma^2=tr(ham^2)-tr(ham)**2 for the whole spectrum
+kohn_data[0, 14] -> gamma^2=tr(ham^2)-tr(ham)**2 for the whole spectrum
 """
 
 mean_dist_desc = """
