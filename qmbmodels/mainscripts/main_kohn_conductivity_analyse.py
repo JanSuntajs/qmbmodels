@@ -200,6 +200,7 @@ if __name__ == '__main__':
 
                 # calculate original mn lvl spc
                 # for all states -> 4 ways
+                level_spacings = np.diff(data)
                 e_heis_0 = np.mean(level_spacings, axis=1)
                 e_heis_00 = np.mean(e_heis_0)
                 e_heis_000 = gmean(level_spacings, axis=1)
