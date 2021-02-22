@@ -308,7 +308,7 @@ if __name__ == '__main__':
                                            e_heis_3,
                                            gamma_1,
                                            e_heis_0,
-                                           e_heiss_000,
+                                           e_heis_000,
                                            gamma_0,
                                            nener_,
                                            nener_orig_])
