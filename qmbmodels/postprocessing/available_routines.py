@@ -8,6 +8,7 @@ from .gamma import gamma_ave, footer_gamma_ave
 from .microcan_deltae import microcan_ave, footer_microcan_ave
 from .ipr import ipr_ave, footer_ipr_ave
 from .thouless_conductivity import thoucond_ave, footer_thoucond_ave
+from .kohn_conductivity import kohn_ave, footer_kohn_ave
 # Routines available for calculations:
 # get_entro_ave: average entropy, sampling averaging performed
 #
@@ -36,6 +37,8 @@ _routines_dict = {
                          footer_t_thouless],
     'get_ipr': [ipr_ave, 'Ipr', 17, footer_ipr_ave],
     'get_thoucond': [thoucond_ave, 'Spectrum_differences', 23,
-                     footer_thoucond_ave]
+                     footer_thoucond_ave],
+    'get_kohncond': [kohn_ave, 'kohn_data', 23,
+                     footer_kohn_ave]
 
 }
