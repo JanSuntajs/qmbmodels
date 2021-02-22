@@ -271,7 +271,7 @@ if __name__ == '__main__':
 
                 e_thou_1 = np.mean(data_phase, axis=1)
                 e_thou_2 = np.mean(e_thou_1)
-                e_thou3 = gmean(data_phase, axis=1)
+                e_thou_3 = gmean(data_phase, axis=1)
                 e_thou_4 = np.mean(e_thou_3)
 
                 # take the two ratios
