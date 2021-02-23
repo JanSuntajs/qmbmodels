@@ -15,69 +15,116 @@ Each row is organised as follows:
 
 0) dW: disorder strength
 
-1) \phi: phase
+1) \phi -> phase_factor \phi
 
-2) nener0: number of all energies in the spectra
+2) nener_orig -> the
+original number of energies, equal to the
+dimension of the Hilbert space
 
-3) nener: number of energies used in the calculations
+3) nener, the number of energies
+used in the thouless time extraction
 
-4) g1: kohn conductivity calculated by taking the
-   ratio of Thouless and Heisenberg energy for each disorder
-   sample, then averaging the results over disorders
+4) g_1 -> "Kohn" conductivity, 
+calculated by obtaining the ratio of each samples'
+Thouless and Heisenberg energy and then taking the
+average of the ratios over different disorder realizations.
 
-5) g2: kohn conductivity obtained by taking the global
-   means for thouless and heisenberg energy, then taking
-   their ratio
+5) g_2 -> "Kohn" conductivity, calculated
+by taking the ratio of the Thouless and Heisenberg energy,
+where each of those have been calculated *globally*, that is,
+by taking their mean over all spectra and disorder realizations
+before taking their ratio.
 
-6) E_T: Thouless energy, mean over all spectra and disorder
-   realizations
+6) g_3 -> "Kohn" conductivity, 
+calculated by obtaining the ratio of each samples'
+Thouless and Heisenberg energy and then taking the
+average of the ratios over different disorder realizations. Here,
+Thouless and Heisenberg energies for samples have been calculated
+using the geometric mean.
 
-7) E_H: Heisenberg energy, mean level spacing over all
-   spectra and disorder realizations
+7) g_4 -> "Kohn" conductivity, calculated
+by taking the ratio of the Thouless and Heisenberg energy,
+where each of those have been calculated *globally*. In this
+case, we use the geometric mean to calculate mean values for
+individual disorder samples and then the arithmetic mean
+when averaging over disorder realizations. After doing this
+for both Heisenberg and Thoules energy, we take their ratio.
 
-8) standard deviation of g1
+8) e_th_1 -> Thouless energy, obtained *globally*, hence
+by taking the average value across different energy spectra
+and different disorder realizations. The quantity being averaged
+is the absolute value of the difference of spectra upon changing
+the boundary conditions, rescaled by 2/\phi**2. The averaging
+over energies is over nener values.
 
-9) standard deviation of E_T
+9) e_th_2 Thouless energy, obtained *globally*, hence
+by taking the average value across different energy spectra
+and different disorder realizations. As oposed to the previous
+entry, the geometric mean is used to obtain the mean values
+for individual samples. The quantity being averaged
+is the absolute value of the difference of spectra upon changing
+the boundary conditions, rescaled by 2/\phi**2. The averaging
+over energies is over nener values.
 
-10) standard deviation of E_H
+10) e_h_1 -> Heisenberg energy, obtained *globally.* The averaging
+over energies is over nener values.
 
-11) size L: system size
+11) e_h_2 -> Heisenberg energy, obtained *globally.* The averaging
+over energies is over nener values and the geometric mean is used
+to obtain the mean values for individual spectra. Those are then averaged
+using the arithmetic mean.
 
-12) nener: number of energies obtained using partial diagonalization
+12) gamma = gamma^2=tr(ham^2)-tr(ham)**2 for the nener
+energies chosen in the calculation
 
-13) target_variance: Variance of the disordered samples
+13) e_h_1_0 -> Heisenberg energy for the whole (nener_orig number
+of energies) spectrum, not just the states from the centre. The arithmetic
+mean is used here both for inter- and intra-spectra calculations.
+
+14) e_h_2_0 -> Heisenberg energy for the whole (nener_orig number
+of energies) spectrum, not just the states from the centre. Mean values
+for individual disorder realizations are obtained using the geometric mean,
+then values for different spectra are averaged using the arithmetic mean.
+
+15) gamma0^2=tr(ham^2)-tr(ham)**2 for the whole spectrum
+
+16) size L: system size
+
+17) nener: number of energies obtained using partial diagonalization
+
+18) target_variance: Variance of the disordered samples
     with which to compare the numerical results in the postprocessing
     steps if mode equals 1 or 2.
     If mode=0: nan, this argument is not needed if preprocessing is not
     performed.
 
-14) epsilon: condition used to determine whether to select a given disorder
+19) epsilon: condition used to determine whether to select a given disorder
    distribution.
    If mode=0: nan
 
-15) dW_min: value of the disorder strength parameter for which the epsilon
+20) dW_min: value of the disorder strength parameter for which the epsilon
    was evaluated.
    If mode=0: nan
 
-16)  variance_before: variance of variances of the disorder distributions before
+21)  variance_before: variance of variances of the disorder distributions before
     post.
 
-17)  variance_after: variance of variances of the disorder distributions after
+22)  variance_after: variance of variances of the disorder distributions after
     post.
 
-18) nsamples: number of all the random samples
+23) nsamples: number of all the random samples
 
-19) nsamples_selected: number of the random disorder samples with an
+24) nsamples_selected: number of the random disorder samples with an
     appropriate variance.
     NOTE: if mode (entry 15) ) equals 0, nsamples equals nsamples.
 
-20) nsamples_rejected: nsamples - nsamples_selected
+25) nsamples_rejected: nsamples - nsamples_selected
     NOTE: if mode (entry 15) ) equals 0, this should be equal to 0.
 
-21) mode: which postprocessing mode was selected
+26) mode: which postprocessing mode was selected
     NOTE: 0 indicates no postprocessing!
 
-22) population_variance: integer specifying whether theoretical prediction for
+27) population_variance: integer specifying whether theoretical prediction for
     the population variance was used in order calculate the target variance.
     1 if that is the case, 0 if not.
 """
@@ -203,4 +250,4 @@ def kohn_ave(h5file, results_key='kohn_data',
                         disorder_string,
                         target_variance, population_variance,
                         mode, epsilon, dW_min,
-                        _kohn_ave, 10, *args, **kwargs)
+                        _kohn_ave, 15, *args, **kwargs)

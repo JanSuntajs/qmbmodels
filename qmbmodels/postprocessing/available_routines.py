@@ -38,7 +38,7 @@ _routines_dict = {
     'get_ipr': [ipr_ave, 'Ipr', 17, footer_ipr_ave],
     'get_thoucond': [thoucond_ave, 'Spectrum_differences', 23,
                      footer_thoucond_ave],
-    'get_kohncond': [kohn_ave, 'kohn_data', 23,
+    'get_kohncond': [kohn_ave, 'kohn_data', 28,
                      footer_kohn_ave]
 
 }
