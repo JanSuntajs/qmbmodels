@@ -186,9 +186,15 @@ if __name__ == '__main__':
                 partial=False)
             print(setnames)
 
-            # check if spectra with changed bc are present
-            phase_factor = attrs['phase_bc']
-            key_diffs = 'Spectrum_differences_phase_factor'
+            if attrs['model'] == 'anderson_complex':
+                # check if spectra with changed bc are present
+                phase_factor = attrs['phase_bc']
+                key_diffs = 'Spectrum_differences_phase_factor'
+
+            elif attrs['model'] == 'anderson':
+
+                phase_factor = np.pi
+                key_diffs = 'Spectrum_differences'
             # if key_diffs is present in attributes' key,
             # then we can perform our calculation
             diffs_present = [key for key in f.keys()
