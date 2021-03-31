@@ -119,11 +119,25 @@ programs = {
                       'save': 'Eigvals', 'vectors': True,
                       'noqueue': False, 'mpi': False,
                       'short': True, 'postprocess': False},
+    'thouless_inter_diag':
+    {'name':
+     f'{_mainfold}main_thouless_conductivity_interacting_diag.py',
+     'array': True,
+     'save': 'Eigvals', 'vectors': True,
+     'noqueue': False, 'mpi': False,
+     'short': True, 'postprocess': False},
     'kohn_diag': {'name': f'{_mainfold}main_kohn_conductivity_diag.py',
                   'array': True,
                   'save': 'Eigvals', 'vectors': True,
                   'noqueue': False, 'mpi': False,
                   'short': True, 'postprocess': False},
+
+    'kohn_diag_check': {'name': (f'{_mainfold}main_check_kohn'
+                                 '_conductivity_implementation.py'),
+                        'array': True,
+                        'save': 'Eigvals', 'vectors': True,
+                        'noqueue': False, 'mpi': False,
+                        'short': True, 'postprocess': False},
     'kohn_analyse': {'name': f'{_mainfold}main_kohn_conductivity_analyse.py', 'array': False,
                      'save': 'Spectral_stats', 'vectors': False,
                      'noqueue': False, 'mpi': False,
