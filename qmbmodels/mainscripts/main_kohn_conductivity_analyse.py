@@ -191,7 +191,8 @@ if __name__ == '__main__':
                 phase_factor = attrs['phase_bc']
                 key_diffs = 'Spectrum_differences_phase_factor'
 
-            elif attrs['model'] == 'anderson':
+            elif 'Spectrum_apbc' in f.keys():
+                # elif attrs['model'] == 'anderson':
 
                 phase_factor = np.pi
                 key_diffs = 'Spectrum_differences'
