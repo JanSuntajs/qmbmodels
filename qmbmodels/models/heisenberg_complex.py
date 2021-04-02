@@ -1,29 +1,25 @@
 """
 This module contains the tools for construction
 of the Heisenberg XXZ model with nearest and
-neighbour terms and the possibility
-to also include the anti-periodic boundary
-conditions. For now, this model repeats code
+neighbour terms and complex_hopping.
+For now, this model repeats code
 of the Heisenberg model and was created to avoid
 pollution of the other currently existing modules
 which were not intended for calculations
 in the anti-periodic case. This shall hopefully
-change in the future. 
+change in the future.
 
 The model in the hard-core boson (spin) case:
 
-H = 0.5 * J1 * \sum_i (s_i^+ s_{i+1}^- + s_i^- s_{i+1}^-) +
-    0.5 * J2 * \sum_i (s_i^+ s_{i+2}^- + s_i^- s_{i+2}^-) +
-    delta1 * J1 * \sum_i s_i^z s_{i+1}^z +
-    delta2 * J2 * \sum_i s_i^z s_{i+2}^z +
+H = 0.5 * J_complex * \sum_i (s_i^+ s_{i+1}^- + s_i^- s_{i+1}^-) +
+    delta * J_complex * \sum_i s_i^z s_{i+1}^z +
     \sum_i w_i s_i^z
 
+Where J_complex = J_mod * np.exp(1j*J_phase)
 The model in the fermionic case reads:
 
-H = 0.5 * J1 * \sum_i (c_i^+ c_{i+1}^- + c_{i+1}^+ c_i^-) +
-    0.5 * J2 * \sum_i (c_i^+ c_{i+2}^- + c_{i+2}^+ c_i^-) +
-    delta1 * J1 * \sum_i n_i^z n_{i+1}^z +
-    delta2 * J2 * \sum_i n_i^z n_{i+2}^z +
+H = 0.5 * J_complex * \sum_i (c_i^+ c_{i+1}^- + c_{i+1}^+ c_i^-) +
+    delta * J_complex * \sum_i n_i^z n_{i+1}^z +
     \sum_i w_i n_i
 
 Attributes:
@@ -39,7 +35,7 @@ syspar_keys: list
 modpar_keys: list
     Module parameters for the
     Heisenberg model:
-    'J', 'delta', 'W', 'dW': float
+    'J_mod', 'J_phase', 'bc_phase', 'delta', 'W', 'dW': float
     nearest and next nearest echange couplings, nearest
     and next-nearest anisotropy parameters, center of
     the disorder distribution and width of the disorder
@@ -58,7 +54,8 @@ from .disorder import get_disorder_dist
 from ._common_keys import comm_modpar_keys, comm_syspar_keys
 
 syspar_keys = ['L', 'nu'] + comm_syspar_keys
-modpar_keys = ['J', 'delta',
+modpar_keys = ['J_mod', 'J_phase', 'delta',
+               'phase_bc',
                'W', 'dW'] + comm_modpar_keys
 
 _modpar_keys = [key for key in modpar_keys if '_seed' not in key]
@@ -84,10 +81,13 @@ def construct_hamiltonian(argsdict, parallel=False, mpirank=0, mpisize=0):
         'ham_type': str, which Hamiltonian type is used ('spin1d'
                     for spin Hamiltonians, 'ferm1d' for fermionic
                     ones and 'free1d' for free models).
-        'J1', 'J2', 'delta1', 'delta2', 'W', 'dW': float
-            Model parameters for the Heisenberg model: nearest
-            and next nearest echange couplings, nearest and
-            next-nearest anisotropy parameters, center of
+        'J_mod', 'J_phase', 'bc_mod', 'bc_phase',
+         'delta', 'W', 'dW': float
+            Model parameters for the Heisenberg model: modulus
+            and phase of the complex hopping, phase of the complex
+            boundary conditions factor,
+            nearest neighbour
+            anisotropy parameter, center of
             the disorder distribution and width of the disorder
             distribution, respectively.
 
@@ -126,6 +126,15 @@ def construct_hamiltonian(argsdict, parallel=False, mpirank=0, mpisize=0):
     disorder = argsdict['disorder']
     ham_type = argsdict['ham_type']
 
+    J_mod = argsdict['J_mod']
+    J_phase = argsdict['J_phase']
+
+    # phase for the boundary conditions hop
+    bc_phase = argsdict['phase_bc']
+    # rescale the phase so that equal complex
+    # prefactor is obtained with each hopping
+    J_phase_ = 1.0 * J_phase / L
+
     if pbc:
         range_1 = range_2 = range(L)
         coup1p = [[i, (i + 1) % L] for i in range_1]
@@ -138,37 +147,46 @@ def construct_hamiltonian(argsdict, parallel=False, mpirank=0, mpisize=0):
         coup1p = [[i, (i + 1)] for i in range_1]
         coup1m = [[i, (i - 1)] for i in range_2]
 
-    # create an array of pbc factors -> ones for
-    # pbc or obc (lengths differ in the two cases)
-    # or with -1 entries on appropriate sites
-    pbc_1 = np.ones_like(range(L))
-    pbc_2 = np.ones_like(range(L))
-    pbc_3 = np.ones_like(range(L))
-    # antiperiodic bc -> first an last
-    # coupling get a -1 -> a phase factor of pi
-    if pbc == -1.:
-        print('antiperiodic bc')
-        pbc_1[-1] = -1.
-        pbc_2[0] = -1.
+    pbc_1 = np.ones_like(range_1)
+    pbc_2 = np.ones_like(range_2)
 
-    couplings_1 = 0.5 * argsdict['J'] * pbc_1
-    couplings_2 = 0.5 * argsdict['J'] * pbc_2
+    couplings_1 = 0.5 * J_mod * np.exp(1j * J_phase_)
+    couplings_2 = couplings_1
 
     if ham_type == 'ferm1d':
 
         ham = fehm
 
+        if pbc:
+            # ferm1d and spind1 cases are different
+            # here
+            pbc_1[-1] = np.exp(1j * bc_phase)
+            pbc_2[0] = np.exp(1j * bc_phase)
+
+        couplings_1 *= pbc_1
+        couplings_2 *= pbc_2
+        couplings_2 = np.conj(couplings_2)
+
         hops = [
-            ['+-', [[couplings_1[i], *coup] for i, coup
-                    in enumerate(coup1p)]],
-            ['+-', [[couplings_2[i], *coup] for i, coup
-                    in enumerate(coup1m)]],
+            ['+-', [[couplings_1, *coup] for coup
+                    in coup1p]],
+            ['+-', [[couplings_2, *coup] for i, coup
+                    in coup1m]],
         ]
         num_op = 'n'
 
     elif ham_type == 'spin1d':
 
         ham = sphm
+
+        if pbc:
+
+            pbc_1[-1] = np.exp(1j * bc_phase)
+
+        couplings_1 *= pbc_1
+        couplings_2 *= pbc_1
+        couplings_2 = np.conj(couplings_2)
+
         hops = [['+-', [[couplings_1[i], *coup] for i, coup
                         in enumerate(coup1p)]],
                 ['-+', [[couplings_2[i], *coup] for i, coup
@@ -176,15 +194,13 @@ def construct_hamiltonian(argsdict, parallel=False, mpirank=0, mpisize=0):
 
         num_op = 'z'
 
-    inter = [[num_op + num_op, [[argsdict['J'] * argsdict['delta'] * pbc_1[i],
+    inter = [[num_op + num_op, [[J_mod * argsdict['delta'],
                                  *coup]
                                 for i, coup in enumerate(coup1p)]]]
 
     fields = get_disorder_dist(L, disorder, argsdict['W'],
                                argsdict['dW'], argsdict['seed'])
 
-    print('hops')
-    print(hops)
     rnd = [num_op, [[field, i] for i, field in enumerate(fields)]]
 
     static_list = [*hops, *inter, rnd]
