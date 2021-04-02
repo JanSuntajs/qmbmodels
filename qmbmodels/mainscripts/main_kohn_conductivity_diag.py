@@ -43,12 +43,35 @@ if __name__ == '__main__':
     # type and the selected boundary conditions should be
     # periodic along all the axes -> the pbc parameter is
     # simply a scalar boolean with the value of True
-    if model_name != 'anderson_complex':
-        print(('Thouless conductivity calculation '
-               'only works for the Anderson case. '
-               f'{model_name} is not supported. Exiting.'))
+
+    if 'complex' not in model_name:
+        if 'anderson' in model_name:
+
+            print(('Calculation only works for the '
+                   'anderson_complex module in the '
+                   'anderson case. '
+                   f'{model_name} is not supported. Exiting.'))
+        if 'heisenberg' in model_name:
+
+            print(('Calculation only works for the '
+                   'heisenberg_complex module in the '
+                   'heisenberg case. '
+                   f'{model_name} is not supported. Exiting.'))
         sys.exit()
 
+    # if we are not dealing with an anderson-type model
+    # then this is an interacting case in 1D!
+    interacting = False
+    if 'anderson' not in model_name:
+        interacting = True
+
+    if interacting:
+        # make sure not both types of complex factors
+        # are nonzero
+        if ((argsDict['J_phase'] != 0.) and (argsDict['phase_bc'] != 0.0)):
+            print(('Please make sure not both phase factors are nonzero. '
+                   'Exiting.'))
+            sys.exit()
     if argsDict['pbc'] is not True:
         print(('Please set the pbc parameter '
                'equal to True. Now you have '
@@ -57,8 +80,17 @@ if __name__ == '__main__':
         sys.exit()
 
     for seed in range(min_seed, max_seed + 1):
+        # perform the first part of the calculation
+        # as is
         print('Using seed: {}'.format(seed))
         argsDict['seed'] = seed
+
+        if interacting:
+            # set the complex phases first to zero
+            bc_phase_int = argsDict['phase_bc']
+            hop_phase_int = argsDict['J_phase']
+            argsDict['phase_bc'] = 0.
+            argsDict['J_phase'] = 0.
         # get the instance of the appropriate hamiltonian
         # class and the diagonal random fields used
         model, fields = mod.construct_hamiltonian(
@@ -76,12 +108,31 @@ if __name__ == '__main__':
         argsDict_apbc = argsDict.copy()
 
         # make sure the bc are of the proper shape
-        argsDict_apbc['pbc'] = np.array(
-            [1 for i in range(argsDict['dim'])], dtype=np.complex128)
+        # for the noninteracting case, pbc is an array,
+        # because there are generally more dimensions to
+        # consider
 
-        bc_modulus = argsDict_apbc['mod_bc']
-        bc_phase = argsDict_apbc['phase_bc']
-        argsDict_apbc['pbc'][-1] = bc_modulus * np.exp(1j * bc_phase)
+        savestr = ''
+        if not interacting:
+            argsDict_apbc['pbc'] = np.array(
+                [1 for i in range(argsDict['dim'])], dtype=np.complex128)
+
+            bc_modulus = argsDict_apbc['mod_bc']
+            bc_phase = argsDict_apbc['phase_bc']
+            argsDict_apbc['pbc'][-1] = bc_modulus * np.exp(1j * bc_phase)
+
+        else:
+            # note: we set the bc phase to 0 for the
+            # original case, now we restore it; we do not
+            # change the 'pbc' parameter since its implementation
+            # is different than in the anderson case
+            argsDict_apbc['J_phase'] = hop_phase_int
+            argsDict_apbc['phase_bc'] = bc_phase_int
+            argsDict['phase_bc'] = bc_phase_int
+            argsDict['J_phase'] = hop_phase_int
+            bc_phase = bc_phase_int
+            if hop_phase_int != 0.:
+                savestr = 'global'
 
         model, fields = mod.construct_hamiltonian(
             argsDict_apbc, parallel=False, mpisize=1)
@@ -97,8 +148,9 @@ if __name__ == '__main__':
         # ----------------------------------------------------------------------
         # save the files
         eigvals_dict = {'Eigenvalues': eigvals_pbc,
-                        f'Spectrum_phase_factor_{bc_phase:.8f}': eigvals_apbc,
-                        ('Spectrum_differences_phase_factor'
+                        f'Spectrum_{savestr}_phase_factor_{bc_phase:.8f}':
+                        eigvals_apbc,
+                        (f'Spectrum_differences_{savestr}_phase_factor'
                          f'_{bc_phase:.8f}'): spectrum_differences,
                         **fields}
 

@@ -40,10 +40,10 @@ if __name__ == '__main__':
     # type and the selected boundary conditions should be
     # periodic along all the axes -> the pbc parameter is
     # simply a scalar boolean with the value of True
-    if model_name != 'heisenberg_boundary_conditions':
+    if model_name != 'heisenberg_complex':
         print(('Thouless conductivity calculation '
                'for now only works for the '
-               'heisenberg_boundary_conditions module '
+               'heisenberg_complex module '
                'in the interacting case. '
                f'{model_name} is not supported. Exiting.'))
         sys.exit()
@@ -53,6 +53,13 @@ if __name__ == '__main__':
                'equal to True. Now you have '
                f'{argsDict["pbc"]} which is not '
                'supported. Exiting.'))
+        sys.exit()
+    # to avoid confusion, make sure there are no
+    # complex phases present
+    if ((argsDict['J_phase'] != 0.0) and (argsDict['phase_bc'] != 0.0)):
+        print(('Please make sure all the complex '
+               'phase factors are set to zero!'
+               ' Exiting.'))
         sys.exit()
 
     for seed in range(min_seed, max_seed + 1):
@@ -69,10 +76,10 @@ if __name__ == '__main__':
         # eigvals, eigvecs = model.eigsystem(complex=False, turbo=True)
         print('Diagonalization for the pbc case finished!')
 
-        # repeat the calculation for the apbc case. 
+        # repeat the calculation for the apbc case.
         argsDict_apbc = argsDict.copy()
         # make sure the bc are of the proper shape
-        argsDict_apbc['pbc'] = -1
+        argsDict_apbc['phase_bc'] = np.pi
 
         model, fields = mod.construct_hamiltonian(
             argsDict_apbc, parallel=False, mpisize=1)
