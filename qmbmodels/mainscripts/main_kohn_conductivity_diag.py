@@ -93,6 +93,7 @@ if __name__ == '__main__':
             argsDict['J_phase'] = 0.
         # get the instance of the appropriate hamiltonian
         # class and the diagonal random fields used
+        print('argsdict: {}'.format(argsDict))
         model, fields = mod.construct_hamiltonian(
             argsDict, parallel=False, mpisize=1)
 
@@ -133,7 +134,7 @@ if __name__ == '__main__':
             bc_phase = bc_phase_int
             if hop_phase_int != 0.:
                 savestr = 'global'
-
+        print('argsdict_apbc: {}'.format(argsDict_apbc))     
         model, fields = mod.construct_hamiltonian(
             argsDict_apbc, parallel=False, mpisize=1)
         print('Starting diagonalization for the general bc case...')
