@@ -147,8 +147,8 @@ def construct_hamiltonian(argsdict, parallel=False, mpirank=0, mpisize=0):
         coup1p = [[i, (i + 1)] for i in range_1]
         coup1m = [[i, (i - 1)] for i in range_2]
 
-    pbc_1 = np.ones_like(range_1)
-    pbc_2 = np.ones_like(range_2)
+    pbc_1 = np.ones_like(range_1, dtype=np.complex128)
+    pbc_2 = np.ones_like(range_2, dtype=np.complex128)
 
     couplings_1 = 0.5 * J_mod * np.exp(1j * J_phase_)
     couplings_2 = couplings_1
