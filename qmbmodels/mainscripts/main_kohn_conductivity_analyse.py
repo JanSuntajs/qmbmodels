@@ -17,7 +17,7 @@ from qmbmodels.utils import set_mkl_lib
 from qmbmodels.utils.filesaver import save_hdf_datasets, \
     save_external_files, load_eigvals
 from qmbmodels.utils.cmd_parser_tools import arg_parser, arg_parser_general
-
+from main_kohn_conductivity_diag import allowed_modules
 
 _kohn_parse_dict = {'kohn_nener': [int, -1]}
 _kohn_name = 'kohn_data'
@@ -186,18 +186,27 @@ if __name__ == '__main__':
                 partial=False)
             print(setnames)
 
-            if attrs['model'] == 'anderson_complex':
-                # check if spectra with changed bc are present
-                phase_factor = attrs['phase_bc']
-                key_diffs = 'Spectrum_differences_phase_factor'
-
-            elif 'Spectrum_apbc' in f.keys():
-                # elif attrs['model'] == 'anderson':
-
+            # if Thouless diag is in order
+            if 'Spectrum_apbc' in f.keys():
+                print(('Kohn analysis message: this is the real case, '
+                       'Thouless '
+                       'analysis will be performed!'))
                 phase_factor = np.pi
                 key_diffs = 'Spectrum_differences'
-            # if key_diffs is present in attributes' key,
-            # then we can perform our calculation
+            else:
+                # find the phase factor
+                # phase_keys
+                phase_keys = [key for key in attrs.keys() if 'phase' in key]
+
+                phase_factor_ = {key: attrs[key]
+                                 for key in phase_keys if attrs[key] != 0.}
+                print('Kohn analysis message: this is the complex case!')
+                print(f'Phase_factor: {phase_factor_}')
+
+                phase_factor = list(phase_factor_.values())[0]
+
+                key_diffs = 'Spectrum_differences_phase_factor'
+
             diffs_present = [key for key in f.keys()
                              if key_diffs in key]
 
