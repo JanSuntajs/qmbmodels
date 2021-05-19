@@ -95,7 +95,6 @@ def _prep_perturbed(argsDict, interacting, complex_,
 
     argsDict_ = argsDict.copy()
 
-
     if case_1:
         argsDict_['pbc'] = np.array(
             [1 for i in range(argsDict['dim'])], dtype=np.int32)

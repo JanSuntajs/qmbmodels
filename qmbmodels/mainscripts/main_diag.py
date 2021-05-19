@@ -26,7 +26,7 @@ if __name__ == '__main__':
             argsDict, parallel=False, mpisize=1)
 
         print('Starting diagonalization ...')
-        eigvals = model.eigvals(complex=False)
+        eigvals = model.eigvals(complex=True)
 
         parity = model.parity_shuffle()
         print(parity)
