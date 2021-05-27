@@ -389,9 +389,9 @@ def prep_sub_script(mode='diag', queue=False, cmd_arg='',
     modload_script = (
         f"\nmodule purge\n"
         f"module load {module}\n"
-        f"conda deactivate\n"
+        f"source deactivate\n"
         # f"eval \"$(conda shell.bash hook)\"\n"
-        f"conda activate {environment}\n"
+        f"source activate {environment}\n"
     )
 
     # properly order the sbatch_script list
