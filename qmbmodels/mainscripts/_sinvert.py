@@ -10,6 +10,7 @@ from scipy import linalg as LA
 
 from ham1d.entropy.rdm import build_rdm
 from ham1d.entropy.ententro import Entangled
+from anderson.operators import get_idx
 from qmbmodels.utils.filesaver import savefile
 
 
@@ -98,7 +99,7 @@ def sinvert_body(mod, argsDict, syspar, syspar_keys,
     # ------------------------------------------------------------
 
     # distinguish two special cases
-    cond_anderson = (argsDict['ham_type'] == 'anderson')
+    cond_anderson = ('anderson' in argsDict['ham_type'])
     cond_free = (argsDict['ham_type'] == 'free1d')
 
     many_body = not (cond_free or cond_anderson)
@@ -243,6 +244,24 @@ def sinvert_body(mod, argsDict, syspar, syspar_keys,
     #
     # ------------------------------------------------------------
 
+    # for anderson case: extract the diagonal matrix elements
+    # of the density operator for the central site
+    # initialize things first
+
+    if not many_body:
+        # coordinates of the density operator at
+        # the central site
+        _matelt_coordinates = np.array([0.5 * model.L
+                                        for i in range(model.dim)],
+                                       dtype=np.uint64)
+        _dimension = np.array(
+            [model.L for i in range(model.dim)], dtype=np.uint64)
+        # what is the index of the site in the occupational basis
+        _idx = get_idx(_matelt_coordinates, _dimension)
+        # initialize the matelts array
+        matelts = np.zeros(nconv, dtype=np.float64)
+        _qulist = [0.1, 0.5, 2]
+
     # store to a numpy array
     if nconv > 0:
 
@@ -253,11 +272,12 @@ def sinvert_body(mod, argsDict, syspar, syspar_keys,
 
         # if mpirank == 0:
 
-        eigvals = []
+        eigvals = np.zeros(nconv, dtype=np.complex128)
         if many_body:
-            entropy = []
+            entropy = np.zeros_like(eigvals, dtype=np.float64)
         else:
-            ipr = []
+            matelts = np.zeros_like(matelts)
+            ipr = np.zeros((3, nconv), dtype=np.float64)
 
         for i in range(0, nconv):
 
@@ -309,7 +329,7 @@ def sinvert_body(mod, argsDict, syspar, syspar_keys,
             # the vector is composed from all the
             # processes
             if mpirank == 0:
-                eigvals.append(eigval)
+                eigvals[i] = eigval
                 eigvec = np.array(zvec)
 
                 if many_body:
@@ -327,11 +347,15 @@ def sinvert_body(mod, argsDict, syspar, syspar_keys,
                         entangled.svd()
                         entro = entangled.eentro()
 
-                    entropy.append(entro)
+                    entropy[i] = entro
                 else:
 
-                    ipr_state = np.sum(np.abs(eigvec)**4)
-                    ipr.append(ipr_state)
+                    ipr_state = np.array([np.sum(
+                        np.abs(eigvec)**(2 * q)) for q in _qulist])
+                    ipr[:, i] = ipr_state
+
+                    density_matelt = np.abs(eigvec[_idx])**2
+                    matelts[i] = density_matelt
 
             # destroy the scatter context before the new
             # loop iteration
@@ -361,8 +385,13 @@ def sinvert_body(mod, argsDict, syspar, syspar_keys,
                 entropy = np.array(entropy)[sortargs]
                 savedict['Entropy_partial'] = entropy
             else:
-                ipr = np.array(ipr)[sortargs]
-                savedict['Ipr_partial'] = ipr
+
+                for j, q_ in enumerate(_qulist):
+                    ipr_ = ipr[j, sortargs]
+
+                    savedict[f'Ipr_q_{q_:.2f}_partial'] = np.copy(ipr_)
+                matelts = np.array(matelts)[sortargs]
+                savedict['Density_diag_matelts_partial'] = matelts
             # save the eigenvalues, entropy and spectral info as
             # a npz array
 
