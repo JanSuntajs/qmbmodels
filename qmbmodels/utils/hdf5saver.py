@@ -105,7 +105,7 @@ def prepare_files(filenames):
 
     """
 
-    files = [np.load(file) for file in filenames]
+    files = [np.load(file, allow_pickle=True) for file in filenames]
 
     # the loaded files are stored in numpy's .npz
     # format. We first extract the keys describing
