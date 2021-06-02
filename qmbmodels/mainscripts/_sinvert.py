@@ -12,6 +12,10 @@ from ham1d.entropy.rdm import build_rdm
 from ham1d.entropy.ententro import Entangled
 from anderson.operators import get_idx
 from qmbmodels.utils.filesaver import savefile
+from qmbmodels.utils.cmd_parser_tools import arg_parser_general
+
+
+_save_space_dict = {'save_space': [int, 0]}
 
 
 def sinvert_body(mod, argsDict, syspar, syspar_keys,
@@ -103,9 +107,14 @@ def sinvert_body(mod, argsDict, syspar, syspar_keys,
     # quantities can be ommited or flattened/averaged to save space
     # examples of such quantities can be the random disorder and
     # the diagonal hamiltonian matrix elements/their squares
+
+    # check whether space saving is requested at the
+    # command line
+
     save_space = False
     try:
-        if argsDict['save_space']:
+        _save_space_dict, save_extra = arg_parser_general(_save_space_dict)
+        if _save_space_dict['save_space']:
             save_space = True
 
     except KeyError:

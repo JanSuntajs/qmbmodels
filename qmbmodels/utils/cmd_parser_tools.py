@@ -151,10 +151,6 @@ def arg_parser(system_keys, module_keys):
             if key == 'pbc':
                 parser.add_argument('--{}'.format(key),
                                     type=str2bool, default=True)
-            # whether to reduce storage space by
-            if key == 'save_space':
-                parser.add_argument('--{}'.format(key),
-                                    type=str2bool, default=False)
             # select the disorder type
             if key == 'disorder':
                 parser.add_argument('--{}'.format(key),
