@@ -92,6 +92,26 @@ def sinvert_body(mod, argsDict, syspar, syspar_keys,
     -> fields -> a dictionary containing information about the
     -> random fields used for different realizations of disorder.
     """
+
+    # ------------------------------------------------------------
+    #
+    #   CHECK WHETHER SPACE NEEDS TO BE SAVED
+    #
+    # -------------------------------------------------------------
+
+    # in case one needs to mind the storage requirements, certain
+    # quantities can be ommited or flattened/averaged to save space
+    # examples of such quantities can be the random disorder and
+    # the diagonal hamiltonian matrix elements/their squares
+    save_space = False
+    try:
+        if argsDict['save_space']:
+            save_space = True
+
+    except KeyError:
+        print(('Key save_space not present in argsDict! '
+               'Setting save_space to False!'))
+
     # ------------------------------------------------------------
     #
     #       ARRAY CONSTRUCTION
@@ -375,11 +395,26 @@ def sinvert_body(mod, argsDict, syspar, syspar_keys,
                         syspar_keys, modpar_keys, 'partial')
 
             savedict = {'Eigenvalues_partial': eigvals,
-                        'Hamiltonian_diagonal_matelts_partial': diagonals[0],
-                        'Hamiltonian_squared_diagonal_matelts_partial':
-                        diagonals[1],
-                        'Eigenvalues_partial_spectral_info': metadata,
-                        ** fields}
+                        'Eigenvalues_partial_spectral_info': metadata}
+
+            if save_space:
+                _ham_diag_elts = np.array(
+                    [np.mean(diagonals[0]), np.std(diagonals[0])])
+                ham_sq_diag_elts = np.array(
+                    [np.mean(diagonals[1]), np.std(diagonals[1])])
+
+                savedict[('Hamiltonian_diagonal_'
+                          'matelts_save_space_partial')] = _ham_diag_elts
+                savedict[('Hamiltonian_squared_diagonal_'
+                          'matelts_save_space_partial')] = _ham_sq_diag_elts
+                # do not store fields here
+            else:
+
+                savedict['Hamiltonian_diagonal_matelts_partial'] = diagonals[0]
+                savedict[('Hamiltonian_squared_'
+                          'diagonal_matelts_partial')] = diagonals[1]
+
+                savedict.update(**fields)
 
             if many_body:
                 entropy = np.array(entropy)[sortargs]
