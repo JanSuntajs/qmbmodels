@@ -6,7 +6,7 @@ the command-line arguments.
 
 import argparse
 
-from ..models._common_keys import comm_syspar_keys
+from qmbmodels.models._common_keys import comm_syspar_keys
 
 def str2bool(v):
     """
