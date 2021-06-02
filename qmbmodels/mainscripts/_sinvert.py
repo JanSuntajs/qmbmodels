@@ -15,7 +15,7 @@ from qmbmodels.utils.filesaver import savefile
 from qmbmodels.utils.cmd_parser_tools import arg_parser_general
 
 
-_save_space_dict = {'save_space': [int, 0]}
+
 
 
 def sinvert_body(mod, argsDict, syspar, syspar_keys,
@@ -113,8 +113,9 @@ def sinvert_body(mod, argsDict, syspar, syspar_keys,
 
     save_space = False
     try:
-        _save_space_dict, save_extra = arg_parser_general(_save_space_dict)
-        if _save_space_dict['save_space']:
+        _save_space_dict = {'save_space': [int, 0]}
+        save_space_dict, save_extra = arg_parser_general(_save_space_dict)
+        if save_space_dict['save_space']:
             save_space = True
 
     except KeyError:
