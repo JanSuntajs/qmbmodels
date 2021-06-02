@@ -30,7 +30,7 @@ minmax_seed_default: dict
 
 """
 
-comm_syspar_keys = ['pbc', 'disorder', 'ham_type']
+comm_syspar_keys = ['pbc', 'disorder', 'ham_type', 'save_space']
 
 comm_modpar_keys = ['min_seed', 'max_seed', 'step_seed']
 
