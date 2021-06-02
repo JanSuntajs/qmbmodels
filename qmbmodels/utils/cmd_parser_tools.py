@@ -138,7 +138,7 @@ def arg_parser(system_keys, module_keys):
     parser = argparse.ArgumentParser(prog='Obtain runtime command arguments '
                                      'for the executable script.')
 
-    spec_system_keys = ['pbc', 'disorder', 'ham_type', 'model']
+    spec_system_keys = ['pbc', 'disorder', 'ham_type', 'model', 'save_space']
     for key in system_keys:
         if key not in spec_system_keys:
             type_ = int
@@ -150,6 +150,10 @@ def arg_parser(system_keys, module_keys):
             if key == 'pbc':
                 parser.add_argument('--{}'.format(key),
                                     type=str2bool, default=True)
+            # whether to reduce storage space by
+            if key == 'save_space':
+                parser.add_argument('--{}'.format(key),
+                                    type=str2bool, default=False)
             # select the disorder type
             if key == 'disorder':
                 parser.add_argument('--{}'.format(key),

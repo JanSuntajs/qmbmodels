@@ -109,7 +109,7 @@ if __name__ == '__main__':
             data, attrs, setnames = load_eigvals(
                 f, [_r_name, _mean_dist_name, _dist_name], nener=rDict['r_nener'])
             print(setnames)
-            
+
             # ----------------------
             # r_mean values
             # ----------------------
