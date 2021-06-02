@@ -400,7 +400,7 @@ def sinvert_body(mod, argsDict, syspar, syspar_keys,
             if save_space:
                 _ham_diag_elts = np.array(
                     [np.mean(diagonals[0]), np.std(diagonals[0])])
-                ham_sq_diag_elts = np.array(
+                _ham_sq_diag_elts = np.array(
                     [np.mean(diagonals[1]), np.std(diagonals[1])])
 
                 savedict[('Hamiltonian_diagonal_'
