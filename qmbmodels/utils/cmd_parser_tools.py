@@ -6,6 +6,7 @@ the command-line arguments.
 
 import argparse
 
+from qmbmodels.models._common_keys import comm_syspar_keys
 
 def str2bool(v):
     """
@@ -138,7 +139,7 @@ def arg_parser(system_keys, module_keys):
     parser = argparse.ArgumentParser(prog='Obtain runtime command arguments '
                                      'for the executable script.')
 
-    spec_system_keys = ['pbc', 'disorder', 'ham_type', 'model']
+    spec_system_keys = comm_syspar_keys + ['model']
     for key in system_keys:
         if key not in spec_system_keys:
             type_ = int
