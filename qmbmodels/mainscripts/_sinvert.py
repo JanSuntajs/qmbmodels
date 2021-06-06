@@ -15,9 +15,6 @@ from qmbmodels.utils.filesaver import savefile
 from qmbmodels.utils.cmd_parser_tools import arg_parser_general
 
 
-
-
-
 def sinvert_body(mod, argsDict, syspar, syspar_keys,
                  modpar, modpar_keys, mpirank, mpisize, comm,
                  save_metadata, savepath,
@@ -112,15 +109,22 @@ def sinvert_body(mod, argsDict, syspar, syspar_keys,
     # command line
 
     save_space = False
+    calc_matelts = False
+    _save_space_dict = {'save_space': [int, 0],
+                        'calc_matelts': [int, 0]}
     try:
-        _save_space_dict = {'save_space': [int, 0]}
         save_space_dict, save_extra = arg_parser_general(_save_space_dict)
         if save_space_dict['save_space']:
             save_space = True
+            print('save_space set to True!')
+        if save_space_dict['calc_matelts']:
+            calc_matelts = True
+            print(('Matrix elements of the density operator '
+                   'will be computed it this is the Anderson model!'))
 
     except KeyError:
-        print(('Key save_space not present in argsDict! '
-               'Setting save_space to False!'))
+        print(('Keys save_space or calc_matelts not present in argsDict! '
+               'Setting to False!'))
 
     # ------------------------------------------------------------
     #

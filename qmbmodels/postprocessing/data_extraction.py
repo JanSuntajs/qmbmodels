@@ -148,6 +148,7 @@ def extract_data(topdir, savepath, routine='get_entro_ave',
                  exclude_keys=[],
                  merge=True,
                  append_to_results_key='',
+                 results_key_additional_args=(),
                  *args, **kwargs):
     """
     A routine for extracting numerical
@@ -292,7 +293,7 @@ def extract_data(topdir, savepath, routine='get_entro_ave',
 
     routine = _routines_dict[routine]
     get_fun = routine[0]
-    results_key = routine[1]
+    results_key = routine[1].format(*results_key_additional_args)
     footer = routine[3]
     if partial:
         results_key += '_partial'
