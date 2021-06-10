@@ -66,8 +66,9 @@ def _prepare_array(argsDict, mod, mpirank, mpisize, PETSc, comm):
         oldkey = key
         if '_partial' not in key:
             fields[key + '_partial'] = fields.pop(oldkey)
-    print('fields:')
-    print(fields)
+    if mpirank == 0:
+        print('fields:')
+        print(fields)
     # prepare for parallel PETSc assembly
     nnz = (model._d_nnz, model._o_nnz)
 
@@ -178,7 +179,6 @@ def _get_extrema(matrix, mpirank, PETSc, SLEPc):
 
     if (mpirank == 0):
         print('Emin: {}. Emax: {}'.format(ener0, ener1))
-
     E.destroy()
 
     return ener0, ener1
@@ -207,7 +207,6 @@ def _perform_sinvert(matrix, target, mpirank, PETSc, SLEPc):
     if mpirank == 0:
         print('nconv is:')
         print(nconv)
-
     return E_si, nconv
 
 
@@ -218,7 +217,6 @@ def _collect_results(E_si, nconv, argsDict,
     """
 
     """
-
     if mpirank == 0:
 
         eigvals = np.zeros(nconv, dtype=np.complex128)
@@ -227,20 +225,16 @@ def _collect_results(E_si, nconv, argsDict,
                 model, nconv)
 
         else:
-            pass
-
-            results_dict = {}
-            # results_dict = {'Entropy_partial': np.zeros(
-            #     nconv, dtype=np.float64)}
-            # idx_dict = {}
-            # q_dict = {}
+            #results_dict = {}
+            results_dict = {'Entropy_partial': np.zeros(
+                nconv, dtype=np.float64)}
+            idx_dict = {}
+            q_dict = {}
 
     # for finding the eigenvectors
 
     vr, tmp = matrix.getVecs()
     vi, tmp = matrix.getVecs()
-
-    #results_dict = {}
 
     if nconv > 0:
 
@@ -298,23 +292,22 @@ def _collect_results(E_si, nconv, argsDict,
                 eigvec = np.array(zvec)
 
                 if many_body:
-                    pass
-                    # pass
-                    # if model.Nu is not None:
-                    #     rdm_matrix = build_rdm(eigvec, int(
-                    #         argsDict['L'] / 2.), argsDict['L'], int(
-                    #         argsDict['L']))
-                    #     rdm_eigvals = LA.eigvalsh(rdm_matrix.todense())
-                    #     rdm_eigvals = rdm_eigvals[rdm_eigvals > 1e-014]
-                    #     entro = -np.dot(rdm_eigvals, np.log(rdm_eigvals))
-                    # else:
-                    #     entangled = Entangled(eigvec, argsDict['L'],
-                    #                           int(argsDict['L'] / 2.))
-                    #     entangled.partitioning('homogenous')
-                    #     entangled.svd()
-                    #     entro = entangled.eentro()
+                    # TO DO: write a function for this
+                    if model.Nu is not None:
+                        rdm_matrix = build_rdm(eigvec, int(
+                            argsDict['L'] / 2.), argsDict['L'], int(
+                            argsDict['L'] / 2))
+                        rdm_eigvals = LA.eigvalsh(rdm_matrix.todense())
+                        rdm_eigvals = rdm_eigvals[rdm_eigvals > 1e-014]
+                        entro = -np.dot(rdm_eigvals, np.log(rdm_eigvals))
+                    else:
+                        entangled = Entangled(eigvec, argsDict['L'],
+                                              int(argsDict['L'] / 2.))
+                        entangled.partitioning('homogenous')
+                        entangled.svd()
+                        entro = entangled.eentro()
 
-                    # results_dict['Entropy_partial'][i] = entro
+                    results_dict['Entropy_partial'][i] = entro
                 else:
 
                     results_dict = _analyse_noninteracting(i,
@@ -329,7 +322,6 @@ def _collect_results(E_si, nconv, argsDict,
             tozero.destroy()
             zvec.destroy()
 
-
     if mpirank == 0:
         sort_args = np.argsort(eigvals)
         eigvals = eigvals[sort_args]
@@ -339,7 +331,6 @@ def _collect_results(E_si, nconv, argsDict,
             results_dict[key] = value[sort_args]
 
         return eigvals, results_dict
-
     else:
         return np.array([]), {}
 
@@ -350,46 +341,52 @@ def _save_results(eigvals, fields, diagonals, results_dict,
                   savepath, syspar, modpar, argsDict,
                   syspar_keys, modpar_keys, many_body,
                   save_space, save_metadata):
+    # NOTE: THIS IS FOR INTERNAL USE ONLY:
+    # in the main/calling program, make sure to place
+    # it inside an if mpirank==0 block, or else
+    # an error would be thrown since some objects,
+    # such as diagonals, would most probably
+    # be undefined
+    # if mpirank == 0:
+    # p#rint('inside save results')
+    # -----------------------------------------
 
-    if mpirank == 0:
-        # -----------------------------------------
+    sortargs = np.argsort(eigvals)
+    eigvals = np.array(eigvals)[sortargs]
 
-        sortargs = np.argsort(eigvals)
-        eigvals = np.array(eigvals)[sortargs]
+    metadata = np.array([ener0, ener1, nconv])
 
-        metadata = np.array([ener0, ener1, nconv])
+    saveargs = (savepath, syspar, modpar, argsDict,
+                syspar_keys, modpar_keys, 'partial')
 
-        saveargs = (savepath, syspar, modpar, argsDict,
-                    syspar_keys, modpar_keys, 'partial')
+    savedict = {'Eigenvalues_partial': eigvals,
+                'Eigenvalues_partial_spectral_info': metadata,
+                **results_dict}
 
-        savedict = {'Eigenvalues_partial': eigvals,
-                    'Eigenvalues_partial_spectral_info': metadata,
-                    **results_dict}
+    if save_space:
+        _ham_diag_elts = np.array(
+            [np.mean(diagonals[0]), np.std(diagonals[0])])
+        _ham_sq_diag_elts = np.array(
+            [np.mean(diagonals[1]), np.std(diagonals[1])])
 
-        if save_space:
-            _ham_diag_elts = np.array(
-                [np.mean(diagonals[0]), np.std(diagonals[0])])
-            _ham_sq_diag_elts = np.array(
-                [np.mean(diagonals[1]), np.std(diagonals[1])])
+        savedict[('Hamiltonian_diagonal_'
+                  'matelts_save_space_partial')] = _ham_diag_elts
+        savedict[('Hamiltonian_squared_diagonal_'
+                  'matelts_save_space_partial')] = _ham_sq_diag_elts
+        # do not store fields here
+    else:
 
-            savedict[('Hamiltonian_diagonal_'
-                      'matelts_save_space_partial')] = _ham_diag_elts
-            savedict[('Hamiltonian_squared_diagonal_'
-                      'matelts_save_space_partial')] = _ham_sq_diag_elts
-            # do not store fields here
-        else:
+        savedict['Hamiltonian_diagonal_matelts_partial'] = diagonals[0]
+        savedict[('Hamiltonian_squared_'
+                  'diagonal_matelts_partial')] = diagonals[1]
 
-            savedict['Hamiltonian_diagonal_matelts_partial'] = diagonals[0]
-            savedict[('Hamiltonian_squared_'
-                      'diagonal_matelts_partial')] = diagonals[1]
+        savedict.update(**fields)
 
-            savedict.update(**fields)
+    # save the eigenvalues, entropy and spectral info as
+    # a npz array
 
-        # save the eigenvalues, entropy and spectral info as
-        # a npz array
-
-        savefile(savedict, *saveargs, save_metadata, save_type='npz')
-        save_metadata = False
+    savefile(savedict, *saveargs, save_metadata, save_type='npz')
+    save_metadata = False
 
 
 def sinvert_body(mod, argsDict, syspar, syspar_keys,
@@ -484,7 +481,6 @@ def sinvert_body(mod, argsDict, syspar, syspar_keys,
 
     # check whether space saving is requested at the
     # command line
-
     save_space = False
     calc_matelts = False
     _save_space_dict = {'save_space': [int, 0],
@@ -573,12 +569,14 @@ def sinvert_body(mod, argsDict, syspar, syspar_keys,
                                              SLEPc, many_body)
 
     if nconv > 0:
-        _save_results(eigvals, fields, diagonals, results_dict,
-                      ener0, ener1, nconv,
-                      mpirank,
-                      savepath, syspar, modpar, argsDict,
-                      syspar_keys, modpar_keys, many_body,
-                      save_space, save_metadata)
+
+        if mpirank == 0:
+            _save_results(eigvals, fields, diagonals, results_dict,
+                          ener0, ener1, nconv,
+                          mpirank,
+                          savepath, syspar, modpar, argsDict,
+                          syspar_keys, modpar_keys, many_body,
+                          save_space, save_metadata)
 
     E_si.destroy()
     matrix.destroy()
