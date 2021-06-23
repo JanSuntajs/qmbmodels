@@ -272,7 +272,6 @@ def _collect_results(E_si, nconv, argsDict,
             # PETSc was compiled in the complex
             # arithmetic.
             tozero, zvec = ctx.toZero(vr)
-            # itozero, zveci = ctxi.toZero(vi)
 
             # fill the vector with values
             # syntax:
@@ -290,6 +289,7 @@ def _collect_results(E_si, nconv, argsDict,
             if mpirank == 0:
                 eigvals[i] = eigval
                 eigvec = np.array(zvec)
+
 
                 if many_body:
                     # TO DO: write a function for this
