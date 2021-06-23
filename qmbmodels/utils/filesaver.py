@@ -199,7 +199,8 @@ def save_external_files(filename, savedict):
         np.savetxt(f'{head}/{txt_file}', value)
 
 
-def load_eigvals(file, setnames, partial=True, nener=-1):
+def load_eigvals(file, setnames, partial=True, nener=-1,
+                 eigname='Eigenvalues'):
     """
     A function for loading the dataset storing
     the energy eigenvalues and storing them
@@ -239,6 +240,10 @@ def load_eigvals(file, setnames, partial=True, nener=-1):
             space dimension, the value of nener is reset to the number
             of available states. In case nener is -1, all states are
             selected.
+    eigname: str, optional
+            Name of the results string to be loaded from the hdf5 file.
+            Defaults to 'Eigenvalues', but also allows for the extraction
+            of other values, if need be.
 
     Returns:
 
@@ -257,7 +262,7 @@ def load_eigvals(file, setnames, partial=True, nener=-1):
     if nener < -1:
         raise ValueError(('load_eigvals error: '
                           'nener should be greater than -1!'))
-    eigname = 'Eigenvalues'
+    #eigname = 'Eigenvalues'
     if partial:
         eigname += '_partial'
 
