@@ -181,3 +181,9 @@ if __name__ == '__main__':
 
     except IndexError:
         pass
+
+    except KeyError:
+
+        print(('main_matelts_variance_ratio warning'
+                ': there was a key error, most'
+                ' probably in the .h5py part!'))
