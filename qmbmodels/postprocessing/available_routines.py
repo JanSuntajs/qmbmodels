@@ -9,6 +9,7 @@ from .microcan_deltae import microcan_ave, footer_microcan_ave
 from .ipr import ipr_ave, footer_ipr_ave
 from .thouless_conductivity import thoucond_ave, footer_thoucond_ave
 from .kohn_conductivity import kohn_ave, footer_kohn_ave
+from .matelts_variance_ratios import matelts_variance_ave, footer_matelt_variance_ave
 # Routines available for calculations:
 # get_entro_ave: average entropy, sampling averaging performed
 #
@@ -39,6 +40,8 @@ _routines_dict = {
     'get_thoucond': [thoucond_ave, 'Spectrum_differences', 23,
                      footer_thoucond_ave],
     'get_kohncond': [kohn_ave, 'kohn_data', 28,
-                     footer_kohn_ave]
+                     footer_kohn_ave],
+    'get_matelt_variance_ave': [matelts_variance_ave,
+                                'matelts_mean_variances', 20, footer_matelt_variance_ave]
 
 }
