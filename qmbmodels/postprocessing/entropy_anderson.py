@@ -28,9 +28,9 @@ Each row is organised as follows:
 4) Delta S_ave: standard deviation of S_ave (not rescaled, both sample
    to sample and state to state contributions)
 
-5) size L: system size
+5) fraction: subsystem size fraction compared to the whole system
 
-6) fraction: subsystem size fraction compared to the whole system
+6) size L: system size
 
 7) nener: number of energies obtained using partial diagonalization
 
