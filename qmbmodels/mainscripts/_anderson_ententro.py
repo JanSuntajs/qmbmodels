@@ -131,7 +131,7 @@ def generate_configurations(states, seedmin, seedmax, filling):
     return np.unique(confs, axis=0)
 
 
-@nb.njit('float64(complex128[:,:], uint64[:], uint64[:])', nogil=True, parallel=True)
+@nb.njit('float64(float64[:,:], uint64[:], uint64[:])', nogil=True, parallel=True)
 def get_ententro(eigvecs, subsystem, mb_configuration):
     """
     Calculate the entaglement entropy for a given
@@ -189,7 +189,7 @@ def get_ententro(eigvecs, subsystem, mb_configuration):
     return ententro(corr_eigvals)
 
 
-@nb.njit('float64[:](complex128[:, :], uint64[:], uint64[:, :], float64)', nogil=True, parallel=True)
+@nb.njit('float64[:](float64[:, :], uint64[:], uint64[:, :], float64)', nogil=True, parallel=True)
 def entro_states(eigvecs, states, configurations, filling=0.5):
     """
     Calculate the entanglement entropy for different
@@ -237,7 +237,7 @@ def main_fun_entro(hamiltonian, stateseedmax, filling):
     eigvals, eigvecs = hamiltonian.eigsystem(complex=True)
     states = hamiltonian.states
     configurations = generate_configurations(states, np.uint64(0),
-        np.uint64(stateseedmax), np.float64(filling))
+                                             np.uint64(stateseedmax), np.float64(filling))
 
-    return eigvals, entro_states(eigvecs, states, configurations,
-        filling)
+    return eigvals, entro_states(np.float64(eigvecs), states, configurations,
+                                 filling)
