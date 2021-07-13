@@ -92,7 +92,7 @@ def _entro_ave(entropy, condition, size, sample_averaging=True,
     entro_rescaled = (entro_theory - ave_entro) / (subsize * np.log(2))
 
     output = (ave_entro, entro_theory, entro_rescaled,
-              std_entro, size, fraction)
+              std_entro, fraction)
 
     output = tuple(map(np.atleast_1d, output))
     return output
@@ -223,7 +223,7 @@ def entro_ave_and(h5file,
                            disorder_string,
                            target_variance, population_variance,
                            mode, epsilon, dW_min,
-                           _entro_ave, 6,
+                           _entro_ave, 5,
                            sample_averaging=sample_averaging,
                            *args,
                            **kwargs)
