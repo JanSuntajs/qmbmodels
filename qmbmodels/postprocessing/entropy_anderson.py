@@ -77,7 +77,8 @@ def _entro_ave(entropy, condition, size, sample_averaging=True,
 
     # theoretical results
     fraction = kwargs['filling_fraction']
-    subsize = size * fraction
+    dim = kwargs['dim']
+    subsize = (size ** dim) * fraction
     # prefactor terms
     fminus = 1 - fraction
     term1 = 1.
