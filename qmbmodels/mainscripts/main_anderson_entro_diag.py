@@ -11,7 +11,8 @@ from _anderson_ententro import main_fun_entro
 from qmbmodels.utils.cmd_parser_tools import arg_parser_general
 
 _eentro_parse_dict = {'eentro_nstates': [int, -1],
-                      'eentro_filling': [float, 0.5]}
+                      'eentro_filling': [float, 0.5],
+                      'eentro_partition': [float, 0.5]}
 
 save_metadata = True
 
@@ -34,6 +35,8 @@ if __name__ == '__main__':
     # compared to the volume of the system
     filling = eentroDict['eentro_filling']
 
+    partition_fraction = eentroDict['eentro_partition']
+
     for seed in range(min_seed, max_seed + 1):
         print('Using seed: {}'.format(seed))
         argsDict['seed'] = seed
@@ -46,7 +49,8 @@ if __name__ == '__main__':
 
         print('Starting diagonalization and entanglement calculation')
 
-        eigvals, eentro = main_fun_entro(model, eentro_nstates, filling)
+        eigvals, eentro = main_fun_entro(model, eentro_nstates, partition_fraction,
+                                         filling)
 
         print('Displaying eigvals')
         print(eigvals)
@@ -60,6 +64,7 @@ if __name__ == '__main__':
 
         entanglement_name = (f'Entropy_noninteracting_'
                              f'nstates_{eentro_nstates}_'
+                             f'partition_size_{partition_fraction:.2f}_'
                              f'filling_{filling:.2f}')
         # do not save field configurations
         eigvals_dict = {'Eigenvalues': eigvals,
