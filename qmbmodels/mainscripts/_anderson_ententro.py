@@ -152,7 +152,7 @@ def _generate_configurations_nb(states, seedmin, seedmax,
     # i = 0
     j = seedmin
 
-    for j in nb.prange(seedmin, seedmax):
+    for j in range(seedmin, seedmax):
 
 
         _conf = _pick_mb_configuration(states, j, filling, gc)
@@ -222,7 +222,7 @@ def get_ententro_real(eigvecs, subsystem, mb_configuration):
                             n_states), dtype=np.float64)
 
     for i in range(n_sites):
-        for j in nb.prange(n_states):
+        for j in range(n_states):
             #
             corr_coeffs[i][j] = eigvecs[subsystem[i]][mb_configuration[j]]
 
@@ -256,7 +256,7 @@ def entro_states(eigvecs, states, configurations,
 
     subsystem_indices = get_subsystem(states, partition_fraction)
     eentro = np.zeros(n_confs, dtype=np.float64)
-    for i in nb.prange(n_confs):
+    for i in range(n_confs):
 
         mb_configuration = states[configurations[i]]
 
