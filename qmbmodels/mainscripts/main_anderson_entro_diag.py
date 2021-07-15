@@ -12,7 +12,8 @@ from qmbmodels.utils.cmd_parser_tools import arg_parser_general
 
 _eentro_parse_dict = {'eentro_nstates': [int, -1],
                       'eentro_filling': [float, 0.5],
-                      'eentro_partition': [float, 0.5]}
+                      'eentro_partition': [float, 0.5],
+                      'eentro_grandcanonical': [int, 1]}
 
 save_metadata = True
 
@@ -37,6 +38,8 @@ if __name__ == '__main__':
 
     partition_fraction = eentroDict['eentro_partition']
 
+    gc = eentroDict['eentro_grandcanonical']
+
     for seed in range(min_seed, max_seed + 1):
         print('Using seed: {}'.format(seed))
         argsDict['seed'] = seed
@@ -49,8 +52,9 @@ if __name__ == '__main__':
 
         print('Starting diagonalization and entanglement calculation')
 
-        eigvals, eentro = main_fun_entro(model, eentro_nstates, partition_fraction,
-                                         filling)
+        eigvals, eentro = main_fun_entro(model, eentro_nstates,
+                                         partition_fraction,
+                                         filling, gc)
 
         print('Displaying eigvals')
         print(eigvals)
