@@ -9,6 +9,8 @@ from .microcan_deltae import microcan_ave, footer_microcan_ave
 from .ipr import ipr_ave, footer_ipr_ave
 from .thouless_conductivity import thoucond_ave, footer_thoucond_ave
 from .kohn_conductivity import kohn_ave, footer_kohn_ave
+from .matelts_variance_ratios import matelts_variance_ave, footer_matelt_variance_ave
+from .entropy_anderson import entro_ave_and, footer_entro_and
 # Routines available for calculations:
 # get_entro_ave: average entropy, sampling averaging performed
 #
@@ -27,6 +29,8 @@ _routines_dict = {
                               footer_entro_no_sample_averaging],
     'entro_analyse': [entro_post_analysis, 'Entropy',
                       None, footer_entro_analyse],
+    'get_entro_ave_and': [entro_ave_and, 'Entropy_noninteracting',
+                          18, footer_entro_and],
     'get_r': [r_ave, 'r_data', 15, footer_r_ave],
     'get_deg': [deg_ave, 'degeneracies_data', 14, footer_deg_ave],
     'get_gamma': [gamma_ave, 'gamma_data', 19, footer_gamma_ave],
@@ -39,6 +43,9 @@ _routines_dict = {
     'get_thoucond': [thoucond_ave, 'Spectrum_differences', 23,
                      footer_thoucond_ave],
     'get_kohncond': [kohn_ave, 'kohn_data', 28,
-                     footer_kohn_ave]
+                     footer_kohn_ave],
+    'get_matelt_variance_ave': [matelts_variance_ave,
+                                'matelts_mean_variances', 20,
+                                footer_matelt_variance_ave],
 
 }

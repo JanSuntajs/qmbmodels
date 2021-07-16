@@ -147,10 +147,15 @@ programs = {
                     'noqueue': False, 'mpi': False,
                     'short': True, 'postprocess': False},
     'and_matelts_variance': {'name': f'{_mainfold}main_matelts_variance_ratio_partial.py',
-                    'array': False,
-                    'save': 'Spectral_stats', 'vectors': False,
-                    'noqueue': False, 'mpi': False,
-                    'short': True, 'postprocess': True},
+                             'array': False,
+                             'save': 'Spectral_stats', 'vectors': False,
+                             'noqueue': False, 'mpi': False,
+                             'short': True, 'postprocess': True},
+    'and_mb_eentro': {'name': f'{_mainfold}main_anderson_entro_diag.py',
+                             'array': True,
+                             'save': 'Eigvals', 'vectors': False,
+                             'noqueue': False, 'mpi': False,
+                             'short': True, 'postprocess': True},
 }
 
 # define the default post-processing parameters so that
