@@ -155,7 +155,7 @@ programs = {
                              'array': True,
                              'save': 'Eigvals', 'vectors': False,
                              'noqueue': False, 'mpi': False,
-                             'short': True, 'postprocess': True},
+                             'short': True, 'postprocess': False},
 }
 
 # define the default post-processing parameters so that
