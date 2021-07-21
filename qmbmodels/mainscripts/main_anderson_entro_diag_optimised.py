@@ -11,7 +11,7 @@ from _anderson_ententro_optimise import main_fun_entro
 from qmbmodels.utils.cmd_parser_tools import arg_parser_general
 
 try:
-    ncores = mkl_set_lib.mkl_get_max_threads()
+    ncores = set_mkl_lib.mkl_get_max_threads()
     print((f'main_anderson_entro_diag info '
            f'on the number of cores: {ncores}'))
 except NameError:
