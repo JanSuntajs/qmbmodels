@@ -22,7 +22,7 @@ try:
 
     numba_dev = True
 
-except NameError:
+except ImportError:
     print(('Regular, not dev version of numba is used! '
            'Some advanced features might be missing!'))
     numba_dev = False
@@ -84,7 +84,7 @@ if __name__ == '__main__':
         if numba_dev:
             set_num_threads(ncores)
             set_mkl_lib.set_num_threads(1)
-        eentro = main_fun_entro(eigvecs, states, eentro_nstates,
+        eentro = main_fun_entro(eigvecs, model.states, eentro_nstates,
                                 partition_fraction,
                                 filling, gc)
 
