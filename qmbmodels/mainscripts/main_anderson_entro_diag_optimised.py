@@ -15,12 +15,15 @@ try:
     print((f'main_anderson_entro_diag info '
            f'on the number of cores: {ncores}'))
 except NameError:
+    print(('There was an error importing mkl libraries! '
+           'Setting the number of cores to 1.'))
     ncores = 1
 
 try:
-    from numba import get_num_threads, mkl_set_num_threads
+    from numba import get_num_threads, set_num_threads
 
     numba_dev = True
+    print(('Numba features for thread masking imported!'))
 
 except ImportError:
     print(('Regular, not dev version of numba is used! '
