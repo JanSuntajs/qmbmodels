@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 
-
 from qmbmodels.utils import set_mkl_lib
 from qmbmodels.utils.cmd_parser_tools import arg_parser
 from qmbmodels.models.prepare_model import get_module_info
@@ -11,24 +10,25 @@ from _anderson_ententro_optimise import main_fun_entro
 from qmbmodels.utils.cmd_parser_tools import arg_parser_general
 
 try:
-    ncores = set_mkl_lib.mkl_get_max_threads()
-    print((f'main_anderson_entro_diag info '
-           f'on the number of cores: {ncores}'))
+
+    print(('main_anderson_entro_diag info '
+           'on the number of cores:'))
+    set_mkl_lib.mkl_get_max_threads()
+
 except NameError:
     print(('There was an error importing mkl libraries! '
-           'Setting the number of cores to 1.'))
-    ncores = 1
+           'Check numpy and scipy installation!'))
+
 
 try:
-    from numba import get_num_threads, set_num_threads
+    from numba import get_num_threads
 
-    numba_dev = True
-    print(('Numba features for thread masking imported!'))
+    print(('Numba features for thread masking imported!'
+           f'Number of numba threads is {get_num_threads}'))
 
 except ImportError:
     print(('Regular, not dev version of numba is used! '
            'Some advanced features might be missing!'))
-    numba_dev = False
 
 _eentro_parse_dict = {'eentro_nstates': [int, -1],
                       'eentro_filling': [float, 0.5],
@@ -77,16 +77,11 @@ if __name__ == '__main__':
 
         print('Starting diagonalization and entanglement calculation')
         # omp mode for diagonalization
-        try:
-            set_mkl_lib.mkl_set_num_threads(ncores)
-        except NameError:
-            pass
+
         eigvals, eigvecs = model.eigsystem(complex=False)
 
         # now, in the numba part, set up for the numba parallelism
-        if numba_dev:
-            set_num_threads(ncores)
-            set_mkl_lib.set_num_threads(1)
+
         eentro = main_fun_entro(eigvecs, model.states, eentro_nstates,
                                 partition_fraction,
                                 filling, gc)

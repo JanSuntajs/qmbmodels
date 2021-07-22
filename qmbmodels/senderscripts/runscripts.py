@@ -205,309 +205,310 @@ def prep_sub_script(mode='diag', queue=False, cmd_arg='',
                     environment='', cd='',
                     name=''
                     ):
-  """
+    """
 
-  A function that prepares a script that can be run either
-  on a SLURM-based cluster or on the headnode/home machine.
+    A function that prepares a script that can be run either
+    on a SLURM-based cluster or on the headnode/home machine.
 
-  An example SLURM-ready script would be:
+    An example SLURM-ready script would be:
 
-      ##  SLURM-BLOCK: this part contains SLURM
-      ##  commands for allocation of time, cpus, memory
-      ##  etc. -> sbatch_script
+        ##  SLURM-BLOCK: this part contains SLURM
+        ##  commands for allocation of time, cpus, memory
+        ##  etc. -> sbatch_script
 
-          #!/bin/bash
-          #SBATCH --time=00:00:01  # format: DD-HH:MM:SS
-          #SBATCH --nodes=1  # number of nodes
-          #SBATCH --ntasks=1  # number of tasks
-          #SBATCH --cpus-per-task=1  # number of cpus per a given task
-          #SBATCH --mem-per-cpu=4  #  memory (in GB) per cpu
-          #SBATCH --job-name 'pretty_name'  #  give job a human-readable name
-          #SBATCH --output=log_folder/slurm_%A_%a.out  #  output files
+            #!/bin/bash
+            #SBATCH --time=00:00:01  # format: DD-HH:MM:SS
+            #SBATCH --nodes=1  # number of nodes
+            #SBATCH --ntasks=1  # number of tasks
+            #SBATCH --cpus-per-task=1  # number of cpus per a given task
+            #SBATCH --mem-per-cpu=4  #  memory (in GB) per cpu
+            #SBATCH --job-name 'pretty_name'  #  give job a human-readable name
+            #SBATCH --output=log_folder/slurm_%A_%a.out  #  output files
 
-      ##  MODLOAD_SCRIPT: in order for the scripts to run
-      ##  properly/as expected,
-      ##  one should first purge the preloaded modules and then load the
-      ##  ones for which the code was prepared/tested. The procedure is
-      ##  as follows:
+        ##  MODLOAD_SCRIPT: in order for the scripts to run
+        ##  properly/as expected,
+        ##  one should first purge the preloaded modules and then load the
+        ##  ones for which the code was prepared/tested. The procedure is
+        ##  as follows:
 
-          module purge
-          module load <module name>  ## for instance: Anaconda3/5.3.0
-          conda activate <environment name>
+            module purge
+            module load <module name>  ## for instance: Anaconda3/5.3.0
+            conda activate <environment name>
 
-      ##  MISC_SCRIPT: change current directory if needed, display hostname
-      ##  and current working directory, display the number of cpus per
-      ##  task allocated in SLURM and set the OMP_NUM_THREADS environment
-      ##  variable, which is important for multiprocessing jobs.
+        ##  MISC_SCRIPT: change current directory if needed, display hostname
+        ##  and current working directory, display the number of cpus per
+        ##  task allocated in SLURM and set the OMP_NUM_THREADS environment
+        ##  variable, which is important for multiprocessing jobs.
 
-          cd .
-          hostname
-          pwd
-          echo $SLURM_CPUS_PER_TASK
+            cd .
+            hostname
+            pwd
+            echo $SLURM_CPUS_PER_TASK
 
-          OMP_NUM_THREADS=${{SLURM_CPUS_PER_TASK}}
+            OMP_NUM_THREADS=${{SLURM_CPUS_PER_TASK}}
 
-      ##  CMD_SCRIPT: run the executable program and parse the command-line
-      ##  arguments
-          ./imbrie_main_sff.py {8} --results={9}/Spectral_stats/{10}/{11} \
-          --syspar={10} --modpar={11}
+        ##  CMD_SCRIPT: run the executable program and parse the command-line
+        ##  arguments
+            ./imbrie_main_sff.py {8} --results={9}/Spectral_stats/{10}/{11} \
+            --syspar={10} --modpar={11}
 
-  NOTE:
-  if queue == False,
-  then only the CMD_SCRIPT part is generated.
+    NOTE:
+    if queue == False,
+    then only the CMD_SCRIPT part is generated.
 
-  Parameters:
+    Parameters:
 
-      mode: string
-          Specifier for which program type to run. Currently 'diag' and
-          'sff' are supported and the default is set to 'diag'.
-      queue: boolean
-          Whether the program is to be executed on a SLURM-based clusterr
-          or on the headnode/home machine.
-      cmd_arg: string
-          A string which follows the name of the executable program when
-          run in the command line:
-          ./<executable_name> <cmd_arg>
-          NOTE: the contents of this string should be related to the
-          structure of the considered Hamiltonian and should thus contain
-          information such as system size, dimensionality, values of the
-          exchange couplings etc.
-      cmd_opt: list
-          A list of strings specifying optional command-line arguments.
-          This is implemented for flexibility - most of the commandline
-          arguments match for the majority of our programs, so a single
-          <cmd_arg>
-          string often suffices, but there can be differences. This option
-          allows to add other command-line possibilities without the need
-          to restructure this code in the future.
-          Note that this function already
-          takes care of the cases when the seed needs to be added manually
-          when code is not executed on a SLURM-based cluster or when the job
-          does not need a seed altogether, such as in the case of sff jobs.
-          Syntax:
-          ./<executable_name> <cmd_arg> <cmd_opt>
-      slurm_opt: list
-          A list specifying optional arguments to be added to the
-          SLURM-related part of the script. Much as in the cmd_opt case,
-          this part is included for flexibility. All other parameters
-          remaining equal, we simply append the required additional
-          set of #SBATCH commands to the preexisting core set. As with
-          the cmd_opt parameter, the function already addresses the cases
-          related to the usage of array jobs.
-      storage: string
-          Path to where the results should be stored.
-      modpar, syspar: strings
-          Formatted strings specifying model and system parameters.
-      module: string
-          Which software module to load (on the spinon cluster
-          which supports modules)
-      environment: string
-          Which (ana)conda environment to load.
-      cd: string
-          Whether to change the working environment or not. The default
-          option leaves the working directory as it is.
-      slurmargs: list
-          A list of arguments to be provided to the SLURM-BLOCK part
-          of the script. Order:
-          [<time>, <nodes>, <ntasks>, <cpus-per-task>,<mem-per-cpu<,
-          <job-name>, <output>, <minseed>, <maxseed>]
-      name: str
-          A human readable description of the job which also
-          serves as the top folder in the results directory.
+        mode: string
+            Specifier for which program type to run. Currently 'diag' and
+            'sff' are supported and the default is set to 'diag'.
+        queue: boolean
+            Whether the program is to be executed on a SLURM-based clusterr
+            or on the headnode/home machine.
+        cmd_arg: string
+            A string which follows the name of the executable program when
+            run in the command line:
+            ./<executable_name> <cmd_arg>
+            NOTE: the contents of this string should be related to the
+            structure of the considered Hamiltonian and should thus contain
+            information such as system size, dimensionality, values of the
+            exchange couplings etc.
+        cmd_opt: list
+            A list of strings specifying optional command-line arguments.
+            This is implemented for flexibility - most of the commandline
+            arguments match for the majority of our programs, so a single
+            <cmd_arg>
+            string often suffices, but there can be differences. This option
+            allows to add other command-line possibilities without the need
+            to restructure this code in the future.
+            Note that this function already
+            takes care of the cases when the seed needs to be added manually
+            when code is not executed on a SLURM-based cluster or when the job
+            does not need a seed altogether, such as in the case of sff jobs.
+            Syntax:
+            ./<executable_name> <cmd_arg> <cmd_opt>
+        slurm_opt: list
+            A list specifying optional arguments to be added to the
+            SLURM-related part of the script. Much as in the cmd_opt case,
+            this part is included for flexibility. All other parameters
+            remaining equal, we simply append the required additional
+            set of #SBATCH commands to the preexisting core set. As with
+            the cmd_opt parameter, the function already addresses the cases
+            related to the usage of array jobs.
+        storage: string
+            Path to where the results should be stored.
+        modpar, syspar: strings
+            Formatted strings specifying model and system parameters.
+        module: string
+            Which software module to load (on the spinon cluster
+            which supports modules)
+        environment: string
+            Which (ana)conda environment to load.
+        cd: string
+            Whether to change the working environment or not. The default
+            option leaves the working directory as it is.
+        slurmargs: list
+            A list of arguments to be provided to the SLURM-BLOCK part
+            of the script. Order:
+            [<time>, <nodes>, <ntasks>, <cpus-per-task>,<mem-per-cpu<,
+            <job-name>, <output>, <minseed>, <maxseed>]
+        name: str
+            A human readable description of the job which also
+            serves as the top folder in the results directory.
 
 
 
-  Returns:
+    Returns:
 
-      submission_scripts: list
-          A list of formatted job submission strings/scripts. If
-          queue == False and jobs require different seeds, the
-          length of the list is greater than one, since a submission
-          script is prepared for each seed number. In all other
-          cases, only one submission script is prepared.
-  """
+        submission_scripts: list
+            A list of formatted job submission strings/scripts. If
+            queue == False and jobs require different seeds, the
+            length of the list is greater than one, since a submission
+            script is prepared for each seed number. In all other
+            cases, only one submission script is prepared.
+    """
 
-  slurm_opt = slurm_opt.copy()
-  prog = programs[mode]
-  minseed = slurmargs[7]
-  maxseed = slurmargs[8]
-  stepseed = slurmargs[9]
-  seedlist = ['']
+    slurm_opt = slurm_opt.copy()
+    prog = programs[mode]
+    minseed = slurmargs[7]
+    maxseed = slurmargs[8]
+    stepseed = slurmargs[9]
+    seedlist = ['']
 
-  # make sure that the slurmargs are modified for postprocessing
-  # jobs
+    # make sure that the slurmargs are modified for postprocessing
+    # jobs
 
-  if prog['postprocess']:
-    slurm_opt = []
-    slurmargs = slurmargs.copy()
-    slurmargs[:len(default_postprocessing_params)
-              ] = default_postprocessing_params
+    if prog['postprocess']:
+        slurm_opt = []
+        slurmargs = slurmargs.copy()
+        slurmargs[:len(default_postprocessing_params)
+                  ] = default_postprocessing_params
 
-  if prog['array']:
+    if prog['array']:
 
-    if prog['short']:
-      arrayspec = f'--array={minseed}-{maxseed}:{stepseed}'
+        if prog['short']:
+            arrayspec = f'--array={minseed}-{maxseed}:{stepseed}'
 
+        else:
+            arrayspec = f'--array={minseed}-{maxseed}'
+
+        if queue:
+
+            slurm_opt.append(f'#SBATCH {arrayspec}')
+
+            if prog['short']:
+
+                seedlist = [('--min_seed=${{SLURM_ARRAY_TASK_ID}} --max_seed='
+                             '$((${{SLURM_ARRAY_TASK_ID}} + {}))').format(
+                    stepseed)]
+            else:
+
+                seedlist = ['--seed=${SLURM_ARRAY_TASK_ID}']
+
+        else:
+            if not prog['short']:
+                seedlist = [f'--seed={seed}' for seed in
+                            range(minseed, maxseed + 1, 1)]
+            else:
+                seedlist = [f'--min_seed={minseed} --max_seed={maxseed}']
+
+    # The actual command line arguments which are used for running a
+    # given program
+    tail, head = syspar.split('_pbc_')
+    head = 'pbc_' + head
+    results = f"{storage}/{name}/{head}/{tail}/{modpar}"
+
+    if prog['mpi']:
+        if not prog['short']:
+            if queue:
+                nproc = '${SLURM_NTASKS}'
+            else:
+                nproc = slurmargs[2]
+            execname = 'mpiexec -np {} python'.format(nproc)
+        else:
+            execname = 'python'
+        # execname = 'mpiexec python'
+        cmd_opt_ = cmd_opt.copy()
     else:
-      arrayspec = f'--array={minseed}-{maxseed}'
+        execname = 'python'
+        # exclude command options referring to the
+        # mpi jobs in this case
+        cmd_opt_ = [opt for opt in cmd_opt if not any(
+            [key in opt for key in sinvert_keys])]
+
+    cmd_scripts = [(
+        f"{execname} {prog['name']} {cmd_arg} {' '.join(cmd_opt_)} {seed} "
+        f"--results={results} "
+        f"--syspar={syspar} --modpar={modpar} \n") for seed in
+        seedlist]
+
+    modload_script = (
+        f"\nmodule purge\n"
+        f"module load {module}\n"
+        f"source deactivate\n"
+        # f"eval \"$(conda shell.bash hook)\"\n"
+        f"source activate {environment}\n"
+    )
+
+    # properly order the sbatch_script list
+    temp_slurm_opt = []
+    for opt in slurm_opt:
+
+        if '#SBATCH' not in opt:
+            slurm_opt.remove(opt)
+            temp_slurm_opt.append(opt)
+
+    for opt in temp_slurm_opt:
+
+        slurm_opt.append(opt)
+
+    sbatch_script = (
+        "#!/bin/bash"
+        "\n#SBATCH --time={0}\n"
+        "#SBATCH --nodes={1}\n"
+        "#SBATCH --ntasks={2}\n"
+        "#SBATCH --cpus-per-task={3}\n"
+        "#SBATCH --mem-per-cpu={4}\n"
+        "#SBATCH --job-name={5}\n"
+        "#SBATCH --output={6}slurm_%A_%a.out\n"
+        "{7}\n").format(*slurmargs[:7], '\n'.join(slurm_opt))
+
+    misc_script = (
+        "\ncd {0}\n"
+        "hostname\n"
+        "pwd\n"
+        "echo $SLURM_CPUS_PER_TASK\n"
+        "export OMP_NUM_THREADS=${{SLURM_CPUS_PER_TASK}}\n"
+        "export NUMBA_NUM_THREADS=${{SLURM_CPUS_PER_TASK}}\n"
+    ).format(cd)
 
     if queue:
 
-      slurm_opt.append(f'#SBATCH {arrayspec}')
-
-      if prog['short']:
-
-        seedlist = [('--min_seed=${{SLURM_ARRAY_TASK_ID}} --max_seed='
-                     '$((${{SLURM_ARRAY_TASK_ID}} + {}))').format(
-            stepseed)]
-      else:
-
-        seedlist = ['--seed=${SLURM_ARRAY_TASK_ID}']
-
+        submission_scripts = [sbatch_script + modload_script +
+                              misc_script + cmd_script for cmd_script
+                              in cmd_scripts]
     else:
-      if not prog['short']:
-        seedlist = [f'--seed={seed}' for seed in
-                    range(minseed, maxseed + 1, 1)]
-      else:
-        seedlist = [f'--min_seed={minseed} --max_seed={maxseed}']
-
-  # The actual command line arguments which are used for running a
-  # given program
-  tail, head = syspar.split('_pbc_')
-  head = 'pbc_' + head
-  results = f"{storage}/{name}/{head}/{tail}/{modpar}"
-
-  if prog['mpi']:
-    if not prog['short']:
-      if queue:
-        nproc = '${SLURM_NTASKS}'
-      else:
-        nproc = slurmargs[2]
-      execname = 'mpiexec -np {} python'.format(nproc)
-    else:
-      execname = 'python'
-    # execname = 'mpiexec python'
-    cmd_opt_ = cmd_opt.copy()
-  else:
-    execname = 'python'
-    # exclude command options referring to the
-    # mpi jobs in this case
-    cmd_opt_ = [opt for opt in cmd_opt if not any(
-        [key in opt for key in sinvert_keys])]
-
-  cmd_scripts = [(
-      f"{execname} {prog['name']} {cmd_arg} {' '.join(cmd_opt_)} {seed} "
-      f"--results={results} "
-      f"--syspar={syspar} --modpar={modpar} \n") for seed in
-      seedlist]
-
-  modload_script = (
-      f"\nmodule purge\n"
-      f"module load {module}\n"
-      f"source deactivate\n"
-      # f"eval \"$(conda shell.bash hook)\"\n"
-      f"source activate {environment}\n"
-  )
-
-  # properly order the sbatch_script list
-  temp_slurm_opt = []
-  for opt in slurm_opt:
-
-    if '#SBATCH' not in opt:
-      slurm_opt.remove(opt)
-      temp_slurm_opt.append(opt)
-
-  for opt in temp_slurm_opt:
-
-    slurm_opt.append(opt)
-
-  sbatch_script = (
-      "#!/bin/bash"
-      "\n#SBATCH --time={0}\n"
-      "#SBATCH --nodes={1}\n"
-      "#SBATCH --ntasks={2}\n"
-      "#SBATCH --cpus-per-task={3}\n"
-      "#SBATCH --mem-per-cpu={4}\n"
-      "#SBATCH --job-name={5}\n"
-      "#SBATCH --output={6}slurm_%A_%a.out\n"
-      "{7}\n").format(*slurmargs[:7], '\n'.join(slurm_opt))
-
-  misc_script = (
-      "\ncd {0}\n"
-      "hostname\n"
-      "pwd\n"
-      "echo $SLURM_CPUS_PER_TASK\n"
-      "export OMP_NUM_THREADS=${{SLURM_CPUS_PER_TASK}}\n"
-  ).format(cd)
-
-  if queue:
-
-    submission_scripts = [sbatch_script + modload_script +
-                          misc_script + cmd_script for cmd_script
-                          in cmd_scripts]
-  else:
-    submission_scripts = cmd_scripts
-  # print(submission_scripts)
-  return submission_scripts
+        submission_scripts = cmd_scripts
+    # print(submission_scripts)
+    return submission_scripts
 
 
 def prepare_dependency_script(scripts, name, logfolder, *args, **kwargs):
-  """
-  In order to be able to run our jobs consecutively,
-  we make use of the SLURM dependencies. See this
-  URL to find out more about using them:
+    """
+    In order to be able to run our jobs consecutively,
+    we make use of the SLURM dependencies. See this
+    URL to find out more about using them:
 
-  https://hpc.nih.gov/docs/job_dependencies.html
-  (accessed on: 29/07/2019)
+    https://hpc.nih.gov/docs/job_dependencies.html
+    (accessed on: 29/07/2019)
 
-  NOTE: currently only afterany option is implemented.
-  If needed, we could add an additional list of dependencies
-  for consecutive jobs.
+    NOTE: currently only afterany option is implemented.
+    If needed, we could add an additional list of dependencies
+    for consecutive jobs.
 
-  Parameters:
-  -----------
+    Parameters:
+    -----------
 
-  scripts: list
-           A list of strings specifying submission scripts
-           for individual job substeps.
-  name: str
-        The name of the dependency script to be stored on
-        disk.
+    scripts: list
+             A list of strings specifying submission scripts
+             for individual job substeps.
+    name: str
+          The name of the dependency script to be stored on
+          disk.
 
-  logfolder: str
-        Folder in which the logs of the dependency script jobs
-        should be stored.
+    logfolder: str
+          Folder in which the logs of the dependency script jobs
+          should be stored.
 
-  """
+    """
 
-  dep_script = ("""#!/bin/bash\n"""
-                """#SBATCH --time=00:01:00\n"""
-                f"""#SBATCH --output={logfolder}/dep_%j.out\n""")
+    dep_script = ("""#!/bin/bash\n"""
+                  """#SBATCH --time=00:01:00\n"""
+                  f"""#SBATCH --output={logfolder}/dep_%j.out\n""")
 
-  dep_script += f"\njid0=$(sbatch --parsable {scripts[0]})"
-  try:
-    for i, script in enumerate(scripts[1:]):
-      j = i + 1
-      dep_script += (f"\njid{j}=$(sbatch --parsable "
-                     f"--dependency=afterany:"
-                     f"$jid{i} {script})\n")
+    dep_script += f"\njid0=$(sbatch --parsable {scripts[0]})"
+    try:
+        for i, script in enumerate(scripts[1:]):
+            j = i + 1
+            dep_script += (f"\njid{j}=$(sbatch --parsable "
+                           f"--dependency=afterany:"
+                           f"$jid{i} {script})\n")
 
-    # remove the scripts to avoid cluttering
-    # of the folder
+        # remove the scripts to avoid cluttering
+        # of the folder
 
-    dep_script += "\n"
-    for script in scripts:
+        dep_script += "\n"
+        for script in scripts:
 
-      # copy_path to a dedicated subfolder in the
-      # results folder and remove the folder from
-      # the tmp dir
-      dep_script += (f"rm {script} \n")
+            # copy_path to a dedicated subfolder in the
+            # results folder and remove the folder from
+            # the tmp dir
+            dep_script += (f"rm {script} \n")
 
-  except IndexError:
-    pass
+    except IndexError:
+        pass
 
-  with open(name, 'w') as namescript:
+    with open(name, 'w') as namescript:
 
-    namescript.write(dep_script)
+        namescript.write(dep_script)
 
-  return name
+    return name
