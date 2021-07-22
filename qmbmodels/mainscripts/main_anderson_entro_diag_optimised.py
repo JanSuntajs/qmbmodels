@@ -15,7 +15,7 @@ try:
            'on the number of cores:'))
     set_mkl_lib.mkl_get_max_threads()
     # save the variable
-    omp_ncores = set_mkl_rt.mkl_rt.MKL_Get_Max_Threads()
+    omp_ncores = set_mkl_lib.mkl_rt.MKL_Get_Max_Threads()
 
 except NameError:
     print(('There was an error importing mkl libraries! '
