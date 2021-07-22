@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-from qmbmodels.utils import set_mkl_lib
+from qmbmodels.utils import set_mkl_lib, mkl_rt
 from qmbmodels.utils.cmd_parser_tools import arg_parser
 from qmbmodels.models.prepare_model import get_module_info
 from qmbmodels.utils.filesaver import savefile
@@ -14,21 +14,26 @@ try:
     print(('main_anderson_entro_diag info '
            'on the number of cores:'))
     set_mkl_lib.mkl_get_max_threads()
+    # save the variable
+    omp_ncores = mkl_rt.MKL_Get_Max_Threads()
 
 except NameError:
     print(('There was an error importing mkl libraries! '
            'Check numpy and scipy installation!'))
+    omp_ncores = 1
 
 
 try:
-    from numba import get_num_threads
+    from numba import get_num_threads, set_num_threads
 
+    numba_ncores = get_num_threads()
     print(('Numba features for thread masking imported!'
            f'Number of numba threads is {get_num_threads()}'))
 
 except ImportError:
     print(('Regular, not dev version of numba is used! '
            'Some advanced features might be missing!'))
+    numba_ncores = 1
 
 _eentro_parse_dict = {'eentro_nstates': [int, -1],
                       'eentro_filling': [float, 0.5],
@@ -78,10 +83,13 @@ if __name__ == '__main__':
         print('Starting diagonalization and entanglement calculation')
         # omp mode for diagonalization
 
+        set_mkl_lib.mkl_set_num_threads(omp_ncores)
+        set_num_threads(1)
         eigvals, eigvecs = model.eigsystem(complex=False)
 
         # now, in the numba part, set up for the numba parallelism
-
+        set_mkl_lib.mkl_set_num_threads(1)
+        set_num_threads(numba_ncores)
         eentro = main_fun_entro(eigvecs, model.states, eentro_nstates,
                                 partition_fraction,
                                 filling, gc)
