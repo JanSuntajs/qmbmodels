@@ -24,7 +24,7 @@ try:
     from numba import get_num_threads
 
     print(('Numba features for thread masking imported!'
-           f'Number of numba threads is {get_num_threads}'))
+           f'Number of numba threads is {get_num_threads()}'))
 
 except ImportError:
     print(('Regular, not dev version of numba is used! '
