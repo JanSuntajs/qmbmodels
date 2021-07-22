@@ -151,16 +151,12 @@ programs = {
                              'save': 'Spectral_stats', 'vectors': False,
                              'noqueue': False, 'mpi': False,
                              'short': True, 'postprocess': True},
-    'and_mb_eentro': {'name': f'{_mainfold}main_anderson_entro_diag.py',
+    'and_mb_eentro': {'name': f'{_mainfold}main_anderson_entro_diag_optimised.py',
                       'array': True,
                       'save': 'Eigvals', 'vectors': False,
                       'noqueue': False, 'mpi': False,
                       'short': True, 'postprocess': False},
-    'and_mb_eentro_opt': {'name': f'{_mainfold}main_anderson_entro_diag_optimised.py',
-                          'array': True,
-                          'save': 'Eigvals', 'vectors': False,
-                          'noqueue': False, 'mpi': False,
-                          'short': True, 'postprocess': False}
+
 }
 
 # define the default post-processing parameters so that
