@@ -1,5 +1,8 @@
 #!/usr/bin/env python
 
+
+import numpy as np
+
 from qmbmodels.utils import set_mkl_lib
 from qmbmodels.utils.cmd_parser_tools import arg_parser
 from qmbmodels.models.prepare_model import get_module_info
@@ -92,7 +95,7 @@ if __name__ == '__main__':
         set_num_threads(numba_ncores)
         eentro = main_fun_entro(eigvecs, model.states, eentro_nstates,
                                 partition_fraction,
-                                filling, gc)
+                                filling, np.bool(gc))
 
         print('Displaying eigvals')
         print(eigvals)

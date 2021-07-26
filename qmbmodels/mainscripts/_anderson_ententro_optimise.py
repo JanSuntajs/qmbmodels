@@ -217,7 +217,7 @@ def get_ententro_real(eigvecs, subsystem, mb_configuration):
         bipartition and many-body configuration
 
     """
-    eigvecs = eigvecs.copy()
+    #eigvecs = eigvecs.copy()
     # pick rows and columns according to our needs
     # this is needed for the calculation of the
     # generalized correlation matrix
