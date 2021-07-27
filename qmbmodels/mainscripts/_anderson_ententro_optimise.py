@@ -191,7 +191,7 @@ def generate_configurations(states, seedmin, seedmax, particle_filling, gc):
     return np.unique(confs, axis=0)
 
 
-@ nb.njit('float64(float64[:,:], uint64[:], uint64[:])', nogil=True, parallel=True)
+@nb.njit('float64(float64[:,:], uint64[:], uint64[:])', nogil=True, parallel=True)
 def get_ententro_real(eigvecs, subsystem, mb_configuration):
     """
     Calculate the entaglement entropy for a given
@@ -229,7 +229,11 @@ def get_ententro_real(eigvecs, subsystem, mb_configuration):
     corr_coeffs = np.zeros((n_sites,
                             n_states), dtype=np.float64)
 
-    for i in nb.prange(n_sites):  # nb.prange(n_sites):
+    corr_matrix = np.zeros((n_sites, n_sites), dtype=np.float64)
+    gen_corr_matrix = np.zeros_like(corr_matrix)
+    corr_eigvals = np.zeros(n_sites, dtype=np.float64)
+
+    for i in range(n_sites):  # nb.prange(n_sites):
         for j in range(n_states):
             #
             corr_coeffs[i][j] = eigvecs[subsystem[i]][mb_configuration[j]]
@@ -249,7 +253,7 @@ def get_ententro_real(eigvecs, subsystem, mb_configuration):
     return ententro(corr_eigvals)
 
 
-@ nb.njit('float64[:](float64[:], float64[:, :], uint64[:], boolean[:, :], float64)', nogil=True, parallel=True)
+@nb.njit('float64[:](float64[:], float64[:, :], uint64[:], boolean[:, :], float64)', nogil=True, parallel=True)
 def entro_states(eentro, eigvecs, states, configurations,
                  partition_fraction=0.5):
     """
@@ -261,15 +265,19 @@ def entro_states(eentro, eigvecs, states, configurations,
     """
     # number of configurations/mb states
     n_confs = eentro.shape[0]
+    eentro = np.zeros(n_confs, dtype=np.float64)
+    subsystem_indices = np.zeros(
+        int(states.shape[0] * partition_fraction),
+        dtype=np.uint64)
 
     subsystem_indices = get_subsystem(states, partition_fraction)
-    #eentro = np.zeros(n_confs, dtype=np.float64)
+
     for i in nb.prange(n_confs):  # nb.prange(n_confs):
 
-        mb_configuration = states[configurations[i]]
+        # mb_configuration = states[configurations[i]]
 
         eentro[i] = get_ententro_real(
-            eigvecs, subsystem_indices, mb_configuration)
+            eigvecs, subsystem_indices, states[configurations[i]])
 
     return eentro
 
