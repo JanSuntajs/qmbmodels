@@ -161,7 +161,7 @@ def _generate_configurations_nb(states, seedmin, seedmax,
     # i = 0
     j = seedmin
 
-    for j in nb.prange(seedmin, seedmax):  # nb.prange(seedmin, seedmax):
+    for j in range(seedmin, seedmax):  # nb.prange(seedmin, seedmax):
 
         confs = _pick_mb_configuration(
             confs, j - seedmin, states, j, filling, gc)
