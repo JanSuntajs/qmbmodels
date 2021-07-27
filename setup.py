@@ -10,9 +10,8 @@ setup(name='qmbmodels',
       license='MIT',
       packages=find_packages(),
       install_requires=[('ham1d @ git+https://github.com/JanSuntajs/'
-                         'ham1d/tarball/master/'
-                         '#egg=ham1d-1.2.5'),],
-      #dependency_links=[('qmbhttps://github.com/JanSuntajs/'
+                         'ham1d.git'), ],
+      # dependency_links=[('qmbhttps://github.com/JanSuntajs/'
       #                   'ham1d/tarball/'
       #                   'master/#egg=ham1d-1.2.5')],
       zip_safe=False)
