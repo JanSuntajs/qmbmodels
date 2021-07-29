@@ -230,8 +230,8 @@ def get_ententro_real(eigvecs, subsystem, mb_configuration):
     corr_coeffs = np.zeros((n_sites,
                             n_states), dtype=np.float64)
 
-    corr_matrix = np.zeros((n_sites, n_sites), dtype=np.float64)
-    gen_corr_matrix = np.zeros_like(corr_matrix)
+    gen_corr_matrix = np.zeros((n_sites, n_sites), dtype=np.float64)
+
     corr_eigvals = np.zeros(n_sites, dtype=np.float64)
 
     for i in range(n_sites):  # nb.prange(n_sites):
@@ -239,12 +239,10 @@ def get_ententro_real(eigvecs, subsystem, mb_configuration):
             #
             corr_coeffs[i][j] = eigvecs[subsystem[i]][mb_configuration[j]]
 
-    corr_matrix = corr_coeffs @ (corr_coeffs.T)
-
     # subtract the diagonal (orthonormality) and multiply by 2 -> see
     # the definition above
-    gen_corr_matrix = 2 * corr_matrix - \
-        np.eye(corr_matrix.shape[0], dtype=np.float64)
+    gen_corr_matrix = 2 * (corr_coeffs @ (corr_coeffs.T)) - \
+        np.eye(n_sites, dtype=np.float64)
 
     # we need the spectrum of the generalized
     # correlation matrix calculated above
