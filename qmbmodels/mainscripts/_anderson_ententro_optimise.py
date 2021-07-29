@@ -192,7 +192,7 @@ def generate_configurations(states, seedmin, seedmax, particle_filling, gc):
     return np.unique(confs, axis=0)
 
 
-@nb.njit('float64(float64[:,:], uint64[:], uint64[:])', nogil=True, parallel=True)
+@nb.njit('float64(float64[:,:], uint64[:], uint64[:])', nogil=True, parallel=False)
 def get_ententro_real(eigvecs, subsystem, mb_configuration):
     """
     Calculate the entaglement entropy for a given
@@ -254,7 +254,7 @@ def get_ententro_real(eigvecs, subsystem, mb_configuration):
     return ententro(corr_eigvals)
 
 
-@nb.njit('float64[:](float64[:], float64[:, :], uint64[:], boolean[:, :], float64)', nogil=True, parallel=True)
+@nb.njit('float64[:](float64[:], float64[:, :], uint64[:], boolean[:, :], float64)', nogil=True, parallel=False)
 def entro_states(eentro, eigvecs, states, configurations,
                  partition_fraction=0.5):
     """
@@ -278,7 +278,7 @@ def entro_states(eentro, eigvecs, states, configurations,
         # mb_configuration = states[configurations[i]]
 
         eentro[i] = get_ententro_real(
-            eigvecs, subsystem_indices, states[configurations[i]])
+            eigvecs.view(), subsystem_indices, states[configurations[i]])
 
     return eentro
 
@@ -306,7 +306,7 @@ def _test_fun_entro(t=-1., W=1, dim=3, L=10,
                                              gc)
 
     eentro = np.zeros(configurations.shape[0], dtype=np.float64)
-    return eigvecs, entro_states(eentro, eigvecs, states,
+    return eigvecs, entro_states(eentro, eigvecs.view(), states,
                                  configurations, partition_fraction)
 
 
@@ -324,3 +324,24 @@ def main_fun_entro(eigvecs, states, stateseedmax,
     return entro_states(eentro, np.float64(eigvecs),
                         states, configurations,
                         partition_fraction)
+
+
+def main_fun_entro_meminfo(eigvecs, states, stateseedmin, stateseedmax,
+                           partition_fraction, particle_filling, gc, p):
+
+    #eigvals, eigvecs = hamiltonian.eigsystem(complex=False)
+    #states = hamiltonian.states
+    print(f'Memory used #1: {p.memory_info().rss/1e06} MB.')
+    configurations = generate_configurations(np.uint64(states),
+                                             np.uint64(stateseedmin),
+                                             np.uint64(stateseedmax),
+                                             np.float64(particle_filling),
+                                             gc)
+    eentro = np.zeros(configurations.shape[0], dtype=np.float64)
+    print(f'Memory used #2: {p.memory_info().rss/1e06} MB.')
+    eentro = entro_states(eentro, np.float64(eigvecs),
+                          states, configurations,
+                          partition_fraction)
+
+    print(f'Memory used #3: {p.memory_info().rss/1e06} MB.')
+    return eentro
