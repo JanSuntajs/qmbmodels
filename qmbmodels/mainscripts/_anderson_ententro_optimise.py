@@ -278,7 +278,7 @@ def entro_states(eentro, eigvecs, states, configurations,
         # mb_configuration = states[configurations[i]]
 
         eentro[i] = get_ententro_real(
-            eigvecs.view(), subsystem_indices, states[configurations[i]])
+            eigvecs, subsystem_indices, states[configurations[i]])
 
     return eentro
 
