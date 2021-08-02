@@ -252,7 +252,7 @@ def get_ententro_real(eigvecs, subsystem, mb_configuration):
     return ententro(corr_eigvals)
 
 
-@nb.njit('float64[:](float64[:], float64[:, :], uint64[:], boolean[:, :], float64)', nogil=True, parallel=True)
+@nb.njit('float64[:](float64[:], float64[:, :], uint64[:], boolean[:, :], float64)', nogil=True, parallel=False)
 def entro_states(eentro, eigvecs, states, configurations,
                  partition_fraction=0.5):
     """
@@ -271,7 +271,7 @@ def entro_states(eentro, eigvecs, states, configurations,
 
     subsystem_indices = get_subsystem(states, partition_fraction)
 
-    for i in nb.prange(n_confs):  # nb.prange(n_confs):
+    for i in range(n_confs):  # nb.prange(n_confs):
 
         # mb_configuration = states[configurations[i]]
 
