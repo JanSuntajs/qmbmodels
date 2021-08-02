@@ -73,7 +73,7 @@ if __name__ == '__main__':
 
     gc = eentroDict['eentro_grandcanonical']
 
-    for seed in range(min_seed, max_seed + 1):
+    for seed in range(min_seed, max_seed):
         print('Using seed: {}'.format(seed))
         argsDict['seed'] = seed
         print(argsDict)
