@@ -91,8 +91,8 @@ if __name__ == '__main__':
         eigvals, eigvecs = model.eigsystem(complex=False)
 
         # now, in the numba part, set up for the numba parallelism
-        set_mkl_lib.mkl_set_num_threads(1)
-        set_num_threads(numba_ncores)
+        #set_mkl_lib.mkl_set_num_threads(1)
+        #set_num_threads(numba_ncores)
         eentro = main_fun_entro(eigvecs, model.states, eentro_nstates,
                                 partition_fraction,
                                 filling, np.bool(gc))
