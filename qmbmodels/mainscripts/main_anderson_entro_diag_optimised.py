@@ -2,6 +2,7 @@
 
 
 import numpy as np
+from time import time
 
 from qmbmodels.utils import set_mkl_lib
 from qmbmodels.utils.cmd_parser_tools import arg_parser
@@ -88,15 +89,19 @@ if __name__ == '__main__':
 
         set_mkl_lib.mkl_set_num_threads(omp_ncores)
         set_num_threads(1)
+        start = time()
         eigvals, eigvecs = model.eigsystem(complex=False)
-
+        end = time()
+        print(f'Elapsed diagonalization time: {end-start}')
         # now, in the numba part, set up for the numba parallelism
         #set_mkl_lib.mkl_set_num_threads(1)
         #set_num_threads(numba_ncores)
+        start = time()
         eentro = main_fun_entro(eigvecs, model.states, eentro_nstates,
                                 partition_fraction,
                                 filling, np.bool(gc))
-
+        end = time()
+        print(f'Elapsed eentro calculation time: {end-start}') 
         print('Displaying eigvals')
         print(eigvals)
 
