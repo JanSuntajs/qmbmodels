@@ -164,8 +164,9 @@ def construct_hamiltonian(argsdict, parallel=False, mpirank=0, mpisize=0):
 
     rnd_grain = _create_grain(beta, L_b, seed)
     lengths = _length_dist(L_loc, seed)
+    coupling_indices = _coupling_dists(L_b, L_loc, seed)
     fields = get_disorder_dist(L_loc, disorder, argsdict['W'],
-                               argsdict['dW'], argsdict['seed'])
+                               argsdict['dW'], seed)
 
     grain_term = ['RR', [[beta, 0, L_b - 1]]]
 
@@ -174,7 +175,7 @@ def construct_hamiltonian(argsdict, parallel=False, mpirank=0, mpisize=0):
 
     if L_loc > 0:
 
-        bath_couplings = [[g0 * alpha**length, lengths[i], L_b + i, ]
+        bath_couplings = [[g0 * alpha**length, coupling_indices[i], L_b + i, ]
                           for i, length in enumerate(lengths)]
         bath_loc_term = ['xx', bath_couplings]
 
@@ -190,4 +191,6 @@ def construct_hamiltonian(argsdict, parallel=False, mpirank=0, mpisize=0):
     return hamiltonian, {'Hamiltonian_grain_matrix_disorder':
                          rnd_grain.flatten(),
                          'Hamiltonian_random_disorder': fields,
-                         'Hamiltonian_lengths_disorder': lengths}
+                         'Hamiltonian_lengths_disorder': lengths,
+                         'Hamiltonian_bath_coupling_indices_disorder':
+                         coupling_indices}
