@@ -141,23 +141,23 @@ def prepare_files(filenames):
         results_dict[key] = np.array([file[key] for file in files])
         shapes_dict[key] = results_dict[key].shape
 
-    if partial:
-        for key in reskeys:
+    # if partial:
+    for key in reskeys:
 
-            files_ = [file[key] for file in files if file[key].size != 0]
+        files_ = [file[key] for file in files if file[key].size != 0]
 
-            shapes = [file.shape[0] for file in files_]
-            minshape = np.min(shapes)
-            files_ = [file[:minshape] for file in files_]
-            results_dict[key] = np.array(files_)
-            shapes_dict[key] = results_dict[key].shape
+        shapes = [file.shape[0] for file in files_]
+        minshape = np.min(shapes)
+        files_ = [file[:minshape] for file in files_]
+        results_dict[key] = np.array(files_)
+        shapes_dict[key] = results_dict[key].shape
     # just fill the dictionary if all the entries are supposed to be
     # of the same shape
-    else:
-        for key in reskeys:
+    # else:
+    #     for key in reskeys:
 
-            results_dict[key] = np.array([file[key] for file in files])
-            shapes_dict[key] = results_dict[key].shape
+    #         results_dict[key] = np.array([file[key] for file in files])
+    #         shapes_dict[key] = results_dict[key].shape
 
     # add '_partial' suffix for partial diagonalization results
     for key in results_dict.keys():
@@ -347,12 +347,12 @@ if __name__ == '__main__':
                         attrs['nsamples'] = nsamples
                         orig_shape = f[reskey].shape[1]
                         shape_resize = orig_shape
-                        if partial:
-                            if shapes_dict[reskey][1] < orig_shape:
-                                shape_resize = shapes_dict[reskey][1]
-                            elif shapes_dict[reskey][1] > orig_shape:
-                                datasets[reskey] = datasets[reskey][:,
-                                                                    :orig_shape]
+                        # if partial:
+                        if shapes_dict[reskey][1] < orig_shape:
+                            shape_resize = shapes_dict[reskey][1]
+                        elif shapes_dict[reskey][1] > orig_shape:
+                            datasets[reskey] = datasets[reskey][:,
+                                                                :orig_shape]
                         f[reskey].resize((nsamples, shape_resize))
 
                         f[reskey][nsamples0:, :] = datasets[reskey]

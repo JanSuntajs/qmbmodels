@@ -63,7 +63,7 @@ _modpar_keys = [key for key in modpar_keys if '_seed' not in key]
 _modpar_keys.append('seed')
 
 
-def _create_grain(beta, size, seed):
+def _create_grain(size, seed):
     """
     Create the random grain matrix in a reproducible
     way.
@@ -84,7 +84,7 @@ def _create_grain(beta, size, seed):
 
     mat = rng.normal(0, 1, (2**size, 2**size))
 
-    return (beta * 0.5) * (mat + mat.T)
+    return (0.5) * (mat + mat.T)
 
 
 def _length_dist(size, seed):
@@ -97,7 +97,7 @@ def _length_dist(size, seed):
     """
     rng = np.random.default_rng(seed)
 
-    return rng.uniform(1, size, size)
+    return np.sort(rng.uniform(1, size, size))
 
 
 def _disorder_dist(size, seed, W=0.5):
@@ -125,7 +125,7 @@ def _coupling_dists(size_bath, size_loc, seed):
     return rng.choice(bath_indices, size_loc)
 
 
-def construct_hamiltonian(argsdict, parallel=False, mpirank=0, mpisize=0):
+def construct_hamiltonian(argsdict, parallel=False, mpirank=0, mpisize=0, dtype=np.float64):
     """
 
 
@@ -162,7 +162,7 @@ def construct_hamiltonian(argsdict, parallel=False, mpirank=0, mpisize=0):
     ham = sphm
     seed = argsdict['seed']
 
-    rnd_grain = _create_grain(beta, L_b, seed)
+    rnd_grain = _create_grain(L_b, seed)
     lengths = _length_dist(L_loc, seed)
     coupling_indices = _coupling_dists(L_b, L_loc, seed)
     fields = get_disorder_dist(L_loc, disorder, argsdict['W'],
@@ -186,7 +186,8 @@ def construct_hamiltonian(argsdict, parallel=False, mpirank=0, mpisize=0):
 
     hamiltonian = ham(L, static_list, [], Nu=None,
                       grain_list=grain_list, parallel=parallel,
-                      mpirank=mpirank, mpisize=mpisize)
+                      mpirank=mpirank, mpisize=mpisize,
+                      dtype=dtype)
 
     return hamiltonian, {'Hamiltonian_grain_matrix_disorder':
                          rnd_grain.flatten(),

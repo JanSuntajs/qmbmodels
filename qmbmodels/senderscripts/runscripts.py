@@ -68,6 +68,10 @@ programs = {
              'save': 'Eigvals', 'vectors': True,
              'noqueue': False, 'mpi': False,
              'short': True, 'postprocess': False},
+    'diag_grain': {'name': f'{_mainfold}main_grain_diag.py', 'array': True, # diagonalization for the
+             'save': 'Eigvals', 'vectors': True,
+             'noqueue': False, 'mpi': False,
+             'short': True, 'postprocess': False},
     'sff': {'name': f'{_mainfold}main_sff.py', 'array': False,
             'save': 'Spectral_stats', 'vectors': False,
             'noqueue': False, 'mpi': False,
