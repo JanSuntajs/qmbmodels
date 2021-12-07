@@ -44,7 +44,7 @@ from qmbmodels.models.prepare_model import get_module_info
 from qmbmodels.utils.filesaver import savefile
 from qmbmodels.models.prepare_model import select_model
 
-from _spectral_fun import eval_spectral_fun, eval_matelt_variances, calc_susceptibility, _smoothing
+from _spectral_fun import eval_spectral_fun, eval_matelt_variances, calc_susceptibility, _smoothing, sort_offdiag_matelts
 
 save_metadata = True
 _allowed_models = ['rnd_grain']
@@ -122,8 +122,9 @@ if __name__ == '__main__':
             argsDict, parallel=False, mpisize=1)
 
         # set complex = False to speed up things
+        print('Starting diagonalization!')
         eigvals, eigvecs = model.eigsystem(complex=False)
-
+        print('Diagonalization finished!')
         # mean level spacing:
         mn_lvl_spc = np.mean(np.diff(eigvals))
 
@@ -146,9 +147,11 @@ if __name__ == '__main__':
         # eval matelts -> first the local term: the most distant LIOM
 
         for i, op_desc in enumerate(oplist):
+            print(f'Operator {op_desc} matrix elements calculations starting!')
 
+            print('Starting matelts calculation!')
             matelts = model.eval_matelts(eigvecs, op_desc, dtype=np.float64)
-
+            print('Matelts calculation finished!')
             # ---------------------------------------------------------------
             #
             # Variances
@@ -163,6 +166,7 @@ if __name__ == '__main__':
             # windows
             # variances_offdiag: variances of the offdiagonal matrix elements
             # ratios: ratios of diagonal and offdiagonal matrix elements variances
+            print('Starting matrix variance calculations!')
             for j in np.linspace(spcDict['matelt_variance_window_min'],
                                  spcDict['matelt_variance_window_max'],
                                  spcDict['matelt_variance_window_nsteps'], dtype=float):
@@ -175,12 +179,15 @@ if __name__ == '__main__':
 
                     matelts_dict[_mateltkeys[k].format(
                         window_width, j, namelist[i])] = result.copy()
+                print(f'Matrix calculations, calculation for window {window_width} finished!')
+            print('Matrix variance calculations finished!')
  
             # ----------------------------------------------------------------
             #
             # SUSCEPTIBILITIES
             #
             # ----------------------------------------------------------------
+            print('Starting susceptibility calculations!')
             mu = mn_lvl_spc * model.L
             results = calc_susceptibility(eigvals, matelts, mu )
             for j, result in enumerate(results):
@@ -189,6 +196,7 @@ if __name__ == '__main__':
                 else:
                     mu_ = mu
                 matelts_dict[_susckeys[j].format(namelist[i])] = result.copy()
+            print('Susceptibility calculations finished!')
             # ----------------------------------------------------------------
             #
             # Full matrix elements distribution
@@ -197,10 +205,13 @@ if __name__ == '__main__':
             # now, perform the analysis -> first the full distribution of
             # matelts, then from some energy window; also calculate
             # the susceptibilities
-
-            diags, diffs_full, spc_fun_full, spc_fun_integ, *_ = eval_spectral_fun(
-                eigvals, matelts, 0., 0., True,
+            print('Full spectrum spectral function calculation starting!')
+            diags, diffs, matelts, aves = sort_offdiag_matelts(eigvals, matelts)
+            print('Sorted offdiagonals!')
+            diffs_full, spc_fun_full, spc_fun_integ, *_ = eval_spectral_fun(
+                eigvals, aves, diffs, matelts, 0., 0., True,
             )
+            print('Full spectrum spectral function calculation finished! Starting smoothing!')
             matelts_dict[_spectralkeys[0].format(namelist[i])] = diags.copy()
 
             for j in np.linspace(spcDict['full_spectral_smoothing_window_min'],
@@ -216,6 +227,7 @@ if __name__ == '__main__':
                 for k, result in enumerate(results):
                     matelts_dict[_spectralkeys[k+1].format(
                         j, namelist[i])] = result.copy()
+            print('Smoothing for the full spectrum spectral function finished!')
 
             # -----------------------------------------------------------------
             #
@@ -227,24 +239,24 @@ if __name__ == '__main__':
             # concentrate on the window around the mean energy
             # allow for testing both eps and smoothing values independently of
             # the full distribution
-
+            print('Performing the partial spectral function calculations!')
             for eps in np.linspace(spcDict['partial_spectral_eps_min'],
                                    spcDict['partial_spectral_eps_max'],
                                    spcDict['partial_spectral_eps_nsteps'], dtype=float):
 
-                _, diffs, spc_fun, _, n_vals, target_ene, eps_, bandwidth = eval_spectral_fun(
-                    eigvals, matelts, np.mean(eigvals), eps, False,)
+                diffs_, spc_fun_, _, n_vals, target_ene, eps_, bandwidth = eval_spectral_fun(
+                    eigvals, aves, diffs, matelts, np.mean(eigvals), eps, False,)
 
                 for j in np.linspace(spcDict['partial_spectral_smoothing_window_min'],
                                      spcDict['partial_spectral_smoothing_window_min'],
                                      spcDict['partial_spectral_smoothing_window_min'], dtype=int):
 
-                    results = _smoothing(diffs, spc_fun, j)
+                    results = _smoothing(diffs_, spc_fun_, j)
 
                     for k, result in enumerate(results):
                         matelts_dict[_spectralkeys[k +
                                                     4].format(j, eps, namelist[i])] = result.copy()
-
+        print('Finished performing the partial spectral function calculations!')
         # ---------------------------------------------------------------------
 
         # ----------------------------------------------------------------------

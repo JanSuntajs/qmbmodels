@@ -22,7 +22,7 @@ def _running_mean(arr, n_window):
     """
 
     ret = np.cumsum(arr)
-    ret[n_window:] = ret[n_window] - ret[:-n_window]
+    ret[n_window:] = ret[n_window:] - ret[:-n_window]
 
     return ret[n_window - 1:] / (n_window * 1.)
 
@@ -77,6 +77,48 @@ def _smoothing(diffs, matelts, n_window):
     matelts = np.mean(matelts.reshape(-1, n_window), axis=1)
 
     return diffs, matelts
+
+
+@nb.njit("Tuple((float64[:], float64[:], float64[:], float64[:]))(float64[:], float64[:, :])")
+def sort_offdiag_matelts(eigvals, matelts):
+    """
+    In calculations of the spectral functions, one
+    needs the spectrally resolved data - the matrix
+    elements need to be ordered w.r.t. the energy
+    differences between the eigenstates on which
+    the selected operator is acting. To avoid
+    constant repetitions and recalculations of the
+    sorted energy array, we provide a single function
+    for performing the sorting beforehand.
+
+    """
+    # extract the diagonal matrix elements first
+    # they are to be discarded later
+    n_matelts = matelts.size
+    n_diags = matelts.shape[0]
+    diags = np.zeros(n_diags, dtype=np.float64)
+
+    offdiags = np.zeros(n_matelts - n_diags, dtype=np.float64)
+    diffs = np.zeros_like(offdiags)
+    aves = np.zeros_like(offdiags)
+    #print('no sigsev')
+    #sort_args = np.ones(diffs.shape[0], dtype=np.uint64)
+
+    idx = 0
+    for i in range(matelts.shape[0]):
+        diags[i] = matelts[i][i]
+        for j in range(matelts.shape[1]):
+            if i != j:
+                diffs[idx] = np.abs(eigvals[i] - eigvals[j])
+                offdiags[idx] = matelts[i][j]
+                aves[idx] = 0.5 * (eigvals[i] + eigvals[j])
+                idx += 1
+
+    #print('Sorting diffs')
+    sort_args = np.argsort(diffs)
+
+    return (diags, diffs[sort_args], offdiags[sort_args], aves[sort_args])
+
 
 
 def calc_susceptibility(eigvals, matelts, mu):
@@ -140,14 +182,15 @@ def calc_susceptibility(eigvals, matelts, mu):
         np.abs(matelts)**2/diffs, axis=1)
     log_susc = np.log(susc)
 
-    susc_filt = np.nansum(np.abs(matelts**2)*diffs / (mu**2 + diffs)**2, axis=1)
+    susc_filt = np.nansum(np.abs(matelts**2)*diffs /
+                          (mu**2 + diffs)**2, axis=1)
 
     log_susc_filt = np.log(susc_filt)
 
     return susc, log_susc, susc_filt, log_susc_filt
 
 
-def eval_spectral_fun(eigvals, matelts, target_ene, eps,
+def eval_spectral_fun(eigvals, aves, diffs,  matelts, target_ene, eps,
                       full_spectrum=True):
     """
     A function for the evaluation of the spectral function as well
@@ -161,9 +204,26 @@ def eval_spectral_fun(eigvals, matelts, target_ene, eps,
     An array of eigenvalues e_i corresponding to the
     matrix elements M_{i,j}.
 
-    matelts: 2D ndarray, dtype=np.float64
+    aves: 1D ndarray, dtype=np.float64
+    An array of average values of eigenpair corresponding
+    to matrix elements without the diagonals.
+    aves_{i, j} = 0.5 * (eigvals_i + eigvals_j); the values
+    should be sorted according to the difference
+    diffs_{i, j} = eigvals_i - eigvals_j (see also the
+    entry for diffs parameter). Should be of size
+    eigvals.size * (eigvals_size - 1)
+
+    diffs: 1D ndarray, dtype=np.float64
+    (Absolute value of) energy differences between states coupled
+    by the matrix elements. Should be sorted in ascending order,
+    the formula is:
+    diffs_{i, j} = |eigvals_i - eigvals_j|.
+
+    matelts: 1D ndarray, dtype=np.float64
     An array of matrix elements M_{i, j} of shape
-    (eigvals.size, eigvals.size)
+    (eigvals.size * (eigvals.size - 1)). 
+    Should be sorted according to the sorting of the diffs
+    parameter.
 
     target_ene: np.float64
     Only relevant if full_spectrum==False in which case
@@ -194,7 +254,6 @@ def eval_spectral_fun(eigvals, matelts, target_ene, eps,
 
     Returns:
 
-    diagonals
 
     diffs
 
@@ -215,34 +274,20 @@ def eval_spectral_fun(eigvals, matelts, target_ene, eps,
     bandwidth = eigvals[-1] - eigvals[0]
     eps_ = eps * bandwidth
 
-    # energy difference array
-    diffs = (eigvals[:, np.newaxis] - eigvals)
-
-    # first, extract the diagonal matrix elt
-    diagonals = np.diagonal(matelts).copy()
-
-    # if no energy window is applied, pick
-    # everything except the diagonals
-    if full_spectrum:
-
-        boolar = np.ones_like(matelts, dtype=np.bool_)
-        np.fill_diagonal(boolar, False)
 
     # in the opposite case, pick the states from
     # the energy window not on the diagonal
-    else:
+    if not full_spectrum:
 
-        boolar = 0.5 * (eigvals[:, np.newaxis] + eigvals)
-        boolar = ((boolar < target_ene + eps_) &
-                  (boolar > target_ene - eps_))
-        np.fill_diagonal(boolar, False)
+        boolar = ((aves < target_ene + eps_) &
+                  (aves > target_ene - eps_))
+        
+        diffs = diffs[boolar]
+        matelts = matelts[boolar]
 
-    diffs = np.abs(diffs[boolar].flatten())
     n_vals = diffs.size
-    sort_args = np.argsort(diffs)
-    diffs = diffs[sort_args]
-    matelts = matelts[boolar].flatten()
-    matelts = np.abs(matelts[sort_args])**2
+
+    matelts = np.abs(matelts)**2
     # for the full spectrum, also calculate the properly
     # normalized integrated spectral function
     if full_spectrum:
@@ -252,7 +297,7 @@ def eval_spectral_fun(eigvals, matelts, target_ene, eps,
     else:
         matelts_integ = np.array([])
     #diffs, matelts = _smoothing(diffs, matelts, window_smoothing)
-    return (diagonals, diffs, matelts, matelts_integ, n_vals,
+    return (diffs, matelts, matelts_integ, n_vals,
             target_ene, eps_, bandwidth)
 
 
@@ -298,15 +343,19 @@ def eval_matelt_variances(eigvals, matelts, n_window):
     vars_offdiag = np.zeros_like(mean_ener)
     ratios = np.zeros_like(mean_ener)
 
-    mask = np.array([[True for j in range(n_window)] for i in range(n_window)])
-    np.fill_diagonal(mask, False)
-    mask = mask.flatten()
+    diag = np.zeros(n_window, dtype=np.float64)
+    offdiag = np.zeros(int(n_window * (n_window - 1)), dtype=np.float64)
     for i in range(matelts.shape[0] + 1 - n_window):
 
-        mat = matelts[i:i+n_window, i:i+n_window]
-        diag = np.diag(mat).copy()
+        idx = 0
+        for j in range(n_window):
+            diag[j] = matelts[i + j, i + j]
+            for k in range(n_window):
+                if j != k:
+                    offdiag[idx] = matelts[i+j, i+k]
+                    idx += 1
+
         var_diag = np.std(diag)**2
-        offdiag = mat.flatten()[mask]
         var_offdiag = np.std(offdiag)**2
 
         ratio = var_diag * 1. / var_offdiag
