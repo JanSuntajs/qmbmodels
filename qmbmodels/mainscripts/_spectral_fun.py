@@ -1,11 +1,12 @@
 #!/usr/bin/env python
 
 """
-    This module contains helper routines for calculations
-    of spectral functions from the Hamiltonian matrix elements
-    as well as susceptibilities.
+This module contains helper routines for calculations
+of spectral functions from the Hamiltonian matrix elements
+as well as susceptibilities and matrix elements variance
+ratios.
 
-    """
+"""
 import numpy as np
 import numba as nb
 
@@ -90,6 +91,42 @@ def sort_offdiag_matelts(eigvals, matelts):
     constant repetitions and recalculations of the
     sorted energy array, we provide a single function
     for performing the sorting beforehand.
+
+    Parameters:
+
+    eigvals: 1D ndarray, np.float64
+    A sorted (in ascending order) array of the eigenvalues
+    corresponding to the matrix elements in the matelts
+    array.
+
+    matelts: 2D ndarray, np.float64
+    An array of matrix elements to be sorted.
+
+    Returns:
+
+    diags: 1D ndarray, np.float64
+    Diagonal matrix elements of the matelts array. Size
+    equals to matelts.shape[0]
+
+    diffs: 1D ndarray, np.float64
+    A sorted (in ascending order) array of absolute diferences
+    between energies coupled by the matelts. Only the offdiagonal
+    differences are shown. The entries are defined as:
+    diffs_{i,j} = eigvals_i - eigvals_j
+
+    offdiags: 1D ndarray, np.float64
+    An array of the offdiagonal matrix elements from the matrix
+    array. The entries are sorted in accordance with the sorting
+    of the diffs array (in other words, the return of the np.argsort
+    function on the diffs array is used to sort the offdiags array).
+
+    aves: 1D ndarray, np.float64
+    An array of the average energies of the states coupled by the
+    matelts. The entries are sorted in accordance with the sorting
+    of the diffs array (in other words, the return of the np.argsort
+    function on the diffs array is used to sort the offdiags array).
+    The formula for the average energy of the pair of states
+    is aves_{i,j} = 0.5 * (eigvals_i + eigvals_j)
 
     """
     # extract the diagonal matrix elements first
@@ -304,6 +341,9 @@ def eval_spectral_fun(eigvals, aves, diffs,  matelts, target_ene, eps,
 @nb.njit("Tuple((float64[:], float64[:], float64[:], float64[:]))(float64[:], float64[:, :], int64)", fastmath=True)
 def eval_matelt_variances(eigvals, matelts, n_window):
     """
+
+    Based on: https://arxiv.org/pdf/1902.03247.pdf
+    
     A function for evaluating the variances
     of the diagonal and offdiagonal matrix
     elements. The function basically slides

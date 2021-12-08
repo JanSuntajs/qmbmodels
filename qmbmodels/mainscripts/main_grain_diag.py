@@ -37,6 +37,7 @@ Spectral functions and integrated spectral functions
 """
 import numpy as np
 import sys
+import gc
 
 from qmbmodels.utils import set_mkl_lib
 from qmbmodels.utils.cmd_parser_tools import arg_parser, arg_parser_general
@@ -113,7 +114,7 @@ if __name__ == '__main__':
                f'{model_name} is not supported. Exiting.'))
         sys.exit()
 
-    for seed in range(min_seed, max_seed + 1):
+    for seed in range(min_seed, max_seed):
         print('Using seed: {}'.format(seed))
         argsDict['seed'] = seed
         # get the instance of the appropriate hamiltonian
@@ -175,12 +176,16 @@ if __name__ == '__main__':
                 results = eval_matelt_variances(
                     eigvals, matelts, window_width)
 
-                for k, result in enumerate(results):
+                for k in range(len(results)):
 
                     matelts_dict[_mateltkeys[k].format(
-                        window_width, j, namelist[i])] = result.copy()
+                        window_width, j, namelist[i])] = results[k].copy()
+
                 print(f'Matrix calculations, calculation for window {window_width} finished!')
             print('Matrix variance calculations finished!')
+
+            results.clear()
+            gc.collect()
  
             # ----------------------------------------------------------------
             #
@@ -190,13 +195,17 @@ if __name__ == '__main__':
             print('Starting susceptibility calculations!')
             mu = mn_lvl_spc * model.L
             results = calc_susceptibility(eigvals, matelts, mu )
-            for j, result in enumerate(results):
+            for j in range(len(results)):
                 if j <= 1:
                     mu_ = 0.0
                 else:
                     mu_ = mu
-                matelts_dict[_susckeys[j].format(namelist[i])] = result.copy()
+                matelts_dict[_susckeys[j].format(namelist[i])] = results[j].copy()
+
             print('Susceptibility calculations finished!')
+
+            results.clear()
+            gc.collect()
             # ----------------------------------------------------------------
             #
             # Full matrix elements distribution
@@ -224,11 +233,13 @@ if __name__ == '__main__':
 
                 results = (diffs_, spc_, spc_integ_)
 
-                for k, result in enumerate(results):
+                for k in range(len(results)):
                     matelts_dict[_spectralkeys[k+1].format(
-                        j, namelist[i])] = result.copy()
-            print('Smoothing for the full spectrum spectral function finished!')
+                        j, namelist[i])] = results[k].copy()
 
+            print('Smoothing for the full spectrum spectral function finished!')
+            results.clear()
+            gc.collect()
             # -----------------------------------------------------------------
             #
             # Matrix elements inside a window
@@ -253,10 +264,13 @@ if __name__ == '__main__':
 
                     results = _smoothing(diffs_, spc_fun_, j)
 
-                    for k, result in enumerate(results):
+                    for k in range(len(results)):
                         matelts_dict[_spectralkeys[k +
-                                                    4].format(j, eps, namelist[i])] = result.copy()
+                                                    4].format(j, eps, namelist[i])] = results[k].copy()
+
         print('Finished performing the partial spectral function calculations!')
+        results.clear()
+        gc.collect()
         # ---------------------------------------------------------------------
 
         # ----------------------------------------------------------------------
