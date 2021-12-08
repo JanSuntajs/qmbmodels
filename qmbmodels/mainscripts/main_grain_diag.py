@@ -176,14 +176,15 @@ if __name__ == '__main__':
                 results = eval_matelt_variances(
                     eigvals, matelts, window_width)
 
-                for k, result in enumerate(results):
+                for k in range(len(results)):
 
                     matelts_dict[_mateltkeys[k].format(
-                        window_width, j, namelist[i])] = result.copy()
+                        window_width, j, namelist[i])] = results[k].copy()
+
                 print(f'Matrix calculations, calculation for window {window_width} finished!')
             print('Matrix variance calculations finished!')
 
-            del results
+            results.clear()
             gc.collect()
  
             # ----------------------------------------------------------------
@@ -194,15 +195,16 @@ if __name__ == '__main__':
             print('Starting susceptibility calculations!')
             mu = mn_lvl_spc * model.L
             results = calc_susceptibility(eigvals, matelts, mu )
-            for j, result in enumerate(results):
+            for j in range(len(results)):
                 if j <= 1:
                     mu_ = 0.0
                 else:
                     mu_ = mu
-                matelts_dict[_susckeys[j].format(namelist[i])] = result.copy()
+                matelts_dict[_susckeys[j].format(namelist[i])] = results[j].copy()
+
             print('Susceptibility calculations finished!')
 
-            del results
+            results.clear()
             gc.collect()
             # ----------------------------------------------------------------
             #
@@ -231,11 +233,12 @@ if __name__ == '__main__':
 
                 results = (diffs_, spc_, spc_integ_)
 
-                for k, result in enumerate(results):
+                for k in range(len(results)):
                     matelts_dict[_spectralkeys[k+1].format(
-                        j, namelist[i])] = result.copy()
+                        j, namelist[i])] = results[k].copy()
+
             print('Smoothing for the full spectrum spectral function finished!')
-            del result
+            results.clear()
             gc.collect()
             # -----------------------------------------------------------------
             #
@@ -261,11 +264,12 @@ if __name__ == '__main__':
 
                     results = _smoothing(diffs_, spc_fun_, j)
 
-                    for k, result in enumerate(results):
+                    for k in range(len(results)):
                         matelts_dict[_spectralkeys[k +
-                                                    4].format(j, eps, namelist[i])] = result.copy()
+                                                    4].format(j, eps, namelist[i])] = results[k].copy()
+
         print('Finished performing the partial spectral function calculations!')
-        del results
+        results.clear()
         gc.collect()
         # ---------------------------------------------------------------------
 
