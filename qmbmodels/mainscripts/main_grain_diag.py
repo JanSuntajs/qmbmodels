@@ -37,6 +37,7 @@ Spectral functions and integrated spectral functions
 """
 import numpy as np
 import sys
+import gc
 
 from qmbmodels.utils import set_mkl_lib
 from qmbmodels.utils.cmd_parser_tools import arg_parser, arg_parser_general
@@ -113,7 +114,7 @@ if __name__ == '__main__':
                f'{model_name} is not supported. Exiting.'))
         sys.exit()
 
-    for seed in range(min_seed, max_seed + 1):
+    for seed in range(min_seed, max_seed):
         print('Using seed: {}'.format(seed))
         argsDict['seed'] = seed
         # get the instance of the appropriate hamiltonian
@@ -181,6 +182,9 @@ if __name__ == '__main__':
                         window_width, j, namelist[i])] = result.copy()
                 print(f'Matrix calculations, calculation for window {window_width} finished!')
             print('Matrix variance calculations finished!')
+
+            del results
+            gc.collect()
  
             # ----------------------------------------------------------------
             #
@@ -197,6 +201,9 @@ if __name__ == '__main__':
                     mu_ = mu
                 matelts_dict[_susckeys[j].format(namelist[i])] = result.copy()
             print('Susceptibility calculations finished!')
+
+            del results
+            gc.collect()
             # ----------------------------------------------------------------
             #
             # Full matrix elements distribution
@@ -228,7 +235,8 @@ if __name__ == '__main__':
                     matelts_dict[_spectralkeys[k+1].format(
                         j, namelist[i])] = result.copy()
             print('Smoothing for the full spectrum spectral function finished!')
-
+            del result
+            gc.collect()
             # -----------------------------------------------------------------
             #
             # Matrix elements inside a window
@@ -257,6 +265,8 @@ if __name__ == '__main__':
                         matelts_dict[_spectralkeys[k +
                                                     4].format(j, eps, namelist[i])] = result.copy()
         print('Finished performing the partial spectral function calculations!')
+        del results
+        gc.collect()
         # ---------------------------------------------------------------------
 
         # ----------------------------------------------------------------------
