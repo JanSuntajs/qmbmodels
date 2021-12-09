@@ -184,7 +184,7 @@ if __name__ == '__main__':
                 print(f'Matrix calculations, calculation for window {window_width} finished!')
             print('Matrix variance calculations finished!')
 
-            results.clear()
+            del results
             gc.collect()
  
             # ----------------------------------------------------------------
@@ -204,7 +204,7 @@ if __name__ == '__main__':
 
             print('Susceptibility calculations finished!')
 
-            results.clear()
+            del results
             gc.collect()
             # ----------------------------------------------------------------
             #
@@ -238,7 +238,7 @@ if __name__ == '__main__':
                         j, namelist[i])] = results[k].copy()
 
             print('Smoothing for the full spectrum spectral function finished!')
-            results.clear()
+            del results
             gc.collect()
             # -----------------------------------------------------------------
             #
@@ -267,10 +267,11 @@ if __name__ == '__main__':
                     for k in range(len(results)):
                         matelts_dict[_spectralkeys[k +
                                                     4].format(j, eps, namelist[i])] = results[k].copy()
-
+                
+                del results
+                gc.collect()
         print('Finished performing the partial spectral function calculations!')
-        results.clear()
-        gc.collect()
+
         # ---------------------------------------------------------------------
 
         # ----------------------------------------------------------------------
