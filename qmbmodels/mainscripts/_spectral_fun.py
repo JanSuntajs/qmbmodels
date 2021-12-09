@@ -396,8 +396,8 @@ def eval_matelt_variances(eigvals, matelts, n_window):
                     idx += 1
 
         var_diag = np.std(diag)**2
-        var_offdiag = np.std(offdiag)**2
-
+        #var_offdiag = np.std(offdiag)**2
+        var_offdiag = np.mean(np.abs(offdiag)**2)
         ratio = var_diag * 1. / var_offdiag
 
         vars_diag[i] = var_diag
