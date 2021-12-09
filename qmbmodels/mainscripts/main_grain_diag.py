@@ -259,11 +259,11 @@ if __name__ == '__main__':
                     eigvals, aves, diffs, matelts, np.mean(eigvals), eps, False,)
 
                 for j in np.linspace(spcDict['partial_spectral_smoothing_window_min'],
-                                     spcDict['partial_spectral_smoothing_window_min'],
-                                     spcDict['partial_spectral_smoothing_window_min'], dtype=int):
+                                     spcDict['partial_spectral_smoothing_window_max'],
+                                     spcDict['partial_spectral_smoothing_window_nsteps'], dtype=int):
 
                     results = _smoothing(diffs_, spc_fun_, j)
-
+                    print(f'Finished smoothing! Portion of states eps: {eps}, smoothing window: {j}')
                     for k in range(len(results)):
                         matelts_dict[_spectralkeys[k +
                                                     4].format(j, eps, namelist[i])] = results[k].copy()
