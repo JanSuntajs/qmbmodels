@@ -100,9 +100,9 @@ def _get_variance_ratio(row1, row2, hop_operator=False):
     # offdiagonal matrix elements
     offdiag = operator[mask_]
 
-    var_diag = (np.mean(diag**2) - np.mean(diag)**2)
-    var_offdiag = np.mean(np.abs(offdiag)**2)
-    # var_offdiag = np.std(offdiag)**2
+    var_diag = np.std(diag)**2 #(np.mean(diag**2) - np.mean(diag)**2)
+    # var_offdiag = np.mean(np.abs(offdiag)**2)
+    var_offdiag = np.mean(np.abs(offdiag)**2) - np.abs(np.mean(offdiag))**2
     var_ratio = var_diag / var_offdiag
 
     return np.real(var_ratio)
