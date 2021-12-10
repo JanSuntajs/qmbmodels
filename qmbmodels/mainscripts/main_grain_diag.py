@@ -283,5 +283,13 @@ if __name__ == '__main__':
         savefile(eigvals_dict, savepath, syspar, modpar, argsDict,
                  syspar_keys, modpar_keys, 'full',
                  save_metadata, save_type='npz')
+        
+        del eigvals
+        del aves
+        del diffs
+        del matelts
+        del matelts_dict
+        del eigvals_dict
+        gc.collect()
 
         save_metadata = False
