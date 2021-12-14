@@ -219,7 +219,7 @@ def calc_susceptibility(eigvals, matelts, mu):
         np.abs(matelts)**2/diffs, axis=1)
     log_susc = np.log(susc)
 
-    susc_filt = np.nansum(np.abs(matelts**2)*diffs /
+    susc_filt = np.nansum((np.abs(matelts)**2)*diffs /
                           (mu**2 + diffs)**2, axis=1)
 
     log_susc_filt = np.log(susc_filt)
