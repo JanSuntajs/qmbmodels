@@ -148,7 +148,7 @@ def construct_hamiltonian(argsdict, parallel=False, mpirank=0, mpisize=0, dtype=
         raise ValueError(('Bath length L_b should '
                           'be greater than 0!'))
 
-    # no pbc by design here
+    # no pbc by design hereo
     if argsdict['pbc']:
 
         raise ValueError('No pbc allowed in this model!')
