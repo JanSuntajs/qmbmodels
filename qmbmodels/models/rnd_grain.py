@@ -56,8 +56,8 @@ from ham1d.models.spin1d import hamiltonian as sphm
 from .disorder import get_disorder_dist
 from ._common_keys import comm_modpar_keys, comm_syspar_keys
 
-syspar_keys = ['L', 'L_b'] + comm_syspar_keys
-modpar_keys = ['beta', 'g0', 'alpha', 'W', 'dW'] + comm_modpar_keys
+syspar_keys = ['L', 'L_b', 'dist_type'] + comm_syspar_keys
+modpar_keys = ['beta', 'g0', 'alpha', 'W', 'dW', 'epslen'] + comm_modpar_keys
 
 _modpar_keys = [key for key in modpar_keys if '_seed' not in key]
 _modpar_keys.append('seed')
@@ -87,7 +87,7 @@ def _create_grain(size, seed):
     return (0.5) * (mat + mat.T)
 
 
-def _length_dist(size, seed):
+def _length_dist(size, seed, dist_type=0, *args, **kwargs):
     """
     A routine for creating distributions
     having the same mean as the discrete
@@ -96,8 +96,14 @@ def _length_dist(size, seed):
 
     """
     rng = np.random.default_rng(seed)
+    if dist_type == 0:
+        return np.sort(rng.uniform(1, size, size))
+    elif dist_type == 1:
 
-    return np.sort(rng.uniform(1, size, size))
+        sites = np.arange(1, size + 1, dtype=np.float64)
+
+        sites += rng.uniform(-kwargs['eps'], kwargs['eps'], size)
+        return sites
 
 
 def _disorder_dist(size, seed, W=0.5):
@@ -138,6 +144,8 @@ def construct_hamiltonian(argsdict, parallel=False, mpirank=0, mpisize=0, dtype=
 
     L_loc = int(L - L_b)
 
+    len_dist_type = argsdict['dist_type']
+
     disorder = argsdict['disorder']
     beta = argsdict['beta']
 
@@ -163,7 +171,7 @@ def construct_hamiltonian(argsdict, parallel=False, mpirank=0, mpisize=0, dtype=
     seed = argsdict['seed']
 
     rnd_grain = _create_grain(L_b, seed)
-    lengths = _length_dist(L_loc, seed)
+    lengths = _length_dist(L_loc, seed, len_dist_type, eps=argsdict['epslen'])
     coupling_indices = _coupling_dists(L_b, L_loc, seed)
     fields = get_disorder_dist(L_loc, disorder, argsdict['W'],
                                argsdict['dW'], seed)
