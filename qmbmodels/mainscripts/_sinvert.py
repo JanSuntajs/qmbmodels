@@ -17,7 +17,22 @@ from qmbmodels.utils.filesaver import savefile
 from qmbmodels.utils.cmd_parser_tools import arg_parser_general
 
 
-def _inter_entro(many_body, model):
+def _inter_entro(many_body, model, bipartition='default'):
+    """
+    Parameters:
+
+    many_body: bool
+    Whether the Hamiltonian is many body or not
+
+    model: object,
+    Hamiltonian model object
+
+    pos: string, optional
+    Defaults to 'default' which creates a symmetric bipartition
+    Also allows for: 'last', which divides the system into
+    L- 1, 1 spins.
+
+    """
     if many_body:
         if model.Nu is not None:
             rdm_matrix = build_rdm(eigvec, int(
@@ -27,8 +42,12 @@ def _inter_entro(many_body, model):
             rdm_eigvals = rdm_eigvals[rdm_eigvals > 1e-014]
             entro = -np.dot(rdm_eigvals, np.log(rdm_eigvals))
         else:
+            if bipartition == 'default':
+                partition = int(argsDict['L'] / 2.)
+            elif bipartition == 'last':
+                partition = int(argsdict['L'] - 1)
             entangled = Entangled(eigvec, argsDict['L'],
-                                  int(argsDict['L'] / 2.))
+                                  partition)
             entangled.partitioning('homogenous')
             entangled.svd()
             entro = entangled.eentro()
@@ -213,7 +232,8 @@ def _perform_sinvert(matrix, target, mpirank, PETSc, SLEPc):
 def _collect_results(E_si, nconv, argsDict,
                      model, matrix, mpirank,
                      PETSc, SLEPc,
-                     many_body):
+                     many_body, 
+                     bipartition='default'):
     """
 
     """
@@ -301,8 +321,12 @@ def _collect_results(E_si, nconv, argsDict,
                         rdm_eigvals = rdm_eigvals[rdm_eigvals > 1e-014]
                         entro = -np.dot(rdm_eigvals, np.log(rdm_eigvals))
                     else:
+                        if bipartition == 'default':
+                            partitioning_ = int(argsDict['L'] / 2.)
+                        elif bipartition == 'last':
+                            partitioning_ = int(argsDict['L'] - 1)
                         entangled = Entangled(eigvec, argsDict['L'],
-                                              int(argsDict['L'] / 2.))
+                                              partitioning_)
                         entangled.partitioning('homogenous')
                         entangled.svd()
                         entro = entangled.eentro()
@@ -392,7 +416,7 @@ def _save_results(eigvals, fields, diagonals, results_dict,
 def sinvert_body(mod, argsDict, syspar, syspar_keys,
                  modpar, modpar_keys, mpirank, mpisize, comm,
                  save_metadata, savepath,
-                 PETSc, SLEPc):
+                 PETSc, SLEPc, bipartition = 'default'):
     """
     A function that prepares the selected quantum hamiltonian
     for a given disorder realization and then performs shift-
@@ -436,6 +460,12 @@ def sinvert_body(mod, argsDict, syspar, syspar_keys,
 
     PETSc, SLEPc: appropriate modules imported from petsc4py and
                   slepc4py, respectively.
+
+    bipartition: string, optional
+        How to perform the bipartition in the entanglement entropy calculation.
+        Defaults to 'default' in which case the bipartition is symmetric. For
+        random grain calculations, we typically pick 'last', which
+        designates a bipartition into L-1, 1 spins.
 
     Returns:
     --------
@@ -566,7 +596,8 @@ def sinvert_body(mod, argsDict, syspar, syspar_keys,
     eigvals, results_dict = _collect_results(E_si, nconv, argsDict,
                                              model, matrix,
                                              mpirank, PETSc,
-                                             SLEPc, many_body)
+                                             SLEPc, many_body,
+                                             bipartition=bipartition)
 
     if nconv > 0:
 

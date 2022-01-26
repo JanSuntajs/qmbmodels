@@ -39,6 +39,13 @@ if __name__ == '__main__':
     (mod, model_name, argsDict, seedDict, syspar_keys, modpar_keys,
         savepath, syspar, modpar, min_seed, max_seed) = get_module_info()
 
+    if model_name == 'rnd_grain':
+        bipartition = 'last'
+        print('Bipartitioning mode: last')
+    else:
+        bipartition = 'default'
+        print('Bipartition mode: default.')
+
     save_metadata = True
     for seed in range(min_seed, max_seed + 1):
         print('Using seed: {}'.format(seed))
@@ -47,6 +54,6 @@ if __name__ == '__main__':
         sinvert_body(mod, argsDict, syspar, syspar_keys, modpar,
                      modpar_keys, mpirank, mpisize, comm, save_metadata,
                      savepath,
-                     PETSc, SLEPc)
+                     PETSc, SLEPc, bipartition=bipartition)
 
         save_metadata = False
