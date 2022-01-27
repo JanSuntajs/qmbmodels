@@ -29,8 +29,8 @@ def _inter_entro(many_body, model, bipartition='default'):
 
     pos: string, optional
     Defaults to 'default' which creates a symmetric bipartition
-    Also allows for: 'last', which divides the system into
-    L- 1, 1 spins.
+    Also allows for: 'last_four', which divides the system into
+    L- 4, 4 spins.
 
     """
     if many_body:
@@ -324,12 +324,9 @@ def _collect_results(E_si, nconv, argsDict,
                         if bipartition == 'default':
                             partitioning_ = int(argsDict['L'] / 2.)
                         elif bipartition == 'last_four':
-                            # for the grain model, we look at the
-                            # entanglement of the last four spins
-                            # because of the ordering (last bit is the
-                            # most important)
                             partitioning_ = 4
-
+                        entangled = Entangled(eigvec, argsDict['L'],
+                                              partitioning_)
                         entangled.partitioning('homogenous')
                         entangled.svd()
                         entro = entangled.eentro()
