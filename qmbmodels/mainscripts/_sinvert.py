@@ -44,8 +44,8 @@ def _inter_entro(many_body, model, bipartition='default'):
         else:
             if bipartition == 'default':
                 partition = int(argsDict['L'] / 2.)
-            elif bipartition == 'last':
-                partition = int(argsdict['L'] - 1)
+            elif bipartition == 'last_four':
+                partition = 4
             entangled = Entangled(eigvec, argsDict['L'],
                                   partition)
             entangled.partitioning('homogenous')
@@ -323,10 +323,13 @@ def _collect_results(E_si, nconv, argsDict,
                     else:
                         if bipartition == 'default':
                             partitioning_ = int(argsDict['L'] / 2.)
-                        elif bipartition == 'last':
-                            partitioning_ = int(argsDict['L'] - 1)
-                        entangled = Entangled(eigvec, argsDict['L'],
-                                              partitioning_)
+                        elif bipartition == 'last_four':
+                            # for the grain model, we look at the
+                            # entanglement of the last four spins
+                            # because of the ordering (last bit is the
+                            # most important)
+                            partitioning_ = 4
+
                         entangled.partitioning('homogenous')
                         entangled.svd()
                         entro = entangled.eentro()
@@ -464,8 +467,8 @@ def sinvert_body(mod, argsDict, syspar, syspar_keys,
     bipartition: string, optional
         How to perform the bipartition in the entanglement entropy calculation.
         Defaults to 'default' in which case the bipartition is symmetric. For
-        random grain calculations, we typically pick 'last', which
-        designates a bipartition into L-1, 1 spins.
+        random grain calculations, we typically pick 'last_four', which
+        designates a bipartition into L-4, 4 spins.
 
     Returns:
     --------

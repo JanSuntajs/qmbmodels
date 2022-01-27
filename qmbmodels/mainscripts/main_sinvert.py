@@ -41,8 +41,8 @@ if __name__ == '__main__':
     print('Using seed: {}'.format(argsDict['seed']))
 
     if model_name == 'rnd_grain':
-        bipartition = 'last'
-        print('Bipartitioning mode: last')
+        bipartition = 'last_four'
+        print('Bipartitioning mode: last_four')
     else:
         bipartition = 'default'
         print('Bipartition mode: default.')

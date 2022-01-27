@@ -40,8 +40,8 @@ if __name__ == '__main__':
         savepath, syspar, modpar, min_seed, max_seed) = get_module_info()
 
     if model_name == 'rnd_grain':
-        bipartition = 'last'
-        print('Bipartitioning mode: last')
+        bipartition = 'last_four'
+        print('Bipartitioning mode: last_four')
     else:
         bipartition = 'default'
         print('Bipartition mode: default.')
