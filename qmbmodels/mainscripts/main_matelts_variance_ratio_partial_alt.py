@@ -8,13 +8,11 @@ Anderson-type operators. We predominantly
 focus on the hopping and local density operators.
 As it turns out, those assume a particularly
 simple form in the Anderson-type Hamiltonians.
-Note: we calculate \Sigma^2 as a mean of ratios of
-individual samples and we also provide a module
-names main_matelts_variance_ratio_partial_alt.py
-in which we calculate the ratio as a ratio
-of mean variances of diagonal and offdiagonal matrix
-elements. Mostly just for testing purposes and for
-comparing the difference.
+As opposed to the main_matelts_variance_ratio_partial.py
+module, we here calculate the \Sigma^2 as the ratio
+of means of variances of diagonal and offdiagonal
+matrix elements. In the original version (without the 'alt')
+suffix, we do it as a mean of ratios of individual samples.
 For lack of time, we create two different modules here
 and not a single compact version as this is not really
 a crucial step of our analysis.
@@ -61,9 +59,9 @@ _nn_hop_name = 'eigvec_components_nn_hop_{}_partial'
 _snn_hop_name = 'eigvec_components_snn_hop_{}_partial'
 _hop_load_files = [_nn_hop_name, _snn_hop_name]
 
-_central_variance_name = 'central_site_matelts_variance_ratio'
-_nn_variance_name = 'nn_hop_matelts_variance_ratio'
-_snn_variance_name = 'snn_hop_matelts_variance_ratio'
+_central_variance_name = 'central_site_matelts_variance_ratio_alt'
+_nn_variance_name = 'nn_hop_matelts_variance_ratio_alt'
+_snn_variance_name = 'snn_hop_matelts_variance_ratio_alt'
 _matelts_mean_values = 'matelts_mean_variances'
 
 _store_files = [_central_variance_name,
@@ -168,11 +166,11 @@ if __name__ == '__main__':
             # a) mean over the first column
             # b) mean over 2nd and 3rd column, then take the
             # ratio of the means
-            ratiolist = np.array([_get_variance_ratio(row, row)
+            ratiolist_ = np.array([_get_variance_ratio(row, row)
                                   for row in central_data])
 
-            ratiolist = ratiolist[:, 0]
-            #ratiolist *= np.mean(ratiolist_[:, 1]) / np.mean(ratiolist_[:, 2])
+            ratiolist = np.ones_like(ratiolist_[:, 1])
+            ratiolist *= np.mean(ratiolist_[:, 1]) / np.mean(ratiolist_[:, 2])
             
             savelist.append(ratiolist)
 
@@ -183,11 +181,11 @@ if __name__ == '__main__':
                                            nener=mateltsDict['matelts_nener'],
                                            eigname=hopfile.replace('_partial', ''))
 
-                ratiolist = np.array([_get_variance_ratio(central_data[i],
+                ratiolist_ = np.array([_get_variance_ratio(central_data[i],
                                                            row, True)
                                       for i, row in enumerate(hopdata)])
-                ratiolist = ratiolist[:, 0]
-                
+                ratiolist = np.ones_like(ratiolist_[:, 1])
+                ratiolist *= np.mean(ratiolist_[:, 1]) / np.mean(ratiolist_[:, 2])
                 # 1st column: ratios for each sample
                 # 2nd column: diagonal variances for each sample
                 # 3rd column: offdiagonal variances for each sample
