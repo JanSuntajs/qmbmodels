@@ -161,9 +161,9 @@ if __name__ == '__main__':
             ratiolist_ = np.array([_get_variance_ratio(row, row)
                                   for row in central_data])
 
-
-            ratiolist = np.mean(ratiolist_[:, 1]) / np.mean(ratiolist_[:, 2])
-            ratiolist *= np.ones_like(ratiolist_[:, 1])
+            ratiolist = np.ones_like(ratiolist_[:, 1])
+            ratiolist *= np.mean(ratiolist_[:, 1]) / np.mean(ratiolist_[:, 2])
+            
             savelist.append(ratiolist)
 
             for i, hopfile in enumerate(_hop_load_files):
@@ -176,8 +176,8 @@ if __name__ == '__main__':
                 ratiolist_ = np.array([_get_variance_ratio(central_data[i],
                                                            row, True)
                                       for i, row in enumerate(hopdata)])
-                ratiolist *= np.ones_like(ratiolist_[:, 1])
-                ratiolist = np.mean(ratiolist_[:, 1]) / np.mean(ratiolist_[:, 2])
+                ratiolist = np.ones_like(ratiolist_[:, 1])
+                ratiolist *= np.mean(ratiolist_[:, 1]) / np.mean(ratiolist_[:, 2])
                 # 1st column: ratios for each sample
                 # 2nd column: diagonal variances for each sample
                 # 3rd column: offdiagonal variances for each sample
