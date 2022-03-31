@@ -61,6 +61,7 @@ _store_files = [_central_variance_name,
                 _matelts_mean_values]
 # sfflist text descriptor
 
+
 def _format_hop_string(hop_type, dim):
 
     hop = np.zeros(dim, dtype=np.uint64)
@@ -84,8 +85,21 @@ def _get_variance_ratio(row1, row2, hop_operator=False):
     subsequent calculation of the ratio of variances
     of their diagonal and offdiagonal matrix elements.
 
+    Parameters:
 
+    row1, row2: int
+    Indices of rows (of the eigenvector matrix) for which
+    to calculate the operator variances
 
+    hop_operator: bool, optional
+    Defaults to False. Whether we are calculating for a hop
+    operator or a local density operator
+
+    Returns:
+
+    var_ratio: ratio of variances for the sample
+    var_diag: variance of the diagonal matrix elements for the sample
+    var_offdiag: variance of the offdiagonal matrix elements for the sample
     """
 
     operator = np.tensordot(row1, np.conj(row2), 0)
@@ -100,12 +114,12 @@ def _get_variance_ratio(row1, row2, hop_operator=False):
     # offdiagonal matrix elements
     offdiag = operator[mask_]
 
-    var_diag = np.std(diag)**2 #(np.mean(diag**2) - np.mean(diag)**2)
+    var_diag = np.std(diag)**2  # (np.mean(diag**2) - np.mean(diag)**2)
     # var_offdiag = np.mean(np.abs(offdiag)**2)
     var_offdiag = np.mean(np.abs(offdiag)**2) - np.abs(np.mean(offdiag))**2
     var_ratio = var_diag / var_offdiag
 
-    return np.real(var_ratio)
+    return np.real(var_ratio), np.real(var_diag), np.real(var_offdiag)
 
 
 if __name__ == '__main__':
@@ -137,8 +151,18 @@ if __name__ == '__main__':
             dim = attrs['dim']
 
             # calculate ratio
-            ratiolist = np.array([_get_variance_ratio(row, row)
+            # 1st column: ratios for each sample
+            # 2nd column: diagonal variances for each sample
+            # 3rd column: offdiagonal variances for each sample
+            # We calculate two alternate versions of the ratio
+            # a) mean over the first column
+            # b) mean over 2nd and 3rd column, then take the
+            # ratio of the means
+            ratiolist_ = np.array([_get_variance_ratio(row, row)
                                   for row in central_data])
+
+            ratiolist = np.mean(ratiolist_[:, 1]) / np.mean(ratiolist_[:, 2])
+
             savelist.append(ratiolist)
 
             for i, hopfile in enumerate(_hop_load_files):
@@ -148,10 +172,14 @@ if __name__ == '__main__':
                                            nener=mateltsDict['matelts_nener'],
                                            eigname=hopfile.replace('_partial', ''))
 
-                ratiolist = np.array([_get_variance_ratio(central_data[i],
-                                                          row, True)
+                ratiolist_ = np.array([_get_variance_ratio(central_data[i],
+                                                           row, True)
                                       for i, row in enumerate(hopdata)])
 
+                ratiolist = np.mean(ratiolist_[:, 1]) / np.mean(ratiolist_[:, 2])
+                # 1st column: ratios for each sample
+                # 2nd column: diagonal variances for each sample
+                # 3rd column: offdiagonal variances for each sample
                 savelist.append(ratiolist)
 
             # take the mean values
@@ -186,5 +214,5 @@ if __name__ == '__main__':
     except KeyError:
 
         print(('main_matelts_variance_ratio warning'
-                ': there was a key error, most'
-                ' probably in the .h5py part!'))
+               ': there was a key error, most'
+               ' probably in the .h5py part!'))
