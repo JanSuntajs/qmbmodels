@@ -208,7 +208,7 @@ if __name__ == '__main__':
         attrs = dict(f['Eigenvalues'].attrs)
 
     # select the data from the energy window on which to calculate r
-    Tlist = np.concatenate(([0.001, 0.01, 0.1], np.arange(0.5, 100.5, 0.5), [np.inf]))
+    Tlist = np.concatenate(([0.001, 0.01, 0.1], np.arange(0.2, 8.1, 0.1), [np.inf]))
     window = 500
     nener = data.shape[1]
     nsamples = data.shape[0]
