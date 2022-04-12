@@ -22,6 +22,7 @@ import numpy as np
 import glob
 import h5py
 
+from scipy.stats import norm
 from spectral_stats.spectra import Spectra
 
 from qmbmodels.utils import set_mkl_lib
@@ -70,12 +71,16 @@ The columns in this file are ordered as follows:
 5) n_window - number of energies in the window
 6) nener - number of all the energies
 7) nsamples - number of random samples (disorder realizations)
-8) Global mean energy - mean energy of all the spectra
-9) Energy variance across all the spectra
-10) Mean of the variances of individual spectra
-11) Mean minimum energy of the whole spectra
-12) Mean maximum energy of the whole spectra
-13) Average median energy.
+8) density of states - density of states at a given energy
+9) Global mean energy - mean energy of all the spectra
+10) Energy variance across all the spectra
+11) Mean of the variances of individual spectra
+12) gamma0 as calculated numerically during the sff calculation routine
+    (if np.nan, then sff has not been calculated). It is extracted from
+    the gamma0 attribute of the sff calculation.
+13) Mean minimum energy of the whole spectra
+14) Mean maximum energy of the whole spectra
+15) Average median energy.
 
 """
 
@@ -127,7 +132,7 @@ def _set_window(window, nener, target_idx, i):
     return low_bound, hi_bound
 
 
-def _get_spectra_misc(data):
+def _get_spectra_misc(data, gamma0=np.nan):
     """
     Calculate misc quantities on the data:
 
@@ -140,9 +145,12 @@ def _get_spectra_misc(data):
     3) Mean of variances (Gamma**2) for different disorder
         for different disorder realizations
 
-    4) and 5): Average minimum and maximum energy
+    4) gamma0 as extracted from the sff calculation (set to
+       np.nan if sff has not been calculated yet.)
 
-    6) Average median energy
+    5) and 6): Average minimum and maximum energy
+
+    7) Average median energy
 
     """
     mean_ene_global = np.mean(data)
@@ -156,7 +164,7 @@ def _get_spectra_misc(data):
 
     median_ene = np.mean(np.median(data, axis=1))
 
-    return (mean_ene_global, var_ene_global, var_ene_local,
+    return (mean_ene_global, var_ene_global, var_ene_local, gamma0,
             min_ene, max_ene, median_ene)
 
 
@@ -205,6 +213,12 @@ if __name__ == '__main__':
 
         data = f['Eigenvalues'][:]
 
+        try:
+            attrs_ = f['SFF_spectrum_eta_0.5000_filter_gaussian'].attrs
+            gamma0 = attrs_['gamma0']
+        except KeyError:
+            gamma0 = np.nan
+
         attrs = dict(f['Eigenvalues'].attrs)
 
     # select the data from the energy window on which to calculate r
@@ -235,7 +249,7 @@ if __name__ == '__main__':
     #
 
     misc_vals = (mean_ene_global, var_ene_global,
-                    var_ene_local, min_ene, max_ene, median_ene) = _get_spectra_misc(data)
+                    var_ene_local, gamma0, min_ene, max_ene, median_ene) = _get_spectra_misc(data, gamma0)
 
     print('Misc spectral quantities:')
     print(
@@ -264,6 +278,8 @@ if __name__ == '__main__':
         print(f'T: {temperature}')
         target_ene, target_idx = _set_target_ene(temperature, data)
         mean_target_ene = np.mean(target_ene)
+        # density of states at a given energy
+        dos = norm.pdf(mean_target_ene, mean_ene_global, gamma0)
         for i, spectrum in enumerate(data):
 
             low_bound, hi_bound = _set_window(window, nener, target_idx, i)
@@ -277,7 +293,7 @@ if __name__ == '__main__':
                 f'window_ene: {mean_ener}, r_mean: {gap_mean}, r_std: {gap_dev}'))
 
         results.append([temperature, mean_target_ene,
-                        mean_ener, gap_mean, gap_dev, window, nener, nsamples,
+                        mean_ener, gap_mean, gap_dev, window, nener, nsamples, dos,
                         *misc_vals])
     
     results = np.array(results)
