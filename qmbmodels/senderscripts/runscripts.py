@@ -92,6 +92,10 @@ programs = {
              'save': 'Spectral_stats', 'vectors': False,
              'noqueue': False, 'mpi': False,
              'short': None, 'postprocess': True},
+    'ipr_external': {'name': f'{_mainfold}main_ipr_external.py', 'array': False,
+                      'save': 'Spectral_stats', 'vectors': False,
+                      'noqueue': False, 'mpi': False,
+                      'short': None, 'postprocess': True},
     'degs': {'name': f'{_mainfold}main_degs.py', 'array': False,
              'save': 'Spectral_stats', 'vectors': False,
              'noqueue': False, 'mpi': False,
@@ -100,6 +104,7 @@ programs = {
                      'save': 'Spectral_stats', 'vectors': False,
                      'noqueue': False, 'mpi': False,
                      'short': None, 'postprocess': True},
+                     
     'gamma_partial': {'name': f'{_mainfold}main_gamma_partial.py',
                       'array': False,
                       'save': 'Spectral_stats', 'vectors': False,
