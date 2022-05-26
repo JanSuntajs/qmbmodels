@@ -62,7 +62,7 @@ _modpar_keys = [key for key in modpar_keys if '_seed' not in key]
 _modpar_keys.append('seed')
 
 
-def rmat(N, scale=np.sqrt(2)):
+def rmat(N, scale=np.sqrt(2), rng=np.random.default_rng(0)):
     """
     Construct a random Gaussian matrix
     with a unit Hilbert-Schmidt norm
@@ -76,14 +76,19 @@ def rmat(N, scale=np.sqrt(2)):
     scale: float, optional
     Parameter determining the variance of the
     Gaussian matrix a_ij; defaults to \sqrt(2)
+
+    rng: optional, random number generator
+    Should typically be an instance of the
+    numpy.random.default_rng class.
     """
 
-    amat = np.random.normal(size=(2**N, 2**N), loc=0., scale=scale)
+
+    amat = rng.normal(size=(2**N, 2**N), loc=0., scale=scale)
 
     return 0.5 * (amat + amat.T)
 
 
-def _gen_step(N, L, alpha):
+def _gen_step(N, L, alpha, rng):
     """
     Parameters:
 
@@ -95,6 +100,10 @@ def _gen_step(N, L, alpha):
 
     alpha: float
     Coupling strength
+
+    rng: random number generator object
+    Should typically be an instance
+    of the numpy.random.default_rng class.
 
     Returns:
 
@@ -125,7 +134,7 @@ def _gen_step(N, L, alpha):
         temp = np.zeros_like(mat)
         for i in range(2**(Lful - N_)):
 
-            temp_ = rmat(N_)
+            temp_ = rmat(N_, np.sqrt(2), rng)
             # proper normalization according to the
             # unit HS norm
             temp_ *= 1./np.sqrt(2**(N_))
@@ -173,7 +182,9 @@ def construct_hamiltonian(argsdict, parallel=False, mpirank=0, mpisize=0,
     # get the hamiltonian matrix and the list of
     # terms
     seed = argsdict['seed']
-    mat, *_ = _gen_step(L_b, L_loc, alpha)
+
+    rng = np.random.default_rng(seed)
+    mat, *_ = _gen_step(L_b, L_loc, alpha, rng)
     # for usrdef hamiltonians:
 
     params_ = {
