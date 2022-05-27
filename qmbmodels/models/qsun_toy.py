@@ -172,9 +172,9 @@ def construct_hamiltonian(argsdict, parallel=False, mpirank=0, mpisize=0,
     alpha = argsdict['alpha']
     J_ = argsdict['J']
 
-    if L_b < 1:
+    if L_b < 0:
         raise ValueError(('Bath length L_b should '
-                          'be greater than 0!'))
+                          'be greater than -1!'))
 
     # no pbc by design hereo
     if argsdict['pbc']:
