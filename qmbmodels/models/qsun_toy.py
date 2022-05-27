@@ -25,11 +25,12 @@ is 2**(L - 1) GOE blocks of size 2**(N + 1), multiplied
 by the coupling of \alpha^1. We proceed in such a manner
 until all of the localized spins are included in the grain
 and hence the coupling term is a single GOE matrix of
-size 2**(L + N).
+size 2**(L + N). We also use the parameter J to tune the
+coupling strenght of the offdiagonal terms.
 
 The full Hamiltonian is thus written as:
 
-H = H_0 + \alpha H_1 + \alpha^2 H_2 + ... + \alpha^L H_L
+H = H_0 + J*(\alpha H_1 + \alpha^2 H_2 + ... + \alpha^L H_L)
 
 IMPORTANT:
 
@@ -56,7 +57,7 @@ from .disorder import get_disorder_dist
 from ._common_keys import comm_modpar_keys, comm_syspar_keys
 
 syspar_keys = ['L', 'L_b'] + comm_syspar_keys
-modpar_keys = ['alpha'] + comm_modpar_keys
+modpar_keys = ['alpha', 'J'] + comm_modpar_keys
 
 _modpar_keys = [key for key in modpar_keys if '_seed' not in key]
 _modpar_keys.append('seed')
@@ -88,7 +89,7 @@ def rmat(N, scale=np.sqrt(2), rng=np.random.default_rng(0)):
     return 0.5 * (amat + amat.T)
 
 
-def _gen_step(N, L, alpha, rng):
+def _gen_step(N, L, alpha, J, rng):
     """
     Parameters:
 
@@ -100,6 +101,10 @@ def _gen_step(N, L, alpha, rng):
 
     alpha: float
     Coupling strength
+
+    J: float
+    A multiplicative prefactor determining the
+    strength of the offdiagonal terms.
 
     rng: random number generator object
     Should typically be an instance
@@ -126,7 +131,7 @@ def _gen_step(N, L, alpha, rng):
     # such that it's H-S norm
     # 1/2**L ||A||_F = 1
     matlist = []
-    j = 0
+
     for j, N_ in enumerate(range(N, Lful + 1)):
         # print(N_)
 
@@ -140,10 +145,14 @@ def _gen_step(N, L, alpha, rng):
             temp_ *= 1./np.sqrt(2**(N_))
             temp[i*ldim:(i+1)*ldim, i*ldim:(i+1)*ldim] = temp_
 
-        mat += temp * alpha**j
+        if j == 0:
+            tempmult = 1.
+        else:
+            tempmult = J
+        mat += temp * tempmult * alpha**j
 
         matlist += [temp]
-        j += 1
+
 
     return mat, matlist
 
@@ -161,6 +170,7 @@ def construct_hamiltonian(argsdict, parallel=False, mpirank=0, mpisize=0,
     L_loc = int(L - L_b)
 
     alpha = argsdict['alpha']
+    J_ = argsdict['J']
 
     if L_b < 1:
         raise ValueError(('Bath length L_b should '
@@ -184,7 +194,7 @@ def construct_hamiltonian(argsdict, parallel=False, mpirank=0, mpisize=0,
     seed = argsdict['seed']
 
     rng = np.random.default_rng(seed)
-    mat, *_ = _gen_step(L_b, L_loc, alpha, rng)
+    mat, *_ = _gen_step(L_b, L_loc, alpha, J_, rng)
     # for usrdef hamiltonians:
 
     params_ = {
