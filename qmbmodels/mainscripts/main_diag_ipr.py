@@ -43,7 +43,7 @@ if __name__ == '__main__':
             argsDict, parallel=False, mpisize=1)
 
         print('Starting diagonalization ...')
-        eigvals, eigvecs = model.eigsystem(complex=True)
+        eigvals, eigvecs = model.eigsystem(complex=False)
 
         # slice the eigvecs array so that only
         # 1000 states from the middle of the spectra
