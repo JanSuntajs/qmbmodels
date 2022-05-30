@@ -200,7 +200,7 @@ def construct_hamiltonian(argsdict, parallel=False, mpirank=0, mpisize=0,
     seed = argsdict['seed']
 
     rng = np.random.default_rng(seed)
-    mat, *_ = _gen_step(L_b, L_loc, alpha, J_, rng)
+    mat, *_ = _gen_step(L_b, L_loc, alpha, J_, rng, False)
     # for usrdef hamiltonians:
 
     params_ = {
