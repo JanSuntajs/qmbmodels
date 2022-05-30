@@ -68,7 +68,7 @@ from .disorder import get_disorder_dist
 from ._common_keys import comm_modpar_keys, comm_syspar_keys
 
 syspar_keys = ['L', 'L_b'] + comm_syspar_keys
-modpar_keys = ['beta', 'g0', 'alpha', 'W', 'dW', 'epslen'] + comm_modpar_keys
+modpar_keys = ['beta', 'g0', 'alpha', 'W', 'dW'] + comm_modpar_keys
 
 _modpar_keys = [key for key in modpar_keys if '_seed' not in key]
 _modpar_keys.append('seed')
