@@ -166,7 +166,7 @@ def construct_hamiltonian(argsdict, parallel=False, mpirank=0, mpisize=0, dtype=
     # grain is of size L - 1 here!
     rnd_grain = _create_grain(L - 1, seed)
 
-    coupling_indices = _coupling_dists(L_ - 1, 1, seed)
+    coupling_indices = _coupling_dists(L - 1, 1, seed)
     fields = get_disorder_dist(1, disorder, argsdict['W'],
                                argsdict['dW'], seed)
 
