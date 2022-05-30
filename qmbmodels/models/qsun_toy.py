@@ -89,7 +89,7 @@ def rmat(N, scale=np.sqrt(2), rng=np.random.default_rng(0)):
     return 0.5 * (amat + amat.T)
 
 
-def _gen_step(N, L, alpha, J, rng):
+def _gen_step(N, L, alpha, J, rng, save_matlist = False):
     """
     Parameters:
 
@@ -119,6 +119,11 @@ def _gen_step(N, L, alpha, J, rng):
     A list of 2D ndarrays, for normalized
     operators on each step (starting with
     the zeroth step, alpha is not included here.)
+
+    save_matlist: boolean, optional
+    Whether to save all the terms comprising
+    the Hamiltonian. Defaults to False to save
+    the memory.
 
     """
 
@@ -151,7 +156,8 @@ def _gen_step(N, L, alpha, J, rng):
             tempmult = J
         mat += temp * tempmult * alpha**j
 
-        matlist += [temp]
+        if save_matlist:
+            matlist += [temp]
 
 
     return mat, matlist
