@@ -30,7 +30,15 @@ _r_keys = ['r_step']
 _r_parse_dict = {'r_step': [float, 0.25], }
 
 _r_name = 'r_data'
-# sfflist text descriptor
+
+# -------------------------------------------------
+#
+#
+# IPR headers/footers
+#
+#
+# -------------------------------------------------
+
 header = """
 This file provides data on averaged eigenstate
 IPR (inverse participation ratio), defined
@@ -52,7 +60,7 @@ Module parameters: {} \n
 
 footer = """
 In this footer, we provide a description on the contents of the
-columns in the file. 
+columns in the file.
 
 0) Energies averaged across different disorder realizations
    (i-th) eigenlevel averaged across i-th eigenlevels of all
@@ -66,11 +74,57 @@ columns in the file.
    of ipr are averaged over disorder realizations.
 
 
+"""
+
+# -------------------------------------------------------------
+#
+#
+# EENTRO headers/footers
+#
+#
+# --------------------------------------------------------------
+
+header_eentro = """
+This file provides data on averaged generalized
+eigenstate entanglement entropy Q_q^(p) which we
+define as 
+\sum \lambda^q_p
+where \lambda^q_p are the eigenvalues of the reduced
+density matrix for a homogenous bipartition of
+p farthermost spins and the remainder of the system.
+One can infer the value of p from the filename.
+
+
+Location of the initial .hdf5 datafile: {} \n
+System parameters: {} \n
+Module parameters: {} \n
+"""
+
+footer_eentro = """
+In this footer, we provide a description on the contents of the
+columns in the file.
+
+0) Energies averaged across different disorder realizations
+   (i-th) eigenlevel averaged across i-th eigenlevels of all
+   realizations.
+
+1-11) Generalized eigenstate entanglement entropies \sum \lambda_p^q
+   in the same manner as energies. In column order, the following
+   q-values (see the header) are saved:
+   0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1., 2.
+
 
 """
 
+headers = [header, header_eentro]
 
 qlist = np.append(np.arange(0.1, 1., 0.1), 2)
+qlist_eentro = np.append(np.arange(0.1, 1.1, 0.1), 2)
+
+plist = [1, 2, 3, 4]
+
+eentro_string = 'EENTRO_Q_p_{:d}_q_{:.2f}'
+
 
 def _set_savepath(loadpath, os_sep='/'):
 
@@ -104,7 +158,8 @@ if __name__ == '__main__':
     syspar = argsDict['syspar']
     modpar = argsDict['modpar']
 
-    header = header.format(savepath, syspar, modpar)
+    for i, header_ in enumerate(headers):
+        headers[i] = header_.format(savepath, syspar, modpar)
 
     loadpath = savepath.replace('Spectral_stats', 'Eigvals')
     # NOTE: this module does not create a hdf5 dataset containing
@@ -114,10 +169,14 @@ if __name__ == '__main__':
     file = glob.glob(f"{loadpath}/*.hdf5")[0]
 
     iprlist = []
+    eentro_dict = {p: [] for p in plist}
     with h5py.File(file, 'a', libver='latest', swmr=True) as f:
 
-
-
+        # -------------------------------
+        #
+        #   IPR data
+        #
+        # -------------------------------
         try:
 
             data = f['EIG_IPR'][:]
@@ -128,21 +187,43 @@ if __name__ == '__main__':
 
                 iprlist.append(f[f'IPR_q_{q_:.2f}'][:])
 
-
         except KeyError:
             print('IPR related keys not present!')
 
             data = np.empty_like()
             iprlist = []
 
+        # ----------------------------------------
+        #
+        # EENTRO data
+        #
+        # ---------------------------------------
+
+        try:
+
+            attrs = dict(f['Eigenvalues'].attrs)
+
+            for p in plist:
+
+                for q in qlist_eentro:
+
+                    eentro_dict[p].append(f[eentro_string.format(p, q)][:])
+
+        except KeyError:
+            print('EENTRO related keys not present!')
 
     nener = data.shape[1]
     nsamples = data.shape[0]
 
-
     mean_ener = np.mean(data, axis=0)
     mean_ipr = [np.mean(ipr_, axis=0) for ipr_ in iprlist]
     mean_log_ipr = [np.mean(np.log(ipr_), axis=0) for ipr_ in iprlist]
+
+    mean_eentro = {}
+    for p in plist:
+
+        mean_eentro[p] = [np.mean(np.log(eentro),
+                                  axis=0) for eentro in eentro_dict[p]]
 
     # ------------------------------------------------
     #
@@ -159,19 +240,26 @@ if __name__ == '__main__':
 
     head, savename = os.path.split(file)
 
-    savename1 = savename.replace('eigvals', f'IPR_average_')
-    savename1 = savename1.replace('.hdf5', '.txt')
-    savename1 = f'{path_}/{savename1}'
+    resultlist = [results, results_log]
+    savenames = ['IPR_average', 'IPR_log_average']
 
-    print(savename1)
-    np.savetxt(savename1, results, header=header, footer=footer)
+    for i, result in enumerate(resultlist):
 
-    savename2 = savename.replace('eigvals', f'IPR_log_average_')
-    savename2 = savename2.replace('.hdf5', '.txt')
-    savename2 = f'{path_}/{savename2}'
+        savename_ = savename.replace('eigvals', savenames[i])
+        savename_ = savename_.replace('.hdf5', '.txt')
+        savename_ = f'{path_}/{savename_}'
+        print(savename_)
+        np.savetxt(savename_, result, header=headers[0], footer=footer)
 
-    print(savename2)
-    np.savetxt(savename2, results_log, header=header, footer=footer)
+    for p in plist:
+
+        results = np.vstack((mean_ener, mean_eentro[p])).T
+
+        savename_ = savename.replace('eigvals', f'EENTRO_p_{p}_average_')
+        savename_ = savename_.replace('.hdf5', '.txt')
+        savename_ = f'{path_}/{savename_}'
+        np.savetxt(savename_, results, header=headers[1],
+                   footer=footer_eentro)
 
     # except IndexError:
     #     pass

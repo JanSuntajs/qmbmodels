@@ -533,7 +533,7 @@
 2.422036785516902935e+00 8.433003649459959661e+01 2.056160628473840291e+01 8.042509815930094064e+00 4.490843854556756831e+00 3.034529566122096789e+00 2.255945261390624346e+00 1.768114742741448087e+00 1.432372059291385114e+00 1.186996018206297077e+00 2.678213148052374093e-01
 # 
 # In this footer, we provide a description on the contents of the
-# columns in the file. 
+# columns in the file.
 # 
 # 0) Energies averaged across different disorder realizations
 #    (i-th) eigenlevel averaged across i-th eigenlevels of all
@@ -543,7 +543,8 @@
 #    in the same manner as energies. In column order, the following
 #    q-values (see the header) are saved:
 #    0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 2.
-# 
+#    In case the file name is IPR_log_average*, then the logarithms
+#    of ipr are averaged over disorder realizations.
 # 
 # 
 # 
