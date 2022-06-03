@@ -145,7 +145,6 @@ def construct_hamiltonian(argsdict, parallel=False, mpirank=0, mpisize=0, dtype=
 
 
     disorder = argsdict['disorder']
-    beta = argsdict['beta']
 
     alpha = argsdict['alpha']
     g0 = argsdict['g0']
