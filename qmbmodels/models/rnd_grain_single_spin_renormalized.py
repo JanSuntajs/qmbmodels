@@ -174,7 +174,7 @@ def construct_hamiltonian(argsdict, parallel=False, mpirank=0, mpisize=0, dtype=
     fields = get_disorder_dist(1, disorder, argsdict['W'],
                                argsdict['dW'], seed)
 
-    grain_term = ['RR', [[1./np.sqrt(2**L_b), 0, L - 2]]]
+    grain_term = ['RR', [[1./np.sqrt(2**(L - 1)), 0, L - 2]]]
 
     static_list = [grain_term]
     grain_list = [rnd_grain]
