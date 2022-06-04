@@ -103,7 +103,7 @@ if __name__ == '__main__':
                 eentro_dict[f'EENTRO_RENYI_p_{p_:d}_q_{q:.2f}'] = (1./(1.-q)) * np.log(np.sum(
                     svd_vals**q, axis=1))
             
-            eentro_dict[f'EENTRO_VN_p_{p_:d}'] = - np.nansum( svd_vals * np.log(svd_vals))
+            eentro_dict[f'EENTRO_VN_p_{p_:d}'] = - np.nansum( svd_vals * np.log(svd_vals), axis=1)
 
         # eigvals, eigvecs = model.eigsystem(complex=False, turbo=True)
         print('Diagonalization finished!')
