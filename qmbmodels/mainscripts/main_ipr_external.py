@@ -108,10 +108,11 @@ columns in the file.
    (i-th) eigenlevel averaged across i-th eigenlevels of all
    realizations.
 
-1-11) Generalized eigenstate entanglement entropies \sum \lambda_p^q
+1-11) Von Renyi eigenstate entanglement entropies (1/ (1-q))\log\sum \lambda_p^q
    in the same manner as energies. In column order, the following
    q-values (see the header) are saved:
-   0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1., 2.
+   0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 2.
+12) Von Neumann entanglement entropy as -\sum \lambda * \log\lambda 
 
 
 """
@@ -119,11 +120,13 @@ columns in the file.
 headers = [header, header_eentro]
 
 qlist = np.append(np.arange(0.1, 1., 0.1), 2)
-qlist_eentro = np.append(np.arange(0.1, 1.1, 0.1), 2)
+# qlist_eentro = np.append(np.arange(0.1, 1., 0.1), 2)
 
 plist = [1, 2, 3, 4]
 
-eentro_string = 'EENTRO_Q_p_{:d}_q_{:.2f}'
+eentro_string = 'EENTRO_RENYI_p_{:d}_q_{:.2f}'
+
+eentro_vn_string = 'EENTRO_VN_p_{:d}'
 
 
 def _set_savepath(loadpath, os_sep='/'):
@@ -205,9 +208,11 @@ if __name__ == '__main__':
 
             for p in plist:
 
-                for q in qlist_eentro:
+                for q in qlist:
 
                     eentro_dict[p].append(f[eentro_string.format(p, q)][:])
+                
+                eentro_dict[p].append(f[eentro_vn_string.format(p)][:])
 
         except KeyError:
             print('EENTRO related keys not present!')
@@ -222,8 +227,9 @@ if __name__ == '__main__':
     mean_eentro = {}
     for p in plist:
 
-        mean_eentro[p] = [np.mean(np.log(eentro),
+        mean_eentro[p] = [np.mean(eentro,
                                   axis=0) for eentro in eentro_dict[p]]
+
 
     # ------------------------------------------------
     #

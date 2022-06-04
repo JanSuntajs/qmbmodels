@@ -33,7 +33,7 @@ nener = 1000
 
 # q values for the ipr calculation
 qlist = np.append(np.arange(0.1, 1., 0.1), 2)
-qlist_entro = np.append(np.arange(0.1, 1.1, 0.1), 2)
+qlist_entro = np.append(np.arange(0.1, 1., 0.1), 2)
 # partitions -> how many of the farthermost spins
 # to include
 plist = [1, 2, 3, 4]
@@ -66,7 +66,7 @@ if __name__ == '__main__':
             nener = nstates
 
         # select only a portion of eigstates
-        eigvecs = eigvecs[:, int(0.5 * (nstates - nener)): int(0.5*(nstates + nener))]
+        eigvecs = eigvecs[:, int(0.5 * (nstates - nener))                          : int(0.5*(nstates + nener))]
 
         # --------------------------------------------------
         #
@@ -97,11 +97,13 @@ if __name__ == '__main__':
                 # _s_coeffs are the coefficients of the
                 # sdv decomposition
                 svd_vals.append(entangled._s_coeffs)
-            svd_vals = np.array(svd_vals)
+            svd_vals = np.array(svd_vals)**2
 
             for q in qlist_entro:
-                eentro_dict[f'EENTRO_Q_p_{p_:d}_q_{q:.2f}'] = np.sum(
-                    svd_vals**q, axis=1)
+                eentro_dict[f'EENTRO_RENYI_p_{p_:d}_q_{q:.2f}'] = (1./(1.-q)) * np.log(np.sum(
+                    svd_vals**q, axis=1))
+            
+            eentro_dict[f'EENTRO_VN_p_{p_:d}'] = - np.nansum( svd_vals * np.log(svd_vals))
 
         # eigvals, eigvecs = model.eigsystem(complex=False, turbo=True)
         print('Diagonalization finished!')
