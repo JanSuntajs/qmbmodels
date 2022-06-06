@@ -111,15 +111,18 @@ columns in the file.
 1-11) Von Renyi eigenstate entanglement entropies (1/ (1-q))\log\sum \lambda_p^q
    in the same manner as energies. In column order, the following
    q-values (see the header) are saved:
-   0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 2.
-12) Von Neumann entanglement entropy as -\sum \lambda * \log\lambda 
+   0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 2., 4., 6.
+13) Von Neumann entanglement entropy as -\sum \lambda * \log\lambda 
+
+14) Schmidt gaps -> differences between the largest eigenvalues of the reduced
+    density matrix averaged over disorder and eigenstates.
 
 
 """
 
 headers = [header, header_eentro]
 
-qlist = np.append(np.arange(0.1, 1., 0.1), 2)
+qlist = np.append(np.arange(0.1, 1., 0.1), (2, 4, 6))
 # qlist_eentro = np.append(np.arange(0.1, 1., 0.1), 2)
 
 plist = [1, 2, 3, 4]
@@ -127,6 +130,8 @@ plist = [1, 2, 3, 4]
 eentro_string = 'EENTRO_RENYI_p_{:d}_q_{:.2f}'
 
 eentro_vn_string = 'EENTRO_VN_p_{:d}'
+
+schmidt_gap_string = 'SCHMIDT_GAP_p_{:d}'
 
 
 def _set_savepath(loadpath, os_sep='/'):
@@ -213,6 +218,7 @@ if __name__ == '__main__':
                     eentro_dict[p].append(f[eentro_string.format(p, q)][:])
                 
                 eentro_dict[p].append(f[eentro_vn_string.format(p)][:])
+                eentro_dict[p].append(f[schmidt_gap_string.format(p)][:])
 
         except KeyError:
             print('EENTRO related keys not present!')
