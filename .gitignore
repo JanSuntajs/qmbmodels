@@ -6,6 +6,7 @@
 **/tmp
 *.hdf5
 **/analysescripts
+**/quick_txtfiles
 
 #ignore the runner script
 *runner.py

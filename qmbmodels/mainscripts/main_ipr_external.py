@@ -120,7 +120,55 @@ columns in the file.
 
 """
 
-headers = [header, header_eentro]
+header_mean = """
+This file provides data on the averaged Renyi_2 entropy
+defined as - \log \sum \lambda^2_p
+
+where \lambda^2_p are the eigenvalues of the reduced
+density matrix for a homogenous bipartition of
+p farthermost spins and the remainder of the system.
+One can infer the value of p from the filename.
+
+In this file, we focus on the statistical analysis of the
+spectra; for energies, Renyi_2 entropies and Schmidt gaps,
+we (in the said order) provide the following data:
+
+- sample means (e. g., means for each sample)
+- sample standard deviations (e. g., standard deviations of the
+data across a sample for different samples)
+- global means (e. g., means across both states and disorder realizations)
+- global standard deviations (e. g., standard deviation across both
+states and disorder realizations.)
+
+
+Location of the initial .hdf5 datafile: {} \n
+System parameters: {} \n
+Module parameters: {} \n
+
+"""
+
+footer_mean = """
+In this footer, we provide a description on the contents of the
+columns in the file.
+
+Energy data
+0) - 3): mean energy for each sample, standard deviation for each sample,
+global mean and global standard deviation. The last two are rescaled such
+that their dimension matches the first two columns
+
+Renyi_2 entropy data (S_2)
+3) - 6): mean S_2 for each sample, standard deviation of S_2 for each sample
+global mean and global standard deviation of S_2
+
+Schmidt gap (SG) data:
+7) - 10): mean SG for each sample, standard deviation of SG for each sample,
+global mean and global standard deviation of SG.
+
+"""
+
+
+
+headers = [header, header_eentro, header_mean]
 
 qlist = np.append(np.arange(0.1, 1., 0.1), (2, 4, 6))
 # qlist_eentro = np.append(np.arange(0.1, 1., 0.1), 2)
@@ -178,6 +226,7 @@ if __name__ == '__main__':
 
     iprlist = []
     eentro_dict = {p: [] for p in plist}
+    mean_dict = {p: [] for p in plist}
     with h5py.File(file, 'a', libver='latest', swmr=True) as f:
 
         # -------------------------------
@@ -213,12 +262,57 @@ if __name__ == '__main__':
 
             for p in plist:
 
+                dset_sg_ = f[schmidt_gap_string.format(p)][:]
                 for q in qlist:
 
-                    eentro_dict[p].append(f[eentro_string.format(p, q)][:])
-                
+                    dset_ = f[eentro_string.format(p, q)][:]
+                    eentro_dict[p].append(dset_)
+
+                    if q == 2:
+
+                        # --------------------------------------
+                        # energies
+                        # --------------------------------------
+                        # stats analysis of the energy data
+                        sample_mean_ene = np.mean(data, axis=1)
+                        sample_std_ene = np.std(data, axis=1)
+
+                        global_mean_ene = np.ones_like(
+                            sample_mean_ene)*np.mean(data,)
+                        global_std_ene = np.ones_like(
+                            sample_mean_ene)*np.std(data,)
+
+                        # ----------------------------------------
+                        # renyi_2 entropies stats analysis
+                        # ----------------------------------------
+
+                        # mean and std for each individual sample
+                        sample_mean = np.mean(dset_, axis=1)
+                        sample_std = np.std(dset_, axis=1)
+                        # mean and std for all the values ->
+                        # over eigenstates and disorder realizations together
+                        global_mean = np.ones_like(
+                            sample_mean) * np.mean(dset_)
+                        global_std = np.ones_like(sample_mean) * np.std(dset_)
+
+                        # ----------------------------------------
+                        # schmidt gap
+                        # ----------------------------------------
+                        sample_mean_sg = np.mean(dset_sg_, axis=1)
+                        sample_std_sg = np.std(dset_sg_, axis=1)
+                        # mean and std for all the values ->
+                        # over eigenstates and disorder realizations together
+                        global_mean_sg = np.ones_like(
+                            sample_mean_sg) * np.mean(dset_sg_)
+                        global_std_sg = np.ones_like(
+                            sample_mean_sg) * np.std(dset_sg_)
+
+                        mean_dict[p] += [sample_mean_ene, sample_std_ene, global_mean_ene, global_std_ene,
+                                         sample_mean, sample_std, global_mean, global_std, sample_mean_sg,
+                                         sample_std_sg, global_mean_sg, global_std_sg]
+
                 eentro_dict[p].append(f[eentro_vn_string.format(p)][:])
-                eentro_dict[p].append(f[schmidt_gap_string.format(p)][:])
+                eentro_dict[p].append(dset_sg_)
 
         except KeyError:
             print('EENTRO related keys not present!')
@@ -226,6 +320,13 @@ if __name__ == '__main__':
     nener = data.shape[1]
     nsamples = data.shape[0]
 
+    # ------------------------------------------------------
+    #
+    # MEAN VALUES
+    #
+    # ------------------------------------------------------
+
+    # take the mean of the relevant quantities to be saved
     mean_ener = np.mean(data, axis=0)
     mean_ipr = [np.mean(ipr_, axis=0) for ipr_ in iprlist]
     mean_log_ipr = [np.mean(np.log(ipr_), axis=0) for ipr_ in iprlist]
@@ -235,7 +336,6 @@ if __name__ == '__main__':
 
         mean_eentro[p] = [np.mean(eentro,
                                   axis=0) for eentro in eentro_dict[p]]
-
 
     # ------------------------------------------------
     #
@@ -251,7 +351,9 @@ if __name__ == '__main__':
     path_ = _set_savepath(loadpath)
 
     head, savename = os.path.split(file)
-
+    # ----------------------------------
+    # save ipr results
+    # ----------------------------------
     resultlist = [results, results_log]
     savenames = ['IPR_average', 'IPR_log_average']
 
@@ -263,6 +365,9 @@ if __name__ == '__main__':
         print(savename_)
         np.savetxt(savename_, result, header=headers[0], footer=footer)
 
+    # -----------------------------------
+    # save general entropy results
+    # -----------------------------------
     for p in plist:
 
         results = np.vstack((mean_ener, mean_eentro[p])).T
@@ -272,6 +377,19 @@ if __name__ == '__main__':
         savename_ = f'{path_}/{savename_}'
         np.savetxt(savename_, results, header=headers[1],
                    footer=footer_eentro)
+
+    # --------------------------------------
+    # save entropy statistical results
+    # --------------------------------------
+    for p in plist:
+        
+        results = np.array(mean_dict[p]).T
+
+        savename_ = savename.replace('eigvals', f'EENTRO_2_STATS_p_{p}_')
+        savename_ = savename_.replace('.hdf5', '.txt')
+        savename_ = f'{path_}/{savename_}'
+        np.savetxt(savename_, results, header=headers[2],
+                   footer=footer_mean)
 
     # except IndexError:
     #     pass
