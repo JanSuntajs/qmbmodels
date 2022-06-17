@@ -157,20 +157,21 @@ global mean and global standard deviation. The last two are rescaled such
 that their dimension matches the first two columns
 
 Renyi_2 entropy data (S_2)
-3) - 6): mean S_2 for each sample, standard deviation of S_2 for each sample
+4) - 7): mean S_2 for each sample, standard deviation of S_2 for each sample
 global mean and global standard deviation of S_2
 
 Schmidt gap (SG) data:
-7) - 10): mean SG for each sample, standard deviation of SG for each sample,
+8) - 11): mean SG for each sample, standard deviation of SG for each sample,
 global mean and global standard deviation of SG.
 
 """
 
 
-
 headers = [header, header_eentro, header_mean]
 
 qlist = np.append(np.arange(0.1, 1., 0.1), (2, 4, 6))
+# which q - values to consider in the mean analysis
+mean_qlist = [0.1, 0.5, 1, 2]
 # qlist_eentro = np.append(np.arange(0.1, 1., 0.1), 2)
 
 plist = [1, 2, 3, 4]
@@ -200,6 +201,33 @@ def _set_savepath(loadpath, os_sep='/'):
     return path
 
 
+def _get_mean_vals(data):
+    """
+    An internal helper routine
+    for calculating (in that order):
+        the sample mean (mean of the
+        sample)
+        the sample standard deviation
+        the global mean
+        the global standard deviation
+
+    Parameters:
+
+    data: ndarray, 2D
+
+    """
+
+    sample_mean = np.mean(data, axis=1)
+    sample_std = np.std(data, axis=1)
+
+    global_mean = np.ones_like(
+        sample_mean)*np.mean(data,)
+    global_std = np.ones_like(
+        sample_mean)*np.std(data,)
+
+    return sample_mean, sample_std, global_mean, global_std
+
+
 if __name__ == '__main__':
 
     rDict, rextra = arg_parser_general(_r_parse_dict)
@@ -226,7 +254,9 @@ if __name__ == '__main__':
 
     iprlist = []
     eentro_dict = {p: [] for p in plist}
-    mean_dict = {p: [] for p in plist}
+
+    mean_dict = {p: {} for p in plist}
+
     with h5py.File(file, 'a', libver='latest', swmr=True) as f:
 
         # -------------------------------
@@ -263,55 +293,58 @@ if __name__ == '__main__':
             for p in plist:
 
                 dset_sg_ = f[schmidt_gap_string.format(p)][:]
-                for q in qlist:
+                # von neumann entropy
+                dset_vn_ = f[eentro_vn_string.format(p)][:]
 
-                    dset_ = f[eentro_string.format(p, q)][:]
-                    eentro_dict[p].append(dset_)
+                # --------------------------------------
+                #
+                # energies and schmidt gaps are
+                # independent of q so no need for
+                # calculations in a loop
+                #
+                # --------------------------------------
 
-                    if q == 2:
+                # --------------------------------------
+                # energies
+                # --------------------------------------
 
-                        # --------------------------------------
-                        # energies
-                        # --------------------------------------
-                        # stats analysis of the energy data
-                        sample_mean_ene = np.mean(data, axis=1)
-                        sample_std_ene = np.std(data, axis=1)
+                (sample_mean_ene, sample_std_ene,
+                 global_mean_ene, global_std_ene) = _get_mean_vals(data)
 
-                        global_mean_ene = np.ones_like(
-                            sample_mean_ene)*np.mean(data,)
-                        global_std_ene = np.ones_like(
-                            sample_mean_ene)*np.std(data,)
+                # ----------------------------------------
+                # schmidt gap
+                # ----------------------------------------
+                (sample_mean_sg, sample_std_sg,
+                global_mean_sg, global_std_sg) = _get_mean_vals(dset_sg_)
+
+                for q in np.append(qlist, 1):
+
+                    if q != 1:
+                        dset_ = f[eentro_string.format(p, q)][:]
+                        eentro_dict[p].append(dset_)
+
+                    else:
+                        dset_ = dset_vn_
+
+                    
+                    if q in mean_qlist:
+
+                        mean_dict[p][q] = []
 
                         # ----------------------------------------
                         # renyi_2 entropies stats analysis
                         # ----------------------------------------
 
                         # mean and std for each individual sample
-                        sample_mean = np.mean(dset_, axis=1)
-                        sample_std = np.std(dset_, axis=1)
-                        # mean and std for all the values ->
-                        # over eigenstates and disorder realizations together
-                        global_mean = np.ones_like(
-                            sample_mean) * np.mean(dset_)
-                        global_std = np.ones_like(sample_mean) * np.std(dset_)
+                        (sample_mean, sample_std,
+                        global_mean, global_std) = _get_mean_vals(dset_)
 
-                        # ----------------------------------------
-                        # schmidt gap
-                        # ----------------------------------------
-                        sample_mean_sg = np.mean(dset_sg_, axis=1)
-                        sample_std_sg = np.std(dset_sg_, axis=1)
-                        # mean and std for all the values ->
-                        # over eigenstates and disorder realizations together
-                        global_mean_sg = np.ones_like(
-                            sample_mean_sg) * np.mean(dset_sg_)
-                        global_std_sg = np.ones_like(
-                            sample_mean_sg) * np.std(dset_sg_)
 
-                        mean_dict[p] += [sample_mean_ene, sample_std_ene, global_mean_ene, global_std_ene,
-                                         sample_mean, sample_std, global_mean, global_std, sample_mean_sg,
-                                         sample_std_sg, global_mean_sg, global_std_sg]
+                        mean_dict[p][q] += [sample_mean_ene, sample_std_ene, global_mean_ene, global_std_ene,
+                                            sample_mean, sample_std, global_mean, global_std, sample_mean_sg,
+                                            sample_std_sg, global_mean_sg, global_std_sg]
 
-                eentro_dict[p].append(f[eentro_vn_string.format(p)][:])
+                eentro_dict[p].append(dset_vn_)
                 eentro_dict[p].append(dset_sg_)
 
         except KeyError:
@@ -382,14 +415,15 @@ if __name__ == '__main__':
     # save entropy statistical results
     # --------------------------------------
     for p in plist:
-        
-        results = np.array(mean_dict[p]).T
 
-        savename_ = savename.replace('eigvals', f'EENTRO_2_STATS_p_{p}_')
-        savename_ = savename_.replace('.hdf5', '.txt')
-        savename_ = f'{path_}/{savename_}'
-        np.savetxt(savename_, results, header=headers[2],
-                   footer=footer_mean)
+        for q in mean_qlist:
+            results = np.array(mean_dict[p][q]).T
+
+            savename_ = savename.replace('eigvals', f'EENTRO_{q}_STATS_p_{p}_')
+            savename_ = savename_.replace('.hdf5', '.txt')
+            savename_ = f'{path_}/{savename_}'
+            np.savetxt(savename_, results, header=headers[2],
+                    footer=footer_mean)
 
     # except IndexError:
     #     pass
