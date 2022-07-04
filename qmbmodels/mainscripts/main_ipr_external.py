@@ -230,13 +230,13 @@ def _get_mean_vals(data):
 
 if __name__ == '__main__':
 
-    rDict, rextra = arg_parser_general(_r_parse_dict)
+    # rDict, rextra = arg_parser_general(_r_parse_dict)
     argsDict, extra = arg_parser([], [])
 
-    r_step, = [
-        rDict[key] for key in _r_parse_dict.keys()]
+    # r_step, = [
+    #     rDict[key] for key in _r_parse_dict.keys()]
 
-    print(r_step)
+    # print(r_step)
 
     savepath = argsDict['results']
     syspar = argsDict['syspar']
