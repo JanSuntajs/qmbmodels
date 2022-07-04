@@ -184,10 +184,10 @@ programs = {
                       'noqueue': False, 'mpi': False,
                       'short': True, 'postprocess': False},
     'and_mb_eentro_scaling_external': {'name': f'{_mainfold}main_anderson_entro_scaling_analysis.py',
-                      'array': True,
-                      'save': 'Eigvals', 'vectors': False,
+                      'array': False,
+                      'save': 'Spectral_stats', 'vectors': False,
                       'noqueue': False, 'mpi': False,
-                      'short': True, 'postprocess': False}
+                      'short': True, 'postprocess': True}
 
 }
 
