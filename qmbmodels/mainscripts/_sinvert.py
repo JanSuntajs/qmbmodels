@@ -340,7 +340,7 @@ def _collect_results(E_si, nconv, argsDict,
                                                            idx_dict,
                                                            q_dict)
 
-            # destroy the scatter context before the new
+            #> destroy the scatter context before the new
             # loop iteration
             ctx.destroy()
             tozero.destroy()
