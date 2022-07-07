@@ -3,14 +3,22 @@
 """
 This code implements the PETSc and SLEPc
 libraries in order to partially diagonalize
-the quantum model hamiltonian of choice. While
-the general structure of the code allows for choice
-of different spectral transformations and different
-solver contexts, the main intent of this code is to
-obtain the eigenvalues and the eigenvectors from
-a selected region of the hamiltonian's spectrum
-and to also calculate the eigenvector's entanglement
-entropy.
+the quantum model hamiltonian of choice. For now,
+the code is almost the same as the one in
+main_sinvert.py except for calling the sinvert
+function (at the very end), in which we have:
+
+    sinvert_body(mod, argsDict, syspar, syspar_keys, modpar,
+                 modpar_keys, mpirank, mpisize, comm, save_metadata,
+                 savepath,
+                 PETSc, SLEPc,
+                 bipartition=bipartition, entropy_f_scaling=True)
+
+so we have entropy_f_scaling = True instead of False such that the scaling
+analysis of the entropy is performed. Rather than losing time
+trying to make everything as terse and compact as possible,
+we c/p-ed the existing code as this program will not be used
+much anyway, only for some schematic plots. 
 
 
 """
@@ -50,6 +58,6 @@ if __name__ == '__main__':
                  modpar_keys, mpirank, mpisize, comm, save_metadata,
                  savepath,
                  PETSc, SLEPc,
-                 bipartition=bipartition, entropy_f_scaling=False)
+                 bipartition=bipartition, entropy_f_scaling=True)
 
 

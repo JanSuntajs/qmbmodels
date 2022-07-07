@@ -17,7 +17,8 @@ from qmbmodels.utils.filesaver import savefile
 from qmbmodels.utils.cmd_parser_tools import arg_parser_general
 
 
-def _inter_entro(many_body, model, bipartition='default'):
+def _inter_entro(eigvec, argsDict, many_body,
+                 model, bipartition='default'):
     """
     Parameters:
 
@@ -30,14 +31,23 @@ def _inter_entro(many_body, model, bipartition='default'):
     pos: string, optional
     Defaults to 'default' which creates a symmetric bipartition
     Also allows for: 'last_four', which divides the system into
-    L- 4, 4 spins.
+    L- 4, 4 spins. If bipartition is an int L_A smaller or equal
+    to L/2, it creates an arbitrary bipartition L_A, L- L_A.
 
     """
     if many_body:
+
         if model.Nu is not None:
-            rdm_matrix = build_rdm(eigvec, int(
-                argsDict['L'] / 2.), argsDict['L'], int(
-                argsDict['nu']))
+
+            if bipartition == 'default':
+                rdm_matrix = build_rdm(eigvec, int(
+                    argsDict['L'] / 2.), argsDict['L'], int(
+                    int(0.5*argsDict['L'])))
+            if isinstance(bipartition, np.integer):
+                
+                rdm_matrix = build_rdm(eigvec, bipartition, argsDict['L'],
+                    int(0.5*argsDict['L']))
+
             rdm_eigvals = LA.eigvalsh(rdm_matrix.todense())
             rdm_eigvals = rdm_eigvals[rdm_eigvals > 1e-014]
             entro = -np.dot(rdm_eigvals, np.log(rdm_eigvals))
@@ -46,13 +56,20 @@ def _inter_entro(many_body, model, bipartition='default'):
                 partition = int(argsDict['L'] / 2.)
             elif bipartition == 'last_four':
                 partition = 4
+            elif isinstance(bipartition, np.integer):
+                partition = bipartition
             entangled = Entangled(eigvec, argsDict['L'],
                                   partition)
             entangled.partitioning('homogenous')
             entangled.svd()
             entro = entangled.eentro()
 
-        entropy[i] = entro
+        # entropy[i] = entro
+
+        return entro
+
+    else:
+        pass
 
 
 def _prepare_array(argsDict, mod, mpirank, mpisize, PETSc, comm):
@@ -232,10 +249,38 @@ def _perform_sinvert(matrix, target, mpirank, PETSc, SLEPc):
 def _collect_results(E_si, nconv, argsDict,
                      model, matrix, mpirank,
                      PETSc, SLEPc,
-                     many_body, 
-                     bipartition='default'):
+                     many_body,
+                     bipartition='default',
+                     entropy_f_scaling=False):
     """
+    Parameters:
 
+    E_si: SLEPc object containing the details
+    and results of the diagonalization procedure.
+
+    nconv: int
+    Number of converged eigenvalues.
+
+    argsDict: dict
+    A dictionary of the command-line arguments.
+
+    matrix: PETSc.mat() object containing the
+    required parallel structure.
+
+    mpirank: int
+    Rank of the mpi process.
+
+    PETSc, SLEPc: PETSc and SLEPc contexts
+
+    many_body: Boolean
+    Whether the model is many-body or not.
+
+    bipartition: str, optional
+    What kind of bipartition to use.
+
+    entropy_f_scaling: Boolean, optional
+    Whether to perform the subsystem size scaling of the
+    entanglement entropy. Defaults to False.
     """
     if mpirank == 0:
 
@@ -250,6 +295,13 @@ def _collect_results(E_si, nconv, argsDict,
                 nconv, dtype=np.float64)}
             idx_dict = {}
             q_dict = {}
+
+            if entropy_f_scaling:
+                
+                subsystems = np.arange(1, int(0.5 * argsDict['L'] + 1), 1)
+                for j in subsystems:
+
+                    results_dict[f'Entropy_scaling_{j}_partial'] = np.zeros(nconv, dtype=np.float64)
 
     # for finding the eigenvectors
 
@@ -310,37 +362,34 @@ def _collect_results(E_si, nconv, argsDict,
                 eigvals[i] = eigval
                 eigvec = np.array(zvec)
 
+                # only perform the calculation for a single bipartition
+                if not entropy_f_scaling:
+                    if many_body:
 
-                if many_body:
-                    # TO DO: write a function for this
-                    if model.Nu is not None:
-                        rdm_matrix = build_rdm(eigvec, int(
-                            argsDict['L'] / 2.), argsDict['L'], int(
-                            argsDict['L'] / 2))
-                        rdm_eigvals = LA.eigvalsh(rdm_matrix.todense())
-                        rdm_eigvals = rdm_eigvals[rdm_eigvals > 1e-014]
-                        entro = -np.dot(rdm_eigvals, np.log(rdm_eigvals))
+                        entro = _inter_entro(eigvec, argsDict, many_body, model,
+                                                'default')
+
+                        results_dict['Entropy_partial'][i] = entro
                     else:
-                        if bipartition == 'default':
-                            partitioning_ = int(argsDict['L'] / 2.)
-                        elif bipartition == 'last_four':
-                            partitioning_ = 4
-                        entangled = Entangled(eigvec, argsDict['L'],
-                                              partitioning_)
-                        entangled.partitioning('homogenous')
-                        entangled.svd()
-                        entro = entangled.eentro()
 
-                    results_dict['Entropy_partial'][i] = entro
+                        results_dict = _analyse_noninteracting(i,
+                                                                eigvec,
+                                                                results_dict,
+                                                                idx_dict,
+                                                                q_dict)
+
                 else:
 
-                    results_dict = _analyse_noninteracting(i,
-                                                           eigvec,
-                                                           results_dict,
-                                                           idx_dict,
-                                                           q_dict)
+                    if many_body:
 
-            #> destroy the scatter context before the new
+                        for subs_ in subsystems:
+
+                            entro = _inter_entro(eigvec, argsDict, many_body, model,
+                            subs_)
+
+                            results_dict[f'Entropy_scaling_{subs_}_partial'][i] = entro
+
+            # > destroy the scatter context before the new
             # loop iteration
             ctx.destroy()
             tozero.destroy()
@@ -416,7 +465,8 @@ def _save_results(eigvals, fields, diagonals, results_dict,
 def sinvert_body(mod, argsDict, syspar, syspar_keys,
                  modpar, modpar_keys, mpirank, mpisize, comm,
                  save_metadata, savepath,
-                 PETSc, SLEPc, bipartition = 'default'):
+                 PETSc, SLEPc, bipartition='default',
+                 entropy_f_scaling=False):
     """
     A function that prepares the selected quantum hamiltonian
     for a given disorder realization and then performs shift-
@@ -466,6 +516,10 @@ def sinvert_body(mod, argsDict, syspar, syspar_keys,
         Defaults to 'default' in which case the bipartition is symmetric. For
         random grain calculations, we typically pick 'last_four', which
         designates a bipartition into L-4, 4 spins.
+
+    entropy_f_scaling: boolean, optional
+    Defaults to False. Whether to perform a scaling analysis of the entropy
+    with the subsystem fraction.
 
     Returns:
     --------
@@ -597,7 +651,8 @@ def sinvert_body(mod, argsDict, syspar, syspar_keys,
                                              model, matrix,
                                              mpirank, PETSc,
                                              SLEPc, many_body,
-                                             bipartition=bipartition)
+                                             bipartition=bipartition,
+                                             entropy_f_scaling=entropy_f_scaling)
 
     if nconv > 0:
 

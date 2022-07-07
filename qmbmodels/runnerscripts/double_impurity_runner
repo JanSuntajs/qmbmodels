@@ -10,13 +10,13 @@ from qmbmodels.models.prepare_model import import_model
 wlist = np.around(np.logspace(-4, np.log10(16), 120), decimals=5)
 w2list = np.logspace(-6, 0, 100)
 if __name__ == '__main__':
-    storage = '/scratch/jan/heisenberg_single_impurity_paper/'
+    storage = '.' #'/scratch/jan/heisenberg_single_impurity_paper/'
     ham_type = 'spin1d'
     model = 'heisenberg_double_impurity'
     mod = import_model(model)
     params = {
-        'L': [18],
-        'J': [4],
+        'L': [12],
+        'J': [6],
         'dJ': [0.0],
         'W1': [0.0],
 	'dW1': [1.0],
@@ -29,8 +29,8 @@ if __name__ == '__main__':
         'ham_type': [ham_type],
         'disorder': ['single'],
         'min_seed': [1],
-        'max_seed': [400],
-        'step_seed': [20],
+        'max_seed': [1],
+        'step_seed': [1],
         'sff_min_tau': [-5],
         'sff_max_tau': [2],
         'sff_n_tau': [30],
