@@ -98,8 +98,8 @@ def _length_dist(size, seed, dist_type=0, *args, **kwargs):
     rng = np.random.default_rng(seed)
     if dist_type == 0:
         return np.sort(rng.uniform(1, size, size))
-    else: 
-        
+    else:
+
         if dist_type == 1:
 
             sites = np.arange(1, size + 1, dtype=np.float64)
@@ -107,9 +107,9 @@ def _length_dist(size, seed, dist_type=0, *args, **kwargs):
         if dist_type == 2:
 
             sites = np.arange(0, size, dtype=np.float64)
-        
+
             sites[1:] += rng.uniform(-kwargs['eps'], kwargs['eps'], size - 1)
-        
+
         return sites
 
 
