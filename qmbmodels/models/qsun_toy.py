@@ -83,13 +83,12 @@ def rmat(N, scale=np.sqrt(2), rng=np.random.default_rng(0)):
     numpy.random.default_rng class.
     """
 
-
     amat = rng.normal(size=(2**N, 2**N), loc=0., scale=scale)
 
     return 0.5 * (amat + amat.T)
 
 
-def _gen_step(N, L, alpha, J, rng, save_matlist = False):
+def _gen_step(N, L, alpha, J, rng, save_matlist=False):
     """
     Parameters:
 
@@ -147,7 +146,7 @@ def _gen_step(N, L, alpha, J, rng, save_matlist = False):
             temp_ = rmat(N_, np.sqrt(2), rng)
             # proper normalization according to the
             # unit HS norm
-            temp_ *= 1./np.sqrt(2**(N_))
+            temp_ *= 1./np.sqrt(2**(N_) + 1.)
             temp[i*ldim:(i+1)*ldim, i*ldim:(i+1)*ldim] = temp_
 
         if j == 0:
@@ -159,14 +158,13 @@ def _gen_step(N, L, alpha, J, rng, save_matlist = False):
         if save_matlist:
             matlist += [temp]
 
-
     return mat, matlist
 
 
 def construct_hamiltonian(argsdict, parallel=False, mpirank=0, mpisize=0,
                           dtype=np.float64):
     """
-
+    Construct the time.
 
     """
 
