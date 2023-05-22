@@ -2,7 +2,8 @@
 
 """
 This module provides utilities for calculating
-the mean mean ipr across different disorder
+the mean mean ipr and the mean entanglement
+entropy across different disorder
 realizations. The data are saved into external
 folder as a .txt file.
 This implementation uses tools from the
@@ -11,6 +12,43 @@ available at:
 
 https://github.com/JanSuntajs/spectral_statistics_tools
 
+We calculate the ipr and entanglement entropy for a range
+of q values:
+
+q = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9,
+     1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9,
+     2., 2.4, 2.6, 2.8., 3.];
+
+Evidently, q=1 is missing above, since we need to use different
+definitions both for IPR and the entanglement entropy. For the
+former, we calculate the corresponding participation entropy
+as the Shannon entropy of the eigenstate probability distribution.
+Note that calculating the IPR for q=1 makes no sense as it would
+trivially yield normalization. For the entanglement entropy,
+we calculate the standard von Neumann entanglement entropy, which
+is the limiting case of the Renyi entanglement entropy as q goes
+to 1.
+
+
+# ---------------------
+#
+# CALLING THE SCRIPT
+#
+# ---------------------
+
+Command-line argument for calling this script following
+the corresponding submission script:
+
+ipr_external
+
+Hence calling the program within qmbmodels would be:
+
+python <submission_script.py> ipr_external
+
+or, to perform the main ipr calculation followed by
+this post-processing step:
+
+python <submission_script.py> diag_ipr ipr_external
 
 """
 
@@ -46,11 +84,11 @@ for an eigenstate \ksi_\alpha as
 
 ipr_\alpha = \sum |c_i^(\alpha)|^2q
 where c_i^(\alpha) are the coefficients of the
-expansio of \ksi_\alpha in the computational basis.
+expansion of \ksi_\alpha in the computational basis.
 If the file has only IPR_average* in the name, then
 the IPR as defined above is being averaged. In case
 the file name is IPR_log_average*, then \log(ipr)
-is being averaged.
+is being averaged. This also holds for the q=1 limit.
 
 
 Location of the initial .hdf5 datafile: {} \n
@@ -66,14 +104,16 @@ columns in the file.
    (i-th) eigenlevel averaged across i-th eigenlevels of all
    realizations.
 
-1-10) Eigenstate IPR values averaged over different disorder realizations
+1-24) Eigenstate IPR values averaged over different disorder realizations
    in the same manner as energies. In column order, the following
    q-values (see the header) are saved:
-   0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 2.
+   0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9,
+   1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2.,
+        2.2,      2.4,      2.6,      2.8,      3.0
    In case the file name is IPR_log_average*, then the logarithms
    of ipr are averaged over disorder realizations.
 
-
+25) Shannon entropy as the limit in the q -> 1 case.
 """
 
 # -------------------------------------------------------------
@@ -108,13 +148,15 @@ columns in the file.
    (i-th) eigenlevel averaged across i-th eigenlevels of all
    realizations.
 
-1-11) Von Renyi eigenstate entanglement entropies (1/ (1-q))\log\sum \lambda_p^q
+1-24) Von Renyi eigenstate entanglement entropies (1/ (1-q))\log\sum \lambda_p^q
    in the same manner as energies. In column order, the following
    q-values (see the header) are saved:
-   0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 2., 4., 6.
-13) Von Neumann entanglement entropy as -\sum \lambda * \log\lambda 
+   0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9,
+   1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2.,
+        2.2,      2.4,      2.6,      2.8,      3.0
+25) Von Neumann entanglement entropy as -\sum \lambda * \log\lambda 
 
-14) Schmidt gaps -> differences between the largest eigenvalues of the reduced
+16) Schmidt gaps -> differences between the largest eigenvalues of the reduced
     density matrix averaged over disorder and eigenstates.
 
 
@@ -169,13 +211,16 @@ global mean and global standard deviation of SG.
 
 headers = [header, header_eentro, header_mean]
 
-qlist = np.append(np.arange(0.1, 1., 0.1), (2, 4, 6))
-# which q - values to consider in the mean analysis
+qlist = np.append(np.arange(0.1, 2.1, 0.1), np.arange(2.2, 3.2, 0.2))
+qlist = np.delete(qlist, 9)
+
+# which values to consider in the mean analysis
 mean_qlist = [0.1, 0.5, 1, 2]
 # qlist_eentro = np.append(np.arange(0.1, 1., 0.1), 2)
 
 plist = [1, 2, 3, 4]
 
+# entanglement entropy analysis
 eentro_string = 'EENTRO_RENYI_p_{:d}_q_{:.2f}'
 
 eentro_vn_string = 'EENTRO_VN_p_{:d}'
@@ -270,9 +315,12 @@ if __name__ == '__main__':
 
             attrs = dict(f['Eigenvalues'].attrs)
 
-            for q_ in qlist:
+            for q_ in np.append(qlist, 1):
 
-                iprlist.append(f[f'IPR_q_{q_:.2f}'][:])
+                if q_ != 1:
+                    iprlist.append(f[f'IPR_q_{q_:.2f}'][:])
+                else:
+                    iprlist.append(f['ENTRO_PART_q_1.00'][:])
 
         except KeyError:
             print('IPR related keys not present!')
@@ -292,6 +340,7 @@ if __name__ == '__main__':
 
             for p in plist:
 
+                # schmidt gap data
                 dset_sg_ = f[schmidt_gap_string.format(p)][:]
                 # von neumann entropy
                 dset_vn_ = f[eentro_vn_string.format(p)][:]
@@ -315,7 +364,7 @@ if __name__ == '__main__':
                 # schmidt gap
                 # ----------------------------------------
                 (sample_mean_sg, sample_std_sg,
-                global_mean_sg, global_std_sg) = _get_mean_vals(dset_sg_)
+                 global_mean_sg, global_std_sg) = _get_mean_vals(dset_sg_)
 
                 for q in np.append(qlist, 1):
 
@@ -326,7 +375,6 @@ if __name__ == '__main__':
                     else:
                         dset_ = dset_vn_
 
-                    
                     if q in mean_qlist:
 
                         mean_dict[p][q] = []
@@ -337,12 +385,15 @@ if __name__ == '__main__':
 
                         # mean and std for each individual sample
                         (sample_mean, sample_std,
-                        global_mean, global_std) = _get_mean_vals(dset_)
+                         global_mean, global_std) = _get_mean_vals(dset_)
 
-
-                        mean_dict[p][q] += [sample_mean_ene, sample_std_ene, global_mean_ene, global_std_ene,
-                                            sample_mean, sample_std, global_mean, global_std, sample_mean_sg,
-                                            sample_std_sg, global_mean_sg, global_std_sg]
+                        mean_dict[p][q] += [sample_mean_ene, sample_std_ene,
+                                            global_mean_ene, global_std_ene,
+                                            sample_mean, sample_std,
+                                            global_mean,
+                                            global_std, sample_mean_sg,
+                                            sample_std_sg, global_mean_sg,
+                                            global_std_sg]
 
                 eentro_dict[p].append(dset_vn_)
                 eentro_dict[p].append(dset_sg_)
@@ -423,7 +474,7 @@ if __name__ == '__main__':
             savename_ = savename_.replace('.hdf5', '.txt')
             savename_ = f'{path_}/{savename_}'
             np.savetxt(savename_, results, header=headers[2],
-                    footer=footer_mean)
+                       footer=footer_mean)
 
     # except IndexError:
     #     pass
