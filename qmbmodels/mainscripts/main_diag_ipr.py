@@ -11,7 +11,8 @@ of q values:
 
 q = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9,
      1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9,
-     2., 2.4, 2.6, 2.8., 3.];
+     2., 2.4, 2.6, 2.8., 3.,
+     4., 5., 6.];
 
 Evidently, q=1 is missing above, since we need to use different
 definitions both for IPR and the entanglement entropy. For the
@@ -67,7 +68,9 @@ nener = 1000
 
 # q values for the ipr calculation
 qlist = np.append(np.arange(0.1, 2.1, 0.1), np.arange(2.2, 3.2, 0.2))
+qlist = np.append(qlist, np.arange(4, 7, 1))
 qlist = np.delete(qlist, 9)
+
 # qlist_entro = np.append(np.arange(0.1, 1., 0.1), 2)
 # partitions -> how many of the farthermost spins
 # to include
@@ -115,7 +118,7 @@ if __name__ == '__main__':
                 axis=0)
 
         # participation entropy for q = 1. -> Shannon entropy
-        ipr_dict['ENTRO_PART_q_1.00'] = np.nansum(
+        ipr_dict['ENTRO_PART_q_1.00'] = -np.nansum(
             np.abs(eigvecs)**2 * np.log(np.abs(eigvecs)**2),
             axis=0)
         # ---------------------------------------------------

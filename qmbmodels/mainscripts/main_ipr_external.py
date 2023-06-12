@@ -17,7 +17,7 @@ of q values:
 
 q = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9,
      1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9,
-     2., 2.4, 2.6, 2.8., 3.];
+     2., 2.4, 2.6, 2.8., 3., 4., 5., 6.];
 
 Evidently, q=1 is missing above, since we need to use different
 definitions both for IPR and the entanglement entropy. For the
@@ -104,16 +104,17 @@ columns in the file.
    (i-th) eigenlevel averaged across i-th eigenlevels of all
    realizations.
 
-1-24) Eigenstate IPR values averaged over different disorder realizations
+1-27) Eigenstate IPR values averaged over different disorder realizations
    in the same manner as energies. In column order, the following
    q-values (see the header) are saved:
    0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9,
    1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2.,
         2.2,      2.4,      2.6,      2.8,      3.0
+        4.,        5.,      6.,
    In case the file name is IPR_log_average*, then the logarithms
    of ipr are averaged over disorder realizations.
 
-25) Shannon entropy as the limit in the q -> 1 case.
+28) Shannon entropy as the limit in the q -> 1 case.
 """
 
 # -------------------------------------------------------------
@@ -148,15 +149,16 @@ columns in the file.
    (i-th) eigenlevel averaged across i-th eigenlevels of all
    realizations.
 
-1-24) Von Renyi eigenstate entanglement entropies (1/ (1-q))\log\sum \lambda_p^q
+1-27) Von Renyi eigenstate entanglement entropies (1/ (1-q))\log\sum \lambda_p^q
    in the same manner as energies. In column order, the following
    q-values (see the header) are saved:
    0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9,
    1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2.,
         2.2,      2.4,      2.6,      2.8,      3.0
-25) Von Neumann entanglement entropy as -\sum \lambda * \log\lambda 
+        4.,       5.,       6.
+28) Von Neumann entanglement entropy as -\sum \lambda * \log\lambda 
 
-16) Schmidt gaps -> differences between the largest eigenvalues of the reduced
+29) Schmidt gaps -> differences between the largest eigenvalues of the reduced
     density matrix averaged over disorder and eigenstates.
 
 
@@ -212,6 +214,7 @@ global mean and global standard deviation of SG.
 headers = [header, header_eentro, header_mean]
 
 qlist = np.append(np.arange(0.1, 2.1, 0.1), np.arange(2.2, 3.2, 0.2))
+qlist = np.append(qlist, np.arange(4, 7, 1))
 qlist = np.delete(qlist, 9)
 
 # which values to consider in the mean analysis
@@ -413,7 +416,11 @@ if __name__ == '__main__':
     # take the mean of the relevant quantities to be saved
     mean_ener = np.mean(data, axis=0)
     mean_ipr = [np.mean(ipr_, axis=0) for ipr_ in iprlist]
-    mean_log_ipr = [np.mean(np.log(ipr_), axis=0) for ipr_ in iprlist]
+    # mean_log_ipr = [np.mean(np.log(ipr_), axis=0) if 'ENTRO_PART' not in
+    #                 ipr_ else np.mean(ipr_, axis=0) for ipr_ in iprlist]
+    mean_log_ipr = [np.mean(np.log(ipr_), axis=0) for ipr_ in iprlist[:-1]]
+    # special case (the limiting one)
+    mean_log_ipr.append(np.mean(iprlist[-1], axis=0))
 
     mean_eentro = {}
     for p in plist:
